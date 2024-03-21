@@ -36,7 +36,7 @@ jobs:
 
     - name: Configure CMake
       run: |
-        mkdir build/${{ matrix.build_type }}
+        mkdir -R build/${{ matrix.build_type }}
         cmake -S . -B build/${{ matrix.build_type }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
     - name: Build
