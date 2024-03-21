@@ -82,33 +82,41 @@ constexpr cpu_cycle_t get_addr_mode_cycle()
 }
 
 #define GET_ALU_OPCODE(op, mode) \
-    static_cast<u8_t>(opcode_base_##op) + get_addr_mode_offset<addr_mode::##mode>()
+    static_cast<u8_t>(opcode_base_##op) + get_addr_mode_offset<mode>()
 
 #define SET_ALU_CALLBACK(table, op, mode) \
-    table._addr_modes[GET_ALU_OPCODE(op, mode)] = addr_mode::##mode; \
-    table._callbacks[GET_ALU_OPCODE(op, mode)] = &cpu::execute_opcode_##op<addr_mode::##mode>; \
+    table._addr_modes[GET_ALU_OPCODE(op, mode)] = mode; \
+    table._callbacks[GET_ALU_OPCODE(op, mode)] = &cpu::execute_opcode_##op<mode>; \
     table._strings[GET_ALU_OPCODE(op, mode)] = #op
 
 #define SET_ALU_CALLBACKS(table, op) \
-    SET_ALU_CALLBACK(table, op, immediate); \
-    SET_ALU_CALLBACK(table, op, zero_page); \
-    SET_ALU_CALLBACK(table, op, zero_page_x); \
-    SET_ALU_CALLBACK(table, op, absolute); \
-    SET_ALU_CALLBACK(table, op, absolute_x); \
-    SET_ALU_CALLBACK(table, op, absolute_y); \
-    SET_ALU_CALLBACK(table, op, indexed_indirect); \
-    SET_ALU_CALLBACK(table, op, indirect_indexed)
+    SET_ALU_CALLBACK(table, op, addr_mode::immediate); \
+    SET_ALU_CALLBACK(table, op, addr_mode::zero_page); \
+    SET_ALU_CALLBACK(table, op, addr_mode::zero_page_x); \
+    SET_ALU_CALLBACK(table, op, addr_mode::absolute); \
+    SET_ALU_CALLBACK(table, op, addr_mode::absolute_x); \
+    SET_ALU_CALLBACK(table, op, addr_mode::absolute_y); \
+    SET_ALU_CALLBACK(table, op, addr_mode::indexed_indirect); \
+    SET_ALU_CALLBACK(table, op, addr_mode::indirect_indexed)
 
 #define SET_ADDR_CALLBACK(table, op, opcode, mode) \
-    table._addr_modes[static_cast<size_t>(opcode)] = addr_mode::##mode; \
-    table._callbacks[static_cast<size_t>(opcode)] = &cpu::execute_opcode_##op<addr_mode::##mode>; \
+    table._addr_modes[static_cast<size_t>(opcode)] = mode; \
+    table._callbacks[static_cast<size_t>(opcode)] = &cpu::execute_opcode_##op<mode>; \
     table._strings[static_cast<size_t>(opcode)] = #op
 
 #define SET_CALLBACK(table, op, opcode) \
-    SET_ADDR_CALLBACK(table, op, opcode, implied)
+    SET_ADDR_CALLBACK(table, op, opcode, addr_mode::implied)
 
 struct cpu::opcode_table
 {
+    template<addr_mode AddrMode, typename F>
+    static consteval void add(opcode_table& table, size_t opcode, const char* str, F f)
+    {
+        table._addr_modes[opcode] = AddrMode;
+        table._callbacks[opcode] = f;
+        table._strings[opcode] = str;
+    }
+
     static consteval opcode_table create()
     {
         opcode_table table{};
@@ -121,81 +129,94 @@ struct cpu::opcode_table
         SET_ALU_CALLBACKS(table, sta);
         SET_ALU_CALLBACKS(table, ora);
         SET_ALU_CALLBACKS(table, sbc);
-
+        
         SET_CALLBACK(table, clc, 0x18);
         SET_CALLBACK(table, cld, 0xd8);
         SET_CALLBACK(table, cli, 0x58);
         SET_CALLBACK(table, clv, 0xb8);
-
+        
         SET_CALLBACK(table, dex, 0xca);
         SET_CALLBACK(table, dey, 0x88);
-
+        
         SET_CALLBACK(table, inx, 0xe8);
         SET_CALLBACK(table, iny, 0xc8);
 
+        SET_CALLBACK(table, nop, 0xea);
+
         SET_CALLBACK(table, pha, 0x48);
         SET_CALLBACK(table, php, 0x08);
-
+        
         SET_CALLBACK(table, pla, 0x68);
         SET_CALLBACK(table, plp, 0x28);
-
+        
         SET_CALLBACK(table, rts, 0x60);
-
+        
         SET_CALLBACK(table, sec, 0x38);
         SET_CALLBACK(table, sed, 0xf8);
         SET_CALLBACK(table, sei, 0x78);
-
+        
         SET_CALLBACK(table, tax, 0xaa);
         SET_CALLBACK(table, tay, 0xa8);
         SET_CALLBACK(table, tsx, 0xba);
         SET_CALLBACK(table, txa, 0x8a);
         SET_CALLBACK(table, txs, 0x9a);
         SET_CALLBACK(table, tya, 0x98);
-
-        SET_ADDR_CALLBACK(table, bcc, 0x90, relative);
-        SET_ADDR_CALLBACK(table, bcs, 0xb0, relative);
-        SET_ADDR_CALLBACK(table, beq, 0xf0, relative);
-        SET_ADDR_CALLBACK(table, bmi, 0x30, relative);
-        SET_ADDR_CALLBACK(table, bne, 0xd0, relative);
-        SET_ADDR_CALLBACK(table, bpl, 0x10, relative);
-        SET_ADDR_CALLBACK(table, bvc, 0x50, relative);
-        SET_ADDR_CALLBACK(table, bvs, 0x70, relative);
-
-        SET_ADDR_CALLBACK(table, bit, 0x24, zero_page);
-        SET_ADDR_CALLBACK(table, bit, 0x2c, absolute);
-
-        SET_ADDR_CALLBACK(table, cpx, 0xe0, immediate);
-        SET_ADDR_CALLBACK(table, cpx, 0xe4, zero_page);
-        SET_ADDR_CALLBACK(table, cpx, 0xec, absolute);
-
-        SET_ADDR_CALLBACK(table, cpy, 0xc0, immediate);
-        SET_ADDR_CALLBACK(table, cpy, 0xc4, zero_page);
-        SET_ADDR_CALLBACK(table, cpy, 0xcc, absolute);
-
-        SET_ADDR_CALLBACK(table, jsr, 0x20, absolute);
-        SET_ADDR_CALLBACK(table, jmp, 0x4c, absolute);
-
-        SET_ADDR_CALLBACK(table, ldx, 0xa2, immediate);
-        SET_ADDR_CALLBACK(table, ldx, 0xa6, zero_page);
-        SET_ADDR_CALLBACK(table, ldx, 0xb6, zero_page_y);
-        SET_ADDR_CALLBACK(table, ldx, 0xae, absolute);
-        SET_ADDR_CALLBACK(table, ldx, 0xbe, absolute_y);
-
-        SET_ADDR_CALLBACK(table, ldy, 0xa0, immediate);
-        SET_ADDR_CALLBACK(table, ldy, 0xa4, zero_page);
-        SET_ADDR_CALLBACK(table, ldy, 0xb4, zero_page_x);
-        SET_ADDR_CALLBACK(table, ldy, 0xac, absolute);
-        SET_ADDR_CALLBACK(table, ldy, 0xbc, absolute_x);
-
-        SET_ADDR_CALLBACK(table, stx, 0x86, zero_page);
-        SET_ADDR_CALLBACK(table, stx, 0x96, zero_page_y);
-        SET_ADDR_CALLBACK(table, stx, 0x8e, absolute);
-
-        SET_ADDR_CALLBACK(table, sty, 0x84, zero_page);
-        SET_ADDR_CALLBACK(table, sty, 0x94, zero_page_x);
-        SET_ADDR_CALLBACK(table, sty, 0x8c, absolute);
-
-        SET_ADDR_CALLBACK(table, nop, 0xea, implied);
+        
+        SET_ADDR_CALLBACK(table, bcc, 0x90, addr_mode::relative);
+        SET_ADDR_CALLBACK(table, bcs, 0xb0, addr_mode::relative);
+        SET_ADDR_CALLBACK(table, beq, 0xf0, addr_mode::relative);
+        SET_ADDR_CALLBACK(table, bmi, 0x30, addr_mode::relative);
+        SET_ADDR_CALLBACK(table, bne, 0xd0, addr_mode::relative);
+        SET_ADDR_CALLBACK(table, bpl, 0x10, addr_mode::relative);
+        SET_ADDR_CALLBACK(table, bvc, 0x50, addr_mode::relative);
+        SET_ADDR_CALLBACK(table, bvs, 0x70, addr_mode::relative);
+        
+        SET_ADDR_CALLBACK(table, bit, 0x24, addr_mode::zero_page);
+        SET_ADDR_CALLBACK(table, bit, 0x2c, addr_mode::absolute);
+        
+        SET_ADDR_CALLBACK(table, cpx, 0xe0, addr_mode::immediate);
+        SET_ADDR_CALLBACK(table, cpx, 0xe4, addr_mode::zero_page);
+        SET_ADDR_CALLBACK(table, cpx, 0xec, addr_mode::absolute);
+        
+        SET_ADDR_CALLBACK(table, cpy, 0xc0, addr_mode::immediate);
+        SET_ADDR_CALLBACK(table, cpy, 0xc4, addr_mode::zero_page);
+        SET_ADDR_CALLBACK(table, cpy, 0xcc, addr_mode::absolute);
+        
+        SET_ADDR_CALLBACK(table, jsr, 0x20, addr_mode::absolute);
+        SET_ADDR_CALLBACK(table, jmp, 0x4c, addr_mode::absolute);
+        
+        SET_ADDR_CALLBACK(table, ldx, 0xa2, addr_mode::immediate);
+        SET_ADDR_CALLBACK(table, ldx, 0xa6, addr_mode::zero_page);
+        SET_ADDR_CALLBACK(table, ldx, 0xb6, addr_mode::zero_page_y);
+        SET_ADDR_CALLBACK(table, ldx, 0xae, addr_mode::absolute);
+        SET_ADDR_CALLBACK(table, ldx, 0xbe, addr_mode::absolute_y);
+        
+        SET_ADDR_CALLBACK(table, ldy, 0xa0, addr_mode::immediate);
+        SET_ADDR_CALLBACK(table, ldy, 0xa4, addr_mode::zero_page);
+        SET_ADDR_CALLBACK(table, ldy, 0xb4, addr_mode::zero_page_x);
+        SET_ADDR_CALLBACK(table, ldy, 0xac, addr_mode::absolute);
+        SET_ADDR_CALLBACK(table, ldy, 0xbc, addr_mode::absolute_x);
+        
+        SET_ADDR_CALLBACK(table, stx, 0x86, addr_mode::zero_page);
+        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
+        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
+        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
+        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
+        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
+        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
+        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
+        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
+        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
+        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
+        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
+        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
+        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
+        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
+        SET_ADDR_CALLBACK(table, stx, 0x8e, addr_mode::absolute);
+        
+        SET_ADDR_CALLBACK(table, sty, 0x84, addr_mode::zero_page);
+        SET_ADDR_CALLBACK(table, sty, 0x94, addr_mode::zero_page_x);
+        SET_ADDR_CALLBACK(table, sty, 0x8c, addr_mode::absolute);
 
         return table;
     }
@@ -944,7 +965,7 @@ void cpu::execute_opcode_sbc(cpu& self)
     byte_t byte = self.read_operand<AddrMode>();
 
     byte = ~byte + 1;                                    // turn it into a add operand
-    byte = byte - (1 - self.has_status_carry() ? 1 : 0); // account for the carry
+    byte = byte - ((1 - self.has_status_carry()) ? 1 : 0); // account for the carry
 
     const uint8_t old_byte = self._registers.a;
 
