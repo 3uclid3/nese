@@ -1,0 +1,44 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Debug, Release]
+        include:
+          - os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+
+          - os: windows-latest
+            cc: clang-cl
+            cxx: clang-cl
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Clang
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt update
+        sudo apt install -y clang
+
+    - name: Set CC and CXX
+      env:
+        CC: ${{ matrix.cc }}
+        CXX: ${{ matrix.cxx }}
+      run: echo "CC=$CC" >> $GITHUB_ENV && echo "CXX=$CXX" >> $GITHUB_ENV
+
+    - name: Configure CMake
+      run: |
+        mkdir build/${{ matrix.build_type }}
+        cmake -S . -B build/${{ matrix.build_type }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+    - name: Build
+      run: cmake --build build/${{ matrix.build_type }} --config ${{ matrix.build_type }}
+
