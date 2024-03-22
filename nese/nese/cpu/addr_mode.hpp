@@ -1,6 +1,6 @@
 #pragma once
 
-namespace nese {
+namespace nese::cpu {
 
 enum class addr_mode
 {

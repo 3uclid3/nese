@@ -1,24 +1,24 @@
 set(DIR "${CMAKE_CURRENT_SOURCE_DIR}/nese")
 
 set(INCLUDES
-    "${DIR}/addr_mode.hpp"
+    "${DIR}/cpu/addr_mode.hpp"
+    "${DIR}/cpu/processor.hpp"
+    "${DIR}/cpu/processor_fmt.inl"
+    "${DIR}/cpu/registers.hpp"
+    "${DIR}/cpu/status_flag.hpp"
+    "${DIR}/memory/ram.hpp"
+    "${DIR}/memory/rom.hpp"
     "${DIR}/basic_types.hpp"
-    "${DIR}/cpu.hpp"
-    "${DIR}/cpu_fmt.inl"
-    "${DIR}/cpu_registers.hpp"
-    "${DIR}/cpu_status.hpp"
     "${DIR}/cycle.hpp"
     "${DIR}/emulator.hpp"
     "${DIR}/log.hpp"
-    "${DIR}/ram.hpp"
-    "${DIR}/rom.hpp"
 )
 
 set(SOURCES
-    "${DIR}/cpu.cpp"
+    "${DIR}/cpu/processor.cpp"
+    "${DIR}/memory/ram.cpp"
+    "${DIR}/memory/rom.cpp"
     "${DIR}/emulator.cpp"
-    "${DIR}/ram.cpp"
-    "${DIR}/rom.cpp"
 )
 
 add_library(nese ${INCLUDES} ${SOURCES})

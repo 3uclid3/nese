@@ -6,8 +6,8 @@
 
 namespace nese {
 
-class cpu;
-class ram;
+namespace cpu { class processor; }
+namespace memory { class ram; }
 
 class emulator
 {
@@ -23,23 +23,23 @@ public:
     bool has_stop_requested() const;
     void stop();
 
-    const cpu& get_cpu() const;
-    const ram& get_ram() const;
+    const cpu::processor& get_cpu() const;
+    const memory::ram& get_ram() const;
 
 
 private:
-    std::unique_ptr<ram> _ram{std::make_unique<ram>()};
-    std::unique_ptr<cpu> _cpu{std::make_unique<cpu>(*_ram.get())};
+    std::unique_ptr<memory::ram> _ram{std::make_unique<memory::ram>()};
+    std::unique_ptr<cpu::processor> _cpu{std::make_unique<cpu::processor>(*_ram.get())};
 
     cycle_t _cycle{0};
 };
 
-inline const cpu& emulator::get_cpu() const
+inline const cpu::processor& emulator::get_cpu() const
 {
     return *_cpu;
 }
 
-inline const ram& emulator::get_ram() const
+inline const memory::ram& emulator::get_ram() const
 {
     return *_ram;
 }

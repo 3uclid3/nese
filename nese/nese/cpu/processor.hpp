@@ -3,9 +3,9 @@
 #include <fmt/format.h>
 #include <spdlog/logger.h>
 
-#include <nese/addr_mode.hpp>
 #include <nese/basic_types.hpp>
-#include <nese/cpu_registers.hpp>
+#include <nese/cpu/addr_mode.hpp>
+#include <nese/cpu/registers.hpp>
 #include <nese/cycle.hpp>
 
 #ifndef NESE_CPU_DEBUGBREAK_ENABLED
@@ -16,14 +16,16 @@
 #define NESE_CPU_LOG_NINTENDULATOR_ENABLED 1
 #endif
 
-namespace nese {
-
+namespace nese::memory {
 class ram;
+} // namespace nese::memory
 
-class cpu
+namespace nese::cpu {
+
+class processor
 {
 public:
-    explicit cpu(ram& ram);
+    explicit processor(memory::ram& ram);
 
     void power_on();
     void reset();
@@ -34,18 +36,18 @@ public:
     void stop();
 
     [[nodiscard]] cycle_t get_cycle() const;
-    [[nodiscard]] const cpu_registers& get_registers() const;
+    [[nodiscard]] const registers& get_registers() const;
 
     void set_code_addr(addr_t addr);
 
-    const ram& get_ram() const { return _ram; } // TODO Remove
+    const memory::ram& get_ram() const { return _ram; } // TODO Remove
 
 #if NESE_CPU_DEBUGBREAK_ENABLED
     void set_debugbreak(addr_t addr);
 #endif
 
 private:
-    using opcode_callback = void (*)(cpu&);
+    using opcode_callback = void (*)(processor&);
 
     struct opcode_table;
     struct opcode_table_singleton;
@@ -87,9 +89,9 @@ private:
     [[nodiscard]] word_t pop_word();
 
 private:
-    [[nodiscard]] bool has_status_flags(cpu_status_flags mask) const;
-    [[nodiscard]] bool has_status_flag(cpu_status_flag mask) const;
-    void set_status_flag(cpu_status_flag mask, bool value);
+    [[nodiscard]] bool has_status_flags(status_flags mask) const;
+    [[nodiscard]] bool has_status_flag(status_flag mask) const;
+    void set_status_flag(status_flag mask, bool value);
 
     [[nodiscard]] bool has_status_carry() const;
     void set_status_carry(bool value);
@@ -121,175 +123,175 @@ private:
 
 private:
     template<addr_mode AddrMode>
-    static void execute_opcode_adc(cpu& self);
+    static void execute_opcode_adc(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_and(cpu& self);
+    static void execute_opcode_and(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_b__(cpu& self, bool condition);
+    static void execute_opcode_b__(processor& self, bool condition);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bcc(cpu& self);
+    static void execute_opcode_bcc(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bcs(cpu& self);
+    static void execute_opcode_bcs(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_beq(cpu& self);
+    static void execute_opcode_beq(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bmi(cpu& self);
+    static void execute_opcode_bmi(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bne(cpu& self);
+    static void execute_opcode_bne(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bpl(cpu& self);
+    static void execute_opcode_bpl(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bvc(cpu& self);
+    static void execute_opcode_bvc(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bvs(cpu& self);
+    static void execute_opcode_bvs(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bit(cpu& self);
+    static void execute_opcode_bit(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_clc(cpu& self);
+    static void execute_opcode_clc(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_cld(cpu& self);
+    static void execute_opcode_cld(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_cli(cpu& self);
+    static void execute_opcode_cli(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_clv(cpu& self);
+    static void execute_opcode_clv(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_c__(cpu& self, byte_t to_byte);
+    static void execute_opcode_c__(processor& self, byte_t to_byte);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_cmp(cpu& self);
+    static void execute_opcode_cmp(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_cpx(cpu& self);
+    static void execute_opcode_cpx(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_cpy(cpu& self);
+    static void execute_opcode_cpy(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_eor(cpu& self);
+    static void execute_opcode_eor(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_de_(cpu& self, byte_t& byte);
+    static void execute_opcode_de_(processor& self, byte_t& byte);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_dex(cpu& self);
+    static void execute_opcode_dex(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_dey(cpu& self);
+    static void execute_opcode_dey(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_in_(cpu& self, byte_t& byte);
+    static void execute_opcode_in_(processor& self, byte_t& byte);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_inx(cpu& self);
+    static void execute_opcode_inx(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_iny(cpu& self);
+    static void execute_opcode_iny(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_jmp(cpu& self);
+    static void execute_opcode_jmp(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_jsr(cpu& self);
+    static void execute_opcode_jsr(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_ld_(cpu& self, byte_t& byte);
+    static void execute_opcode_ld_(processor& self, byte_t& byte);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_lda(cpu& self);
+    static void execute_opcode_lda(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_ldx(cpu& self);
+    static void execute_opcode_ldx(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_ldy(cpu& self);
+    static void execute_opcode_ldy(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_nop(cpu& self);
+    static void execute_opcode_nop(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_ora(cpu& self);
+    static void execute_opcode_ora(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_pha(cpu& self);
+    static void execute_opcode_pha(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_php(cpu& self);
+    static void execute_opcode_php(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_pla(cpu& self);
+    static void execute_opcode_pla(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_plp(cpu& self);
+    static void execute_opcode_plp(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_rts(cpu& self);
+    static void execute_opcode_rts(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_sbc(cpu& self);
+    static void execute_opcode_sbc(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_sec(cpu& self);
+    static void execute_opcode_sec(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_sed(cpu& self);
+    static void execute_opcode_sed(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_sei(cpu& self);
+    static void execute_opcode_sei(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_st_(cpu& self, byte_t byte);
+    static void execute_opcode_st_(processor& self, byte_t byte);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_sta(cpu& self);
+    static void execute_opcode_sta(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_stx(cpu& self);
+    static void execute_opcode_stx(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_sty(cpu& self);
+    static void execute_opcode_sty(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_t__(cpu& self, byte_t from_byte, byte_t& to_byte);
+    static void execute_opcode_t__(processor& self, byte_t from_byte, byte_t& to_byte);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_tax(cpu& self);
+    static void execute_opcode_tax(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_tay(cpu& self);
+    static void execute_opcode_tay(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_tsx(cpu& self);
+    static void execute_opcode_tsx(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_txa(cpu& self);
+    static void execute_opcode_txa(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_txs(cpu& self);
+    static void execute_opcode_txs(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_tya(cpu& self);
+    static void execute_opcode_tya(processor& self);
 
 private:
-    cpu_registers _registers{};
+    registers _registers{};
     cycle_t _cycle{0};
 
-    ram& _ram;
+    memory::ram& _ram;
 
     bool _stop_requested{false};
 
@@ -302,42 +304,42 @@ private:
     std::shared_ptr<spdlog::logger> _nintendulator_logger;
 #endif
 
-    friend struct fmt::formatter<cpu>;
+    friend struct fmt::formatter<processor>;
 };
 
-inline bool cpu::has_stop_requested() const
+inline bool processor::has_stop_requested() const
 {
     return _stop_requested;
 }
 
-inline void cpu::stop()
+inline void processor::stop()
 {
     _stop_requested = true;
 }
 
-inline cycle_t cpu::get_cycle() const
+inline cycle_t processor::get_cycle() const
 {
     return _cycle;
 }
 
-inline const cpu_registers& cpu::get_registers() const
+inline const registers& processor::get_registers() const
 {
     return _registers;
 }
 
-inline void cpu::set_code_addr(addr_t addr)
+inline void processor::set_code_addr(addr_t addr)
 {
     _registers.pc = addr;
 }
 
 #if NESE_CPU_DEBUGBREAK_ENABLED
-inline void cpu::set_debugbreak(addr_t addr)
+inline void processor::set_debugbreak(addr_t addr)
 {
     _debugbreak = true;
     _debugbreak_addr = addr;
 }
 #endif
 
-} // namespace nese
+} // namespace nese::cpu
 
-#include <nese/cpu_fmt.inl>
+#include <nese/cpu/processor_fmt.inl>

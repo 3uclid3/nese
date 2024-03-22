@@ -1,18 +1,17 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include <nese/cpu.hpp>
-#include <nese/cpu_mock.hpp>
-#include <nese/ram.hpp>
-#include <nese/rom.hpp>
+#include <nese/cpu/processor_mock.hpp>
+#include <nese/memory/ram.hpp>
+#include <nese/memory/rom.hpp>
 #include <nese/test_config.hpp>
 
-namespace nese {
+namespace nese::cpu {
 
-void run_rom(cpu& cpu, ram& ram, std::string_view rom_name)
+void run_rom(processor& cpu, memory::ram& ram, std::string_view rom_name)
 {
     const std::string path = fmt::format("{}/{}", test_roms_path, rom_name);
 
-    rom rom = rom::from_file(path.c_str());
+    memory::rom rom = memory::rom::from_file(path.c_str());
 
     cpu.power_on();
     ram.power_on();
@@ -39,7 +38,7 @@ void run_rom(cpu& cpu, ram& ram, std::string_view rom_name)
 
 TEST_CASE("cpu - nestest")
 {
-    cpu_mock cpu;
+    processor_mock cpu;
 
     run_rom(cpu, cpu.ram, "nestest.nes");
 

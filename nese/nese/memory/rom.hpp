@@ -4,7 +4,7 @@
 
 #include <nese/basic_types.hpp>
 
-namespace nese {
+namespace nese::memory {
 
 class rom
 {
@@ -41,7 +41,6 @@ private:
     header _header;
     prg _prg;
     chr _chr;
-
 };
 
 inline const rom::header& rom::get_header() const
@@ -59,4 +58,4 @@ inline const rom::chr& rom::get_chr() const
     return _chr;
 }
 
-} // namespace nese
+} // namespace nese::memory

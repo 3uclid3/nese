@@ -1,10 +1,10 @@
-#include <nese/rom.hpp>
+#include <nese/memory/rom.hpp>
 
 #include <fstream>
 
 #include <nese/log.hpp>
 
-namespace nese {
+namespace nese::memory {
 
 static_assert(sizeof(rom::header) == 0x10);
 
@@ -47,4 +47,4 @@ u8_t rom::get_mapper() const
     return ((_header.flag6 & 0xf0) >> 4) + (_header.flag7 & 0xf0);
 }
 
-} // namespace nese
+} // namespace nese::memory

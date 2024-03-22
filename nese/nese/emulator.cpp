@@ -1,8 +1,8 @@
 #include <nese/emulator.hpp>
 
-#include <nese/cpu.hpp>
+#include <nese/cpu/processor.hpp>
 #include <nese/log.hpp>
-#include <nese/ram.hpp>
+#include <nese/memory/ram.hpp>
 
 namespace nese {
 

@@ -4,7 +4,7 @@
 
 #include <nese/basic_types.hpp>
 
-namespace nese {
+namespace nese::memory {
 
 class ram
 {
@@ -31,4 +31,4 @@ private:
     std::array<byte_t, max_size> _data{};
 };
 
-} // namespace nese
+} // namespace nese::memory

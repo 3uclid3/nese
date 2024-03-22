@@ -1,13 +1,13 @@
 #pragma once
 
 #include <nese/basic_types.hpp>
-#include <nese/cpu_status.hpp>
+#include <nese/cpu/status_flag.hpp>
 
-namespace nese {
+namespace nese::cpu {
 
-struct cpu_registers
+struct registers
 {
-    constexpr void set_flag(cpu_status_flag flag, bool value);
+    constexpr void set_flag(status_flag flag, bool value);
 
     u8_t a{0};   // Accumulator - supports using status register for carrying, overflow detection, etc
     u8_t x{0};   // Index register. Used for addressing modes, loop counters
@@ -17,9 +17,9 @@ struct cpu_registers
     u8_t p{0};   // Status register - used by ALU unit
 };
 
-constexpr void cpu_registers::set_flag(cpu_status_flag flag, bool value)
+constexpr void registers::set_flag(status_flag flag, bool value)
 {
     s = value ? s | flag : s & ~flag;
 }
 
-}
+} // namespace nese::cpu

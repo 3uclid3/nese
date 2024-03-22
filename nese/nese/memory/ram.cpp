@@ -1,8 +1,8 @@
-#include <nese/ram.hpp>
+#include <nese/memory/ram.hpp>
 
 #include <cassert>
 
-namespace nese {
+namespace nese::memory {
 
 void ram::power_on()
 {
@@ -54,7 +54,7 @@ addr_t ram::redirect_addr(addr_t addr)
         // map 0x0000~0x07ff 4 times until 0x1ffff
         return addr & 0x7ff;
     }
-    
+
     if ((addr & 0xE000) == 0x2000)
     {
         // map 0x2000~0x2008 every 8 bytes until 0x3ffff
@@ -64,4 +64,4 @@ addr_t ram::redirect_addr(addr_t addr)
     return addr;
 }
 
-} // namespace nese
+} // namespace nese::memory
