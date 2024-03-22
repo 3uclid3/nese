@@ -31,7 +31,7 @@ enum rmw_opcode_base : u8_t
 constexpr addr_t stack_offset = 0x100;
 
 template<addr_mode AddrMode>
-constexpr u8_t get_addr_mode_offset()
+constexpr u8_t get_alu_opcode_offset()
 {
     switch (AddrMode)
     {
@@ -54,10 +54,10 @@ constexpr u8_t get_addr_mode_offset()
         return 0x19;
 
     case addr_mode::indexed_indirect:
-        return 0x1d;
+        return 0x1;
 
     case addr_mode::indirect_indexed:
-        return 0x19;
+        return 0x11;
     }
 
     __assume(false);
@@ -91,7 +91,7 @@ constexpr cpu_cycle_t get_addr_mode_cycle()
 }
 
 #define GET_ALU_OPCODE(op, mode) \
-    (static_cast<u8_t>(alu_opcode_base_##op) + get_addr_mode_offset<mode>())
+    (static_cast<u8_t>(alu_opcode_base_##op) + get_alu_opcode_offset<mode>())
 
 #define SET_ALU_CALLBACK(table, op, mode) \
     (table)._addr_modes[GET_ALU_OPCODE(op, mode)] = mode; \
@@ -374,7 +374,6 @@ word_t processor::decode_operand()
 template<>
 word_t processor::decode_operand_addr<addr_mode::zero_page>()
 {
-    // zero page - next byte is 8-bit address
     return decode_byte();
 }
 
@@ -411,17 +410,15 @@ word_t processor::decode_operand_addr<addr_mode::absolute_y>()
 template<>
 word_t processor::decode_operand_addr<addr_mode::indexed_indirect>()
 {
-    // zero page - next byte is 8-bit address
-    return decode_byte();
+    const byte_t addr = decode_byte();
+    return get_byte_from_memory((addr + _registers.x) & 0xff) + static_cast<uint16_t>((get_byte_from_memory((addr + _registers.x + 1) & 0xff)) << 8);
 }
 
 template<>
 word_t processor::decode_operand_addr<addr_mode::indirect_indexed>()
 {
-    // Indirect Indexed
-    // implies a table of table address in zero page
-    const uint8_t addr = decode_byte();
-    return _ram.get_byte(addr) + (static_cast<uint16_t>(_ram.get_byte(addr + 1)) << 8) + _registers.y;
+    const byte_t addr = decode_byte();
+    return get_byte_from_memory(addr) + (static_cast<uint16_t>((get_byte_from_memory(addr + 1) & 0xff)) << 8) + _registers.y;
 }
 
 template<addr_mode AddrMode>
