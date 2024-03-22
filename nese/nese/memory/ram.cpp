@@ -15,12 +15,30 @@ void ram::reset()
 
 byte_t ram::get_byte(addr_t addr) const
 {
-    return _data[redirect_addr(addr)];
+    addr = redirect_addr(addr);
+
+    if ((addr & 0xfff8) == 0x2000 || (addr & 0xffe0) == 0x4000)
+    {
+        // TODO IO reg
+        // return;
+        NESE_ASSERT(false);
+    }
+
+    return _data[addr];
 }
 
 void ram::set_byte(addr_t addr, byte_t value)
 {
-    _data[redirect_addr(addr)] = value;
+    addr = redirect_addr(addr);
+
+    if ((addr & 0xfff8) == 0x2000 || (addr & 0xffe0) == 0x4000)
+    {
+        // TODO IO reg
+        NESE_ASSERT(false);
+        return;
+    }
+
+    _data[addr] = value;
 }
 
 word_t ram::get_word(addr_t addr) const
