@@ -68,6 +68,9 @@ private:
     template<addr_mode AddrMode>
     [[nodiscard]] byte_t read_operand(word_t op);
 
+    template<addr_mode AddrMode>
+    void write_operand(byte_t addr, byte_t value);
+
 private:
     void push_byte(byte_t value);
     [[nodiscard]] byte_t pop_byte();
@@ -126,6 +129,9 @@ private:
 
     template<addr_mode AddrMode>
     static void execute_instruction_and(processor& self);
+
+    template<addr_mode AddrMode>
+    static void execute_instruction_asl(processor& self);
 
     template<addr_mode AddrMode>
     static void execute_instruction_b__(processor& self, bool condition);
@@ -221,6 +227,9 @@ private:
     static void execute_instruction_ldy(processor& self);
 
     template<addr_mode AddrMode>
+    static void execute_instruction_lsr(processor& self);
+
+    template<addr_mode AddrMode>
     static void execute_instruction_nop(processor& self);
 
     template<addr_mode AddrMode>
@@ -239,7 +248,16 @@ private:
     static void execute_instruction_plp(processor& self);
 
     template<addr_mode AddrMode>
+    static void execute_instruction_rti(processor& self);
+
+    template<addr_mode AddrMode>
     static void execute_instruction_rts(processor& self);
+
+    template<addr_mode AddrMode>
+    static void execute_instruction_rol(processor& self);
+
+    template<addr_mode AddrMode>
+    static void execute_instruction_ror(processor& self);
 
     template<addr_mode AddrMode>
     static void execute_instruction_sbc(processor& self);

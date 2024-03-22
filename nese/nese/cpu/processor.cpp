@@ -8,16 +8,24 @@
 
 namespace nese::cpu {
 
-enum opcode_base : u8_t
+enum alu_opcode_base : u8_t
 {
-    opcode_base_ora = 0x00,
-    opcode_base_and = 0x20,
-    opcode_base_eor = 0x40,
-    opcode_base_adc = 0x60,
-    opcode_base_sta = 0x80,
-    opcode_base_lda = 0xA0,
-    opcode_base_cmp = 0xC0,
-    opcode_base_sbc = 0xE0
+    alu_opcode_base_ora = 0x00,
+    alu_opcode_base_and = 0x20,
+    alu_opcode_base_eor = 0x40,
+    alu_opcode_base_adc = 0x60,
+    alu_opcode_base_sta = 0x80,
+    alu_opcode_base_lda = 0xA0,
+    alu_opcode_base_cmp = 0xC0,
+    alu_opcode_base_sbc = 0xE0
+};
+
+enum rmw_opcode_base : u8_t
+{
+    rmw_opcode_base_asl = 0x00,
+    rmw_opcode_base_rol = 0x20,
+    rmw_opcode_base_lsr = 0x40,
+    rmw_opcode_base_ror = 0x60
 };
 
 constexpr addr_t stack_offset = 0x100;
@@ -83,12 +91,12 @@ constexpr cpu_cycle_t get_addr_mode_cycle()
 }
 
 #define GET_ALU_OPCODE(op, mode) \
-    static_cast<u8_t>(opcode_base_##op) + get_addr_mode_offset<mode>()
+    (static_cast<u8_t>(alu_opcode_base_##op) + get_addr_mode_offset<mode>())
 
 #define SET_ALU_CALLBACK(table, op, mode) \
-    table._addr_modes[GET_ALU_OPCODE(op, mode)] = mode; \
-    table._callbacks[GET_ALU_OPCODE(op, mode)] = &processor::execute_instruction_##op<mode>; \
-    table._strings[GET_ALU_OPCODE(op, mode)] = #op
+    (table)._addr_modes[GET_ALU_OPCODE(op, mode)] = mode; \
+    (table)._callbacks[GET_ALU_OPCODE(op, mode)] = &processor::execute_instruction_##op<mode>; \
+    (table)._strings[GET_ALU_OPCODE(op, mode)] = #op
 
 #define SET_ALU_CALLBACKS(table, op) \
     SET_ALU_CALLBACK(table, op, addr_mode::immediate); \
@@ -100,10 +108,25 @@ constexpr cpu_cycle_t get_addr_mode_cycle()
     SET_ALU_CALLBACK(table, op, addr_mode::indexed_indirect); \
     SET_ALU_CALLBACK(table, op, addr_mode::indirect_indexed)
 
+#define GET_RMW_OPCODE(op, offset) \
+    (static_cast<u8_t>(rmw_opcode_base_##op) + static_cast<u8_t>(offset))
+
+#define SET_RMW_CALLBACK(table, op, offset, mode) \
+    (table)._addr_modes[GET_RMW_OPCODE(op, offset)] = mode; \
+    (table)._callbacks[GET_RMW_OPCODE(op, offset)] = &processor::execute_instruction_##op<mode>; \
+    (table)._strings[GET_RMW_OPCODE(op, offset)] = #op
+
+#define SET_RMW_CALLBACKS(table, op) \
+    SET_RMW_CALLBACK(table, op, 0x6, addr_mode::zero_page); \
+    SET_RMW_CALLBACK(table, op, 0xa, addr_mode::accumulator); \
+    SET_RMW_CALLBACK(table, op, 0x16, addr_mode::zero_page_x); \
+    SET_RMW_CALLBACK(table, op, 0xe, addr_mode::absolute); \
+    SET_RMW_CALLBACK(table, op, 0x1e, addr_mode::absolute_x)
+
 #define SET_ADDR_CALLBACK(table, op, opcode, mode) \
-    table._addr_modes[static_cast<size_t>(opcode)] = mode; \
-    table._callbacks[static_cast<size_t>(opcode)] = &processor::execute_instruction_##op<mode>; \
-    table._strings[static_cast<size_t>(opcode)] = #op
+    (table)._addr_modes[static_cast<size_t>(opcode)] = mode; \
+    (table)._callbacks[static_cast<size_t>(opcode)] = &processor::execute_instruction_##op<mode>; \
+    (table)._strings[static_cast<size_t>(opcode)] = #op
 
 #define SET_CALLBACK(table, op, opcode) \
     SET_ADDR_CALLBACK(table, op, opcode, addr_mode::implied)
@@ -122,6 +145,11 @@ struct processor::instruction_table
         SET_ALU_CALLBACKS(table, sta);
         SET_ALU_CALLBACKS(table, ora);
         SET_ALU_CALLBACKS(table, sbc);
+
+        SET_RMW_CALLBACKS(table, asl);
+        SET_RMW_CALLBACKS(table, rol);
+        SET_RMW_CALLBACKS(table, lsr);
+        SET_RMW_CALLBACKS(table, ror);
 
         SET_CALLBACK(table, clc, 0x18);
         SET_CALLBACK(table, cld, 0xd8);
@@ -142,6 +170,7 @@ struct processor::instruction_table
         SET_CALLBACK(table, pla, 0x68);
         SET_CALLBACK(table, plp, 0x28);
 
+        SET_CALLBACK(table, rti, 0x40);
         SET_CALLBACK(table, rts, 0x60);
 
         SET_CALLBACK(table, sec, 0x38);
@@ -239,8 +268,10 @@ struct processor::instruction_table_singleton
     static constexpr instruction_table instance{instruction_table::create()};
 };
 
+#undef SET_ADDR_CALLBACK
 #undef SET_ALU_CALLBACK
 #undef SET_ALU_CALLBACKS
+#undef SET_CALLBACK
 
 processor::processor(memory::ram& ram)
     : _ram(ram)
@@ -416,6 +447,19 @@ template<addr_mode AddrMode>
 byte_t processor::read_operand(word_t op)
 {
     return get_byte_from_memory(op);
+}
+
+template<addr_mode AddrMode>
+void processor::write_operand(byte_t addr, byte_t value)
+{
+    if constexpr (AddrMode == addr_mode::accumulator)
+    {
+        _registers.a = value;
+    }
+    else
+    {
+        set_byte_to_memory(addr, value);
+    }
 }
 
 void processor::push_byte(byte_t value)
@@ -612,6 +656,22 @@ void processor::execute_instruction_and(processor& self)
     self.set_status_alu(self._registers.a);
 
     self._cycle += get_addr_mode_cycle<AddrMode>();
+}
+
+// ASL (Arithmetic Shift Left):
+// Shifts all bits of the accumulator or a memory location one bit to the left, setting the carry flag with the last bit's value and affecting the zero and negative flags.
+template<addr_mode AddrMode>
+void processor::execute_instruction_asl(processor& self)
+{
+    const byte_t value = self.read_operand<AddrMode>();
+    const byte_t new_value = value << 1;
+
+    self.write_operand<AddrMode>(value, new_value);
+
+    // flags
+    self.set_status_carry(value & 0x80);
+    self.set_status_zero(self._registers.a == 0);
+    self.set_status_negative(new_value & 0x80);
 }
 
 // BCC (Branch if Carry Clear):
@@ -888,6 +948,22 @@ void processor::execute_instruction_ldy(processor& self)
     execute_instruction_ld_<AddrMode>(self, self._registers.y);
 }
 
+// LSR (Logical Shift Right):
+// Shifts all bits of the accumulator or a memory location one bit to the right, setting the carry flag with the first bit's value and affecting the zero and negative flags.
+template<addr_mode AddrMode>
+void processor::execute_instruction_lsr(processor& self)
+{
+    const byte_t value = self.read_operand<AddrMode>();
+    const byte_t new_value = value >> 1;
+
+    self.write_operand<AddrMode>(value, new_value);
+
+    // flags
+    self.set_status_carry(value & 0x1);
+    self.set_status_zero(self._registers.a == 0);
+    self.set_status_negative(new_value & 0x80);
+}
+
 // ORA (Logical Inclusive OR):
 // Performs a bitwise OR between the accumulator and a memory value, affecting the zero and negative flags.
 template<addr_mode AddrMode>
@@ -945,6 +1021,16 @@ void processor::execute_instruction_plp(processor& self)
     self._registers.p = (self.pop_byte() & 0xef) | (self._registers.p & 0x10) | 0x20;
 }
 
+// RTI (Return from Interrupt):
+// Restores the CPU's state from the stack, including the program counter and processor flags, to conclude an interrupt service routine.
+template<addr_mode AddrMode>
+void processor::execute_instruction_rti(processor& self)
+{
+    execute_instruction_plp<addr_mode::implied>(self);
+
+    self._registers.pc = self.pop_word();
+}
+
 // RTS (Return from Subroutine):
 // Pulls the program counter (plus one) from the stack, returning from a subroutine.
 template<addr_mode AddrMode>
@@ -952,6 +1038,36 @@ void processor::execute_instruction_rts(processor& self)
 {
     // See JSR - we pushed actual return address - 1
     self._registers.pc = self.pop_word() + 1;
+}
+
+// ROL (Rotate Left):
+// Rotates all bits of the accumulator or a memory location one bit to the left, including the carry flag, affecting the carry, zero, and negative flags.
+template<addr_mode AddrMode>
+void processor::execute_instruction_rol(processor& self)
+{
+    const byte_t value = self.read_operand<AddrMode>();
+    const byte_t new_value = (value << 1) | (self.has_status_carry() ? 1 : 0);
+    self.write_operand<AddrMode>(value, new_value);
+
+    // flags
+    self.set_status_carry(value & 0x80);
+    self.set_status_zero(self._registers.a == 0);
+    self.set_status_negative(new_value & 0x80);
+}
+
+// ROR (Rotate Right):
+// Rotates all bits of the accumulator or a memory location one bit to the right, including the carry flag, affecting the carry, zero, and negative flags.
+template<addr_mode AddrMode>
+void processor::execute_instruction_ror(processor& self)
+{
+    const byte_t value = self.read_operand<AddrMode>();
+    const byte_t new_value = (value >> 1) | ((self.has_status_carry() ? 1 : 0) << 7);
+    self.write_operand<AddrMode>(value, new_value);
+
+    // flags
+    self.set_status_carry(value & 0x1);
+    self.set_status_zero(self._registers.a == 0);
+    self.set_status_negative(new_value & 0x80);
 }
 
 // SBC (Subtract with Carry):
