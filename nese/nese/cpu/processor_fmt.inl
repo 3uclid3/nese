@@ -187,7 +187,7 @@ struct fmt::formatter<nese::cpu::processor>
             const addr_t addr = cpu.get_byte_from_memory(pc);
             const addr_t final_addr = cpu.get_byte_from_memory((addr + registers.x) & 0xff) + (static_cast<nese::word_t>(cpu.get_byte_from_memory((addr + registers.x + 1) & 0xff)) << 8);
 
-            out = fmt::format_to(out, "(${:02X}, X) @ {:02X} = {:04X} = {:02X}", addr, addr + registers.x, final_addr, cpu.get_byte_from_memory(final_addr));
+            out = fmt::format_to(out, "(${:02X},X) @ {:02X} = {:04X} = {:02X}", addr, addr + registers.x, final_addr, cpu.get_byte_from_memory(final_addr));
             operand_str_size += 24;
         }
         break;
