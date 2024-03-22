@@ -86,7 +86,7 @@ constexpr cpu_cycle_t get_addr_mode_cycle()
 
 #define SET_ALU_CALLBACK(table, op, mode) \
     table._addr_modes[GET_ALU_OPCODE(op, mode)] = mode; \
-    table._callbacks[GET_ALU_OPCODE(op, mode)] = &processor::execute_opcode_##op<mode>; \
+    table._callbacks[GET_ALU_OPCODE(op, mode)] = &processor::execute_instruction_##op<mode>; \
     table._strings[GET_ALU_OPCODE(op, mode)] = #op
 
 #define SET_ALU_CALLBACKS(table, op) \
@@ -101,25 +101,17 @@ constexpr cpu_cycle_t get_addr_mode_cycle()
 
 #define SET_ADDR_CALLBACK(table, op, opcode, mode) \
     table._addr_modes[static_cast<size_t>(opcode)] = mode; \
-    table._callbacks[static_cast<size_t>(opcode)] = &processor::execute_opcode_##op<mode>; \
+    table._callbacks[static_cast<size_t>(opcode)] = &processor::execute_instruction_##op<mode>; \
     table._strings[static_cast<size_t>(opcode)] = #op
 
 #define SET_CALLBACK(table, op, opcode) \
     SET_ADDR_CALLBACK(table, op, opcode, addr_mode::implied)
 
-struct processor::processor::opcode_table
+struct processor::instruction_table
 {
-    template<addr_mode AddrMode, typename F>
-    static consteval void add(opcode_table& table, size_t opcode, const char* str, F f)
+    static consteval instruction_table create()
     {
-        table._addr_modes[opcode] = AddrMode;
-        table._callbacks[opcode] = f;
-        table._strings[opcode] = str;
-    }
-
-    static consteval opcode_table create()
-    {
-        opcode_table table{};
+        instruction_table table{};
 
         SET_ALU_CALLBACKS(table, adc);
         SET_ALU_CALLBACKS(table, and);
@@ -221,7 +213,7 @@ struct processor::processor::opcode_table
         return table;
     }
 
-    [[nodiscard]] constexpr opcode_callback get_callback(byte_t code) const
+    [[nodiscard]] constexpr instruction_callback get_callback(byte_t code) const
     {
         return _callbacks[static_cast<size_t>(code)];
     }
@@ -237,13 +229,13 @@ struct processor::processor::opcode_table
     }
 
     std::array<addr_mode, 256> _addr_modes;
-    std::array<opcode_callback, 256> _callbacks;
+    std::array<instruction_callback, 256> _callbacks;
     std::array<std::string_view, 256> _strings;
 };
 
-struct processor::opcode_table_singleton
+struct processor::instruction_table_singleton
 {
-    static constexpr opcode_table instance{opcode_table::create()};
+    static constexpr instruction_table instance{instruction_table::create()};
 };
 
 #undef SET_ALU_CALLBACK
@@ -290,35 +282,6 @@ void processor::step_to(cycle_t cycle)
 
         execute_next_instruction();
     }
-}
-
-addr_mode processor::get_opcode_addr_mode(byte_t code)
-{
-    return opcode_table_singleton::instance.get_addr_mode(code);
-}
-
-processor::opcode_callback processor::get_opcode_callback(byte_t code)
-{
-    return opcode_table_singleton::instance.get_callback(code);
-}
-
-std::string_view processor::get_opcode_string(byte_t code)
-{
-    return opcode_table_singleton::instance.get_string(code);
-}
-
-void processor::execute_next_instruction()
-{
-#if NESE_CPU_LOG_NINTENDULATOR_ENABLED
-    _nintendulator_logger->trace("{}", *this);
-#endif
-
-    const byte_t opcode = decode_byte();
-    const opcode_callback callback = get_opcode_callback(opcode);
-
-    NESE_CRITICAL_ASSERT(callback, "[cpu][{}] unsupported opcode 0x{:x}", _cycle.count(), opcode);
-
-    callback(*this);
 }
 
 byte_t processor::get_byte_from_memory(addr_t addr) const
@@ -587,10 +550,39 @@ bool processor::is_sign_overflow(byte_t old_byte, byte_t new_byte, byte_t byte)
     return (old_byte & 0x80) == (byte & 0x80) && (old_byte & 0x80) != (new_byte & 0x80);
 }
 
+addr_mode processor::get_instruction_addr_mode(byte_t code)
+{
+    return instruction_table_singleton::instance.get_addr_mode(code);
+}
+
+processor::instruction_callback processor::get_instruction_callback(byte_t code)
+{
+    return instruction_table_singleton::instance.get_callback(code);
+}
+
+std::string_view processor::get_instruction_string(byte_t code)
+{
+    return instruction_table_singleton::instance.get_string(code);
+}
+
+void processor::execute_next_instruction()
+{
+#if NESE_CPU_LOG_NINTENDULATOR_ENABLED
+    _nintendulator_logger->trace("{}", *this);
+#endif
+
+    const byte_t opcode = decode_byte();
+    const instruction_callback callback = get_instruction_callback(opcode);
+
+    NESE_CRITICAL_ASSERT(callback, "[cpu][{}] unsupported instruction with op code = 0x{:02x}", _cycle.count(), opcode);
+
+    callback(*this);
+}
+
 // ADC (Add with Carry):
 // Adds a memory value and the carry flag to the accumulator, affecting flags for carry, zero, overflow, and negative.
 template<addr_mode AddrMode>
-void processor::execute_opcode_adc(processor& self)
+void processor::execute_instruction_adc(processor& self)
 {
     const byte_t old_byte = self._registers.a;
     const byte_t byte = self.read_operand<AddrMode>();
@@ -606,7 +598,7 @@ void processor::execute_opcode_adc(processor& self)
 // AND (Logical AND):
 // Performs a bitwise AND on the accumulator and a memory value, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_and(processor& self)
+void processor::execute_instruction_and(processor& self)
 {
     const byte_t byte = self.read_operand<AddrMode>();
 
@@ -620,7 +612,7 @@ void processor::execute_opcode_and(processor& self)
 // BCC (Branch if Carry Clear):
 // If the condition, it adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrMode>
-void processor::execute_opcode_b__(processor& self, bool condition)
+void processor::execute_instruction_b__(processor& self, bool condition)
 {
     const byte_t byte = self.decode_byte();
 
@@ -633,71 +625,71 @@ void processor::execute_opcode_b__(processor& self, bool condition)
 // BCC (Branch if Carry Clear):
 // If the carry flag is clear, it adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrMode>
-void processor::execute_opcode_bcc(processor& self)
+void processor::execute_instruction_bcc(processor& self)
 {
-    self.execute_opcode_b__<AddrMode>(self, !self.has_status_carry());
+    self.execute_instruction_b__<AddrMode>(self, !self.has_status_carry());
 }
 
 // BCS (Branch if Carry Set):
 // If the carry flag is set, it adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrMode>
-void processor::execute_opcode_bcs(processor& self)
+void processor::execute_instruction_bcs(processor& self)
 {
-    self.execute_opcode_b__<AddrMode>(self, self.has_status_carry());
+    self.execute_instruction_b__<AddrMode>(self, self.has_status_carry());
 }
 
 // BEQ (Branch if Equal):
 // If the zero flag is set, adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrMode>
-void processor::execute_opcode_beq(processor& self)
+void processor::execute_instruction_beq(processor& self)
 {
-    self.execute_opcode_b__<AddrMode>(self, self.has_status_zero());
+    self.execute_instruction_b__<AddrMode>(self, self.has_status_zero());
 }
 
 // BMI (Branch if Minus):
 // If the negative flag is set, it adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrMode>
-void processor::execute_opcode_bmi(processor& self)
+void processor::execute_instruction_bmi(processor& self)
 {
-    self.execute_opcode_b__<AddrMode>(self, self.has_status_negative());
+    self.execute_instruction_b__<AddrMode>(self, self.has_status_negative());
 }
 
 // BNE (Branch if Not Equal):
 // If the zero flag is clear, adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrMode>
-void processor::execute_opcode_bne(processor& self)
+void processor::execute_instruction_bne(processor& self)
 {
-    self.execute_opcode_b__<AddrMode>(self, !self.has_status_zero());
+    self.execute_instruction_b__<AddrMode>(self, !self.has_status_zero());
 }
 
 // BPL (Branch if Positive):
 // If the negative flag is clear, it adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrMode>
-void processor::execute_opcode_bpl(processor& self)
+void processor::execute_instruction_bpl(processor& self)
 {
-    self.execute_opcode_b__<AddrMode>(self, !self.has_status_negative());
+    self.execute_instruction_b__<AddrMode>(self, !self.has_status_negative());
 }
 
 // BVC (Branch if Overflow Clear):
 // If the overflow flag is clear, it adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrMode>
-void processor::execute_opcode_bvc(processor& self)
+void processor::execute_instruction_bvc(processor& self)
 {
-    self.execute_opcode_b__<AddrMode>(self, !self.has_status_overflow());
+    self.execute_instruction_b__<AddrMode>(self, !self.has_status_overflow());
 }
 
 // BVS (Branch if Overflow Set):
 // If the overflow flag is set, it adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrMode>
-void processor::execute_opcode_bvs(processor& self)
+void processor::execute_instruction_bvs(processor& self)
 {
-    self.execute_opcode_b__<AddrMode>(self, self.has_status_overflow());
+    self.execute_instruction_b__<AddrMode>(self, self.has_status_overflow());
 }
 
 // BIT (Bit Test):
 // Tests bits in memory with the accumulator, affecting the zero, negative, and overflow flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_bit(processor& self)
+void processor::execute_instruction_bit(processor& self)
 {
     const byte_t byte = self.read_operand<AddrMode>();
     const byte_t new_byte = byte & self._registers.a;
@@ -710,7 +702,7 @@ void processor::execute_opcode_bit(processor& self)
 // CLC (Clear Carry Flag):
 // Clears the carry flag to 0.
 template<addr_mode AddrMode>
-void processor::execute_opcode_clc(processor& self)
+void processor::execute_instruction_clc(processor& self)
 {
     self.set_status_carry(false);
 }
@@ -718,7 +710,7 @@ void processor::execute_opcode_clc(processor& self)
 // CLD (Clear Decimal Mode):
 // Clears the decimal mode flag, affecting how ADC and SBC instructions work.
 template<addr_mode AddrMode>
-void processor::execute_opcode_cld(processor& self)
+void processor::execute_instruction_cld(processor& self)
 {
     self.set_status_decimal(false);
 }
@@ -726,7 +718,7 @@ void processor::execute_opcode_cld(processor& self)
 // CLI (Clear Interrupt Disable):
 // Clears the interrupt disable flag, allowing interrupts.
 template<addr_mode AddrMode>
-void processor::execute_opcode_cli(processor& self)
+void processor::execute_instruction_cli(processor& self)
 {
     self.set_status_interrupt(false);
 }
@@ -734,7 +726,7 @@ void processor::execute_opcode_cli(processor& self)
 // CLV (Clear Overflow Flag):
 // Clears the overflow flag to 0, affecting subsequent arithmetic and branch instructions.
 template<addr_mode AddrMode>
-void processor::execute_opcode_clv(processor& self)
+void processor::execute_instruction_clv(processor& self)
 {
     self.set_status_overflow(false);
 }
@@ -742,7 +734,7 @@ void processor::execute_opcode_clv(processor& self)
 // CMP (Compare Accumulator):
 // Compares to_byte with a memory value, setting flags based on the subtraction result (carry, zero, and negative flags).
 template<addr_mode AddrMode>
-void processor::execute_opcode_c__(processor& self, byte_t to_byte)
+void processor::execute_instruction_c__(processor& self, byte_t to_byte)
 {
     const byte_t byte = self.read_operand<AddrMode>();
     const byte_t diff = to_byte - byte;
@@ -755,31 +747,31 @@ void processor::execute_opcode_c__(processor& self, byte_t to_byte)
 // CMP (Compare Accumulator):
 // Compares the accumulator with a memory value, setting flags based on the subtraction result (carry, zero, and negative flags).
 template<addr_mode AddrMode>
-void processor::execute_opcode_cmp(processor& self)
+void processor::execute_instruction_cmp(processor& self)
 {
-    execute_opcode_c__<AddrMode>(self, self._registers.a);
+    execute_instruction_c__<AddrMode>(self, self._registers.a);
 }
 
 // CPX (Compare X Register):
 // Compares the X register with a memory value, setting flags based on the subtraction result (carry, zero, and negative flags).
 template<addr_mode AddrMode>
-void processor::execute_opcode_cpx(processor& self)
+void processor::execute_instruction_cpx(processor& self)
 {
-    execute_opcode_c__<AddrMode>(self, self._registers.x);
+    execute_instruction_c__<AddrMode>(self, self._registers.x);
 }
 
 // CPY (Compare Y Register):
 // Compares the Y register with a memory value, setting flags based on the subtraction result (carry, zero, and negative flags).
 template<addr_mode AddrMode>
-void processor::execute_opcode_cpy(processor& self)
+void processor::execute_instruction_cpy(processor& self)
 {
-    execute_opcode_c__<AddrMode>(self, self._registers.y);
+    execute_instruction_c__<AddrMode>(self, self._registers.y);
 }
 
 // EOR (Exclusive OR):
 // Performs a bitwise exclusive OR between the accumulator and a memory value, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_eor(processor& self)
+void processor::execute_instruction_eor(processor& self)
 {
     self._registers.a ^= self.read_operand<AddrMode>();
 
@@ -787,7 +779,7 @@ void processor::execute_opcode_eor(processor& self)
 }
 
 template<addr_mode AddrMode>
-void processor::execute_opcode_de_(processor& self, byte_t& byte)
+void processor::execute_instruction_de_(processor& self, byte_t& byte)
 {
     --byte;
 
@@ -797,23 +789,23 @@ void processor::execute_opcode_de_(processor& self, byte_t& byte)
 // DEY (Decrement X Register):
 // Decreases the value in the Y register by one, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_dex(processor& self)
+void processor::execute_instruction_dex(processor& self)
 {
-    execute_opcode_de_<AddrMode>(self, self._registers.x);
+    execute_instruction_de_<AddrMode>(self, self._registers.x);
 }
 
 // DEY (Decrement Y Register):
 // Decreases the value in the Y register by one, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_dey(processor& self)
+void processor::execute_instruction_dey(processor& self)
 {
-    execute_opcode_de_<AddrMode>(self, self._registers.y);
+    execute_instruction_de_<AddrMode>(self, self._registers.y);
 }
 
 // INX (Increment Register):
 // Increases a register by one, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_in_(processor& self, byte_t& byte)
+void processor::execute_instruction_in_(processor& self, byte_t& byte)
 {
     ++byte;
 
@@ -823,23 +815,23 @@ void processor::execute_opcode_in_(processor& self, byte_t& byte)
 // INX (Increment X Register):
 // Increases the X register by one, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_inx(processor& self)
+void processor::execute_instruction_inx(processor& self)
 {
-    execute_opcode_in_<AddrMode>(self, self._registers.x);
+    execute_instruction_in_<AddrMode>(self, self._registers.x);
 }
 
 // INY (Increment Y Register):
 // Increases the Y register by one, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_iny(processor& self)
+void processor::execute_instruction_iny(processor& self)
 {
-    execute_opcode_in_<AddrMode>(self, self._registers.y);
+    execute_instruction_in_<AddrMode>(self, self._registers.y);
 }
 
 // JMP (Jump):
 // Sets the program counter to the address specified by the operand, effectively jumping to a new code location.
 template<addr_mode AddrMode>
-void processor::execute_opcode_jmp(processor& self)
+void processor::execute_instruction_jmp(processor& self)
 {
     self._registers.pc = self.decode_operand_addr<AddrMode>();
 
@@ -849,7 +841,7 @@ void processor::execute_opcode_jmp(processor& self)
 // JSR (Jump to Subroutine):
 // Pushes the address (minus one) of the next operation on to the stack and sets the program counter to the target address, for subroutine calls.
 template<addr_mode AddrMode>
-void processor::execute_opcode_jsr(processor& self)
+void processor::execute_instruction_jsr(processor& self)
 {
     // we push the actual return address -1, which is the current place (before decoding the 16-bit addr) + 1
     self.push_word(self._registers.pc + 1);
@@ -860,7 +852,7 @@ void processor::execute_opcode_jsr(processor& self)
 // LDA (Load):
 // Loads a value into byte from memory or an immediate value, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_ld_(processor& self, byte_t& byte)
+void processor::execute_instruction_ld_(processor& self, byte_t& byte)
 {
     byte = self.read_operand<AddrMode>();
 
@@ -870,31 +862,31 @@ void processor::execute_opcode_ld_(processor& self, byte_t& byte)
 // LDA (Load Accumulator):
 // Loads a value into the accumulator from memory or an immediate value, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_lda(processor& self)
+void processor::execute_instruction_lda(processor& self)
 {
-    execute_opcode_ld_<AddrMode>(self, self._registers.a);
+    execute_instruction_ld_<AddrMode>(self, self._registers.a);
 }
 
 // LDX (Load X Register):
 // Loads a value into the X register from memory or an immediate value, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_ldx(processor& self)
+void processor::execute_instruction_ldx(processor& self)
 {
-    execute_opcode_ld_<AddrMode>(self, self._registers.x);
+    execute_instruction_ld_<AddrMode>(self, self._registers.x);
 }
 
 // LDY (Load Y Register):
 // Loads a value into the Y register from memory or an immediate value, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_ldy(processor& self)
+void processor::execute_instruction_ldy(processor& self)
 {
-    execute_opcode_ld_<AddrMode>(self, self._registers.y);
+    execute_instruction_ld_<AddrMode>(self, self._registers.y);
 }
 
 // ORA (Logical Inclusive OR):
 // Performs a bitwise OR between the accumulator and a memory value, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_ora(processor& self)
+void processor::execute_instruction_ora(processor& self)
 {
     self._registers.a |= self.read_operand<AddrMode>();
 
@@ -904,7 +896,7 @@ void processor::execute_opcode_ora(processor& self)
 // NOP (No Operation):
 // Performs no operation and is used for timing adjustments and code alignment.
 template<addr_mode AddrMode>
-void processor::execute_opcode_nop(processor& self)
+void processor::execute_instruction_nop(processor& self)
 {
     (void)self;
 }
@@ -912,7 +904,7 @@ void processor::execute_opcode_nop(processor& self)
 // PHA (Push Accumulator):
 // Pushes a copy of the accumulator onto the stack.
 template<addr_mode AddrMode>
-void processor::execute_opcode_pha(processor& self)
+void processor::execute_instruction_pha(processor& self)
 {
     self.push_byte(self._registers.a);
 }
@@ -920,7 +912,7 @@ void processor::execute_opcode_pha(processor& self)
 // PHP (Push Processor Status):
 // Pushes a copy of the status flags onto the stack.
 template<addr_mode AddrMode>
-void processor::execute_opcode_php(processor& self)
+void processor::execute_instruction_php(processor& self)
 {
     // http://wiki.nesdev.com/w/index.php/status_flag_behavior
     // Set bit 5 and 4 to 1 when copy status into from PHP
@@ -930,7 +922,7 @@ void processor::execute_opcode_php(processor& self)
 // PLA (Pull Accumulator):
 // Pulls a byte from the stack into the accumulator, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_pla(processor& self)
+void processor::execute_instruction_pla(processor& self)
 {
     self._registers.a = self.pop_byte();
 
@@ -940,7 +932,7 @@ void processor::execute_opcode_pla(processor& self)
 // PLP (Pull Processor Status):
 // Pulls the processor status flags from the stack.
 template<addr_mode AddrMode>
-void processor::execute_opcode_plp(processor& self)
+void processor::execute_instruction_plp(processor& self)
 {
     // http://wiki.nesdev.com/w/index.php/status_flag_behavior
     // Bit 5 and 4 are ignored when pulled from stack - which means they are preserved
@@ -951,7 +943,7 @@ void processor::execute_opcode_plp(processor& self)
 // RTS (Return from Subroutine):
 // Pulls the program counter (plus one) from the stack, returning from a subroutine.
 template<addr_mode AddrMode>
-void processor::execute_opcode_rts(processor& self)
+void processor::execute_instruction_rts(processor& self)
 {
     // See JSR - we pushed actual return address - 1
     self._registers.pc = self.pop_word() + 1;
@@ -960,7 +952,7 @@ void processor::execute_opcode_rts(processor& self)
 // SBC (Subtract with Carry):
 // Subtracts a memory value and the carry flag from the accumulator, affecting flags for carry, zero, overflow, and negative.
 template<addr_mode AddrMode>
-void processor::execute_opcode_sbc(processor& self)
+void processor::execute_instruction_sbc(processor& self)
 {
     byte_t byte = self.read_operand<AddrMode>();
 
@@ -980,7 +972,7 @@ void processor::execute_opcode_sbc(processor& self)
 // SEC (Set Carry Flag):
 // Sets the carry flag to 1.
 template<addr_mode AddrMode>
-void processor::execute_opcode_sec(processor& self)
+void processor::execute_instruction_sec(processor& self)
 {
     self.set_status_carry(true);
 }
@@ -988,7 +980,7 @@ void processor::execute_opcode_sec(processor& self)
 // SED (Set Decimal Mode):
 // Sets the decimal mode flag, affecting how ADC and SBC instructions work.
 template<addr_mode AddrMode>
-void processor::execute_opcode_sed(processor& self)
+void processor::execute_instruction_sed(processor& self)
 {
     self.set_status_decimal(true);
 }
@@ -996,7 +988,7 @@ void processor::execute_opcode_sed(processor& self)
 // SEI (Set Interrupt Disable):
 // Sets the interrupt disable flag, preventing interrupts.
 template<addr_mode AddrMode>
-void processor::execute_opcode_sei(processor& self)
+void processor::execute_instruction_sei(processor& self)
 {
     self.set_status_interrupt(true);
 }
@@ -1004,7 +996,7 @@ void processor::execute_opcode_sei(processor& self)
 // ST_ (Store):
 // Stores a value into a specific location in memory.
 template<addr_mode AddrMode>
-void processor::execute_opcode_st_(processor& self, byte_t byte)
+void processor::execute_instruction_st_(processor& self, byte_t byte)
 {
     self.set_byte_to_memory(self.decode_operand_addr<AddrMode>(), byte);
 }
@@ -1012,33 +1004,33 @@ void processor::execute_opcode_st_(processor& self, byte_t byte)
 // STA (Store Accumulator):
 // Stores the value in the accumulator into a specific location in memory.
 template<addr_mode AddrMode>
-void processor::execute_opcode_sta(processor& self)
+void processor::execute_instruction_sta(processor& self)
 {
     // STA imm (0x89) = NOP
     if constexpr (AddrMode != addr_mode::immediate)
     {
-        self.execute_opcode_st_<AddrMode>(self, self._registers.a);
+        self.execute_instruction_st_<AddrMode>(self, self._registers.a);
     }
 }
 
 // STX (Store X Register):
 // Stores the value in the X register into a specified memory location.
 template<addr_mode AddrMode>
-void processor::execute_opcode_stx(processor& self)
+void processor::execute_instruction_stx(processor& self)
 {
-    self.execute_opcode_st_<AddrMode>(self, self._registers.x);
+    self.execute_instruction_st_<AddrMode>(self, self._registers.x);
 }
 
 // STY (Store Y Register):
 // Stores the value in the Y register into a specified memory location.
 template<addr_mode AddrMode>
-void processor::execute_opcode_sty(processor& self)
+void processor::execute_instruction_sty(processor& self)
 {
-    self.execute_opcode_st_<AddrMode>(self, self._registers.y);
+    self.execute_instruction_st_<AddrMode>(self, self._registers.y);
 }
 
 template<addr_mode AddrMode>
-void processor::execute_opcode_t__(processor& self, byte_t from_byte, byte_t& to_byte)
+void processor::execute_instruction_t__(processor& self, byte_t from_byte, byte_t& to_byte)
 {
     to_byte = from_byte;
 
@@ -1048,39 +1040,39 @@ void processor::execute_opcode_t__(processor& self, byte_t from_byte, byte_t& to
 // TAX (Transfer Accumulator to X):
 // Transfers the value in the accumulator to the X register, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_tax(processor& self)
+void processor::execute_instruction_tax(processor& self)
 {
-    execute_opcode_t__<AddrMode>(self, self._registers.a, self._registers.x);
+    execute_instruction_t__<AddrMode>(self, self._registers.a, self._registers.x);
 }
 
 // TAY (Transfer Accumulator to Y):
 // Transfers the value in the accumulator to the Y register, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_tay(processor& self)
+void processor::execute_instruction_tay(processor& self)
 {
-    execute_opcode_t__<AddrMode>(self, self._registers.a, self._registers.y);
+    execute_instruction_t__<AddrMode>(self, self._registers.a, self._registers.y);
 }
 
 // TSX (Transfer Stack Pointer to X):
 // Transfers the current stack pointer value to the X register, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_tsx(processor& self)
+void processor::execute_instruction_tsx(processor& self)
 {
-    execute_opcode_t__<AddrMode>(self, self._registers.s, self._registers.x);
+    execute_instruction_t__<AddrMode>(self, self._registers.s, self._registers.x);
 }
 
 // TXA (Transfer X to Accumulator):
 // Transfers the value in the X register to the accumulator, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_txa(processor& self)
+void processor::execute_instruction_txa(processor& self)
 {
-    execute_opcode_t__<AddrMode>(self, self._registers.x, self._registers.a);
+    execute_instruction_t__<AddrMode>(self, self._registers.x, self._registers.a);
 }
 
 // TXS (Transfer X to Stack Pointer):
 // Transfers the value in the X register to the stack pointer. Note that this instruction does not affect any flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_txs(processor& self)
+void processor::execute_instruction_txs(processor& self)
 {
     self._registers.s = self._registers.x;
 }
@@ -1088,9 +1080,9 @@ void processor::execute_opcode_txs(processor& self)
 // TYA (Transfer Y to Accumulator):
 // Transfers the value in the Y register to the accumulator, affecting the zero and negative flags.
 template<addr_mode AddrMode>
-void processor::execute_opcode_tya(processor& self)
+void processor::execute_instruction_tya(processor& self)
 {
-    execute_opcode_t__<AddrMode>(self, self._registers.y, self._registers.a);
+    execute_instruction_t__<AddrMode>(self, self._registers.y, self._registers.a);
 }
 
 } // namespace nese

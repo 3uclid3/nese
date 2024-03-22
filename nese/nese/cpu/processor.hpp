@@ -47,19 +47,6 @@ public:
 #endif
 
 private:
-    using opcode_callback = void (*)(processor&);
-
-    struct opcode_table;
-    struct opcode_table_singleton;
-
-    [[nodiscard]] static addr_mode get_opcode_addr_mode(byte_t code);
-    [[nodiscard]] static opcode_callback get_opcode_callback(byte_t code);
-    [[nodiscard]] static std::string_view get_opcode_string(byte_t code);
-
-private:
-    void execute_next_instruction();
-
-private:
     [[nodiscard]] byte_t get_byte_from_memory(addr_t addr) const;
     void set_byte_to_memory(addr_t addr, byte_t value);
 
@@ -122,170 +109,182 @@ private:
     static bool is_sign_overflow(byte_t old_byte, byte_t new_byte, byte_t byte);
 
 private:
-    template<addr_mode AddrMode>
-    static void execute_opcode_adc(processor& self);
+    using instruction_callback = void (*)(processor&);
+
+    struct instruction_table;
+    struct instruction_table_singleton;
+
+    [[nodiscard]] static addr_mode get_instruction_addr_mode(byte_t op_code);
+    [[nodiscard]] static instruction_callback get_instruction_callback(byte_t op_code);
+    [[nodiscard]] static std::string_view get_instruction_string(byte_t op_code);
+
+private:
+    void execute_next_instruction();
 
     template<addr_mode AddrMode>
-    static void execute_opcode_and(processor& self);
+    static void execute_instruction_adc(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_b__(processor& self, bool condition);
+    static void execute_instruction_and(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bcc(processor& self);
+    static void execute_instruction_b__(processor& self, bool condition);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bcs(processor& self);
+    static void execute_instruction_bcc(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_beq(processor& self);
+    static void execute_instruction_bcs(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bmi(processor& self);
+    static void execute_instruction_beq(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bne(processor& self);
+    static void execute_instruction_bmi(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bpl(processor& self);
+    static void execute_instruction_bne(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bvc(processor& self);
+    static void execute_instruction_bpl(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bvs(processor& self);
+    static void execute_instruction_bvc(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_bit(processor& self);
+    static void execute_instruction_bvs(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_clc(processor& self);
+    static void execute_instruction_bit(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_cld(processor& self);
+    static void execute_instruction_clc(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_cli(processor& self);
+    static void execute_instruction_cld(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_clv(processor& self);
+    static void execute_instruction_cli(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_c__(processor& self, byte_t to_byte);
+    static void execute_instruction_clv(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_cmp(processor& self);
+    static void execute_instruction_c__(processor& self, byte_t to_byte);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_cpx(processor& self);
+    static void execute_instruction_cmp(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_cpy(processor& self);
+    static void execute_instruction_cpx(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_eor(processor& self);
+    static void execute_instruction_cpy(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_de_(processor& self, byte_t& byte);
+    static void execute_instruction_eor(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_dex(processor& self);
+    static void execute_instruction_de_(processor& self, byte_t& byte);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_dey(processor& self);
+    static void execute_instruction_dex(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_in_(processor& self, byte_t& byte);
+    static void execute_instruction_dey(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_inx(processor& self);
+    static void execute_instruction_in_(processor& self, byte_t& byte);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_iny(processor& self);
+    static void execute_instruction_inx(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_jmp(processor& self);
+    static void execute_instruction_iny(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_jsr(processor& self);
+    static void execute_instruction_jmp(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_ld_(processor& self, byte_t& byte);
+    static void execute_instruction_jsr(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_lda(processor& self);
+    static void execute_instruction_ld_(processor& self, byte_t& byte);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_ldx(processor& self);
+    static void execute_instruction_lda(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_ldy(processor& self);
+    static void execute_instruction_ldx(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_nop(processor& self);
+    static void execute_instruction_ldy(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_ora(processor& self);
+    static void execute_instruction_nop(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_pha(processor& self);
+    static void execute_instruction_ora(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_php(processor& self);
+    static void execute_instruction_pha(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_pla(processor& self);
+    static void execute_instruction_php(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_plp(processor& self);
+    static void execute_instruction_pla(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_rts(processor& self);
+    static void execute_instruction_plp(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_sbc(processor& self);
+    static void execute_instruction_rts(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_sec(processor& self);
+    static void execute_instruction_sbc(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_sed(processor& self);
+    static void execute_instruction_sec(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_sei(processor& self);
+    static void execute_instruction_sed(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_st_(processor& self, byte_t byte);
+    static void execute_instruction_sei(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_sta(processor& self);
+    static void execute_instruction_st_(processor& self, byte_t byte);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_stx(processor& self);
+    static void execute_instruction_sta(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_sty(processor& self);
+    static void execute_instruction_stx(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_t__(processor& self, byte_t from_byte, byte_t& to_byte);
+    static void execute_instruction_sty(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_tax(processor& self);
+    static void execute_instruction_t__(processor& self, byte_t from_byte, byte_t& to_byte);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_tay(processor& self);
+    static void execute_instruction_tax(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_tsx(processor& self);
+    static void execute_instruction_tay(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_txa(processor& self);
+    static void execute_instruction_tsx(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_txs(processor& self);
+    static void execute_instruction_txa(processor& self);
 
     template<addr_mode AddrMode>
-    static void execute_opcode_tya(processor& self);
+    static void execute_instruction_txs(processor& self);
+
+    template<addr_mode AddrMode>
+    static void execute_instruction_tya(processor& self);
 
 private:
     registers _registers{};
