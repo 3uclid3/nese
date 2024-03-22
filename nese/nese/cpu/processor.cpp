@@ -2,8 +2,9 @@
 
 #include <spdlog/sinks/basic_file_sink.h>
 
-#include <nese/log.hpp>
 #include <nese/memory/ram.hpp>
+#include <nese/utility/assert.hpp>
+#include <nese/utility/log.hpp>
 
 namespace nese::cpu {
 
@@ -276,7 +277,11 @@ void processor::step_to(cycle_t cycle)
 #if NESE_CPU_DEBUGBREAK_ENABLED
         if (_debugbreak && _debugbreak_addr == _registers.pc)
         {
+#if __has_builtin(__debugbreak)
             __debugbreak();
+#else
+            stop();
+#endif
         }
 #endif
 
@@ -574,7 +579,7 @@ void processor::execute_next_instruction()
     const byte_t opcode = decode_byte();
     const instruction_callback callback = get_instruction_callback(opcode);
 
-    NESE_CRITICAL_ASSERT(callback, "[cpu][{}] unsupported instruction with op code = 0x{:02x}", _cycle.count(), opcode);
+    NESE_ASSERT_LOG(callback, "[cpu][{}] unsupported instruction with op code = 0x{:02x}", _cycle.count(), opcode);
 
     callback(*this);
 }
@@ -1085,4 +1090,4 @@ void processor::execute_instruction_tya(processor& self)
     execute_instruction_t__<AddrMode>(self, self._registers.y, self._registers.a);
 }
 
-} // namespace nese
+} // namespace nese::cpu

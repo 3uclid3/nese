@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-#include <nese/log.hpp>
+#include <nese/utility/log.hpp>
 
 namespace nese::memory {
 

@@ -8,10 +8,11 @@ set(INCLUDES
     "${DIR}/cpu/status_flag.hpp"
     "${DIR}/memory/ram.hpp"
     "${DIR}/memory/rom.hpp"
+    "${DIR}/utility/assert.hpp"
+    "${DIR}/utility/log.hpp"
     "${DIR}/basic_types.hpp"
     "${DIR}/cycle.hpp"
     "${DIR}/emulator.hpp"
-    "${DIR}/log.hpp"
 )
 
 set(SOURCES

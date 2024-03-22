@@ -1,6 +1,6 @@
 #include <nese/memory/ram.hpp>
 
-#include <cassert>
+#include <nese/utility/assert.hpp>
 
 namespace nese::memory {
 
@@ -42,7 +42,7 @@ void ram::set_word(addr_t addr, word_t value)
 
 void ram::set_bytes(addr_t addr, const byte_t* data, size_t size)
 {
-    assert(addr + size <= max_size);
+    NESE_ASSERT(addr + size <= max_size);
 
     std::memcpy(_data.data() + redirect_addr(addr), data, size);
 }

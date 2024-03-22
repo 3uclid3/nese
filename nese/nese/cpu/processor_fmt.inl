@@ -1,5 +1,3 @@
-#include <cassert>
-
 template<>
 struct fmt::formatter<nese::cpu::processor>
 {
