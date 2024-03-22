@@ -85,6 +85,7 @@ project_options(
 )
 
 add_subdirectory("nese")
+add_subdirectory("nesesan")
 
 if(FEATURE_TESTS)
     add_subdirectory("tests")
