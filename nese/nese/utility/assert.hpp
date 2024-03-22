@@ -31,7 +31,7 @@
         if (!result) \
         { \
             SPDLOG_CRITICAL("[assert] condition: {}", #condition); \
-            SPDLOG_CRITICAL("[assert] {}", __VA_ARGS__); \
+            SPDLOG_CRITICAL(__VA_ARGS__); \
             nese::debug_trigger_assert(); \
         } \
     } while (false)
