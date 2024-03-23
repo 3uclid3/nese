@@ -20,11 +20,10 @@ public:
     void exit();
 
 private:
-    template<typename F>
-    void add_view(std::string_view path, F func);
+    void create_main_menu();
 
-    template<typename F>
-    void add_callback(std::string_view path, F func);
+    void create_views();
+    void create_views_imgui();
 
 private:
     using views = std::vector<std::unique_ptr<view>>;
