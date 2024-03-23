@@ -19,8 +19,8 @@ template<basic_menu_bar_imgui_scope ScopeT, typename... MenuItemsT>
 class basic_menu
 {
 public:
-    using submenu_menu_item = basic_submenu_menu_item<MenuItemsT...>;
-    using menu_item = typename submenu_menu_item::menu_item;
+    using submenu_item = basic_submenu_menu_item<MenuItemsT...>;
+    using menu_item = typename submenu_item::menu_item;
 
     template<typename T>
     T& add(std::string_view path);
@@ -30,14 +30,14 @@ public:
     const menu_item* find_item(std::string_view name) const;
 
 private:
-    submenu_menu_item _root_item;
+    submenu_item _root;
 };
 
 template<basic_menu_bar_imgui_scope ScopeT, typename... MenuItemsT>
 template<typename T>
 T& basic_menu<ScopeT, MenuItemsT...>::add(std::string_view path)
 {
-    submenu_menu_item* current_item = &_root_item;
+    submenu_item* current_item = &_root;
 
     for (size_t i = 0; i < path.size();)
     {
@@ -71,15 +71,15 @@ T& basic_menu<ScopeT, MenuItemsT...>::add(std::string_view path)
 
             if (it == current_item->items.end())
             {
-                current_item->items.emplace_back(submenu_menu_item{.name = std::string(name), .items = {}, .is_enabled = {}});
+                current_item->items.emplace_back(submenu_item{.name = std::string(name), .items = {}, .is_enabled = {}});
 
-                current_item = &std::get<submenu_menu_item>(current_item->items.back());
+                current_item = &std::get<submenu_item>(current_item->items.back());
             }
             else
             {
-                NESE_ASSERT(std::holds_alternative<submenu_menu_item>(*it));
+                NESE_ASSERT(std::holds_alternative<submenu_item>(*it));
 
-                current_item = &std::get<submenu_menu_item>(*it);
+                current_item = &std::get<submenu_item>(*it);
             }
         }
     }
@@ -93,7 +93,7 @@ void basic_menu<ScopeT, MenuItemsT...>::update() const
 {
     ScopeT::begin();
 
-    for (auto& item : _root_item.items)
+    for (auto& item : _root.items)
     {
         std::visit([](auto&& arg) { arg.update(); }, item);
     }
@@ -104,7 +104,7 @@ void basic_menu<ScopeT, MenuItemsT...>::update() const
 template<basic_menu_bar_imgui_scope ScopeT, typename... MenuItemsT>
 const typename basic_menu<ScopeT, MenuItemsT...>::menu_item* basic_menu<ScopeT, MenuItemsT...>::find_item(std::string_view name) const
 {
-    return _root_item.find_item(name);
+    return _root.find_item(name);
 }
 
 } // namespace nese::san
