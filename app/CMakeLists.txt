@@ -1,1 +1,1 @@
-add_subdirectory("nesesan.sdl2")
+add_subdirectory("nesesan.opengl")

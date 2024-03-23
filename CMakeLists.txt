@@ -96,7 +96,7 @@ endif()
 # Package the project
 package_project(
     TARGETS
-    nesesan.sdl2
+    nesesan.opengl
     nesesan
     nese
     nese_project_options 
