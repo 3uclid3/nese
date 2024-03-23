@@ -29,3 +29,11 @@ target_include_interface_directories(nese_test "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Set the folder for the project in Visual Studio
 set_property(TARGET nese_test PROPERTY FOLDER "tests")
+
+# use xml reporter if coverage is enabled
+if(${ENABLE_COVERAGE})
+  set(COVERAGE_ARGS REPORTER xml)
+endif()
+
+# automatically discover tests that are defined in catch based test files you can modify the tests
+catch_discover_tests(nese_test ${COVERAGE_ARGS})
