@@ -14,8 +14,8 @@
 #include <imgui.h>
 
 #include <nese/utility/log.hpp>
-#include <nesesan.sdl2/imgui_impl_sdl2.h>
-#include <nesesan.sdl2/imgui_impl_sdlrenderer2.h>
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_sdlrenderer2.h>
 #include <nesesan/application.hpp>
 
 #if !SDL_VERSION_ATLEAST(2, 0, 17)

@@ -10,7 +10,8 @@
     },
     {
       "name": "imgui",
-      "version>=": "1.90"
+      "version>=": "1.90",
+      "features": [ "docking-experimental", "sdl2-binding", "sdl2-renderer-binding" ]
     },
     {
       "name": "spdlog",

@@ -1,13 +1,9 @@
 set(DIR "${CMAKE_CURRENT_SOURCE_DIR}/nesesan.sdl2")
 
 set(INCLUDES
-    "${DIR}/imgui_impl_sdlrenderer2.h"
-    "${DIR}/imgui_impl_sdl2.h"
 )
 
 set(SOURCES
-    "${DIR}/imgui_impl_sdlrenderer2.cpp"
-    "${DIR}/imgui_impl_sdl2.cpp"
     "${DIR}/main.cpp"
 )
 
