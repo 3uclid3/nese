@@ -19,21 +19,10 @@ add_executable(nese_test ${INCLUDES} ${SOURCES})
 target_link_libraries(
     nese_test
     PRIVATE
-        nese
         nese_project_options
         nese_project_warnings
-)
-
-target_find_dependencies(
-    nese_test
-    PRIVATE_CONFIG
-        Catch2
-)
-
-target_link_system_libraries(
-    nese_test
-    PRIVATE 
-        Catch2::Catch2WithMain
+        nese_catch2
+        nese
 )
 
 target_include_interface_directories(nese_test "${CMAKE_CURRENT_SOURCE_DIR}")

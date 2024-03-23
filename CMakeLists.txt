@@ -10,11 +10,18 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
 endif()
 
 # Add project_options from https://github.com/aminya/project_options
-# Change the version in the following URL to update the package (watch the releases of the repository for future updates)
 set(PROJECT_OPTIONS_VERSION "v0.35.1")
 FetchContent_Declare(_project_options URL https://github.com/aminya/project_options/archive/refs/tags/${PROJECT_OPTIONS_VERSION}.zip)
 FetchContent_MakeAvailable(_project_options)
 include(${_project_options_SOURCE_DIR}/Index.cmake)
+
+# Build Features
+option(FEATURE_TESTS "Enable the tests" ON)
+
+# vcpkg test feature
+if(FEATURE_TESTS)
+  list(APPEND VCPKG_MANIFEST_FEATURES "tests")
+endif()
 
 # install vcpkg dependencies: - should be called before defining project()
 run_vcpkg(
@@ -30,31 +37,28 @@ project(
     LANGUAGES CXX C
 )
 
-# Build Features
-option(FEATURE_TESTS "Enable the tests" ON)
-
-# vcpkg test feature
-if(FEATURE_TESTS)
-  list(APPEND VCPKG_MANIFEST_FEATURES "tests")
-endif()
-
 # Enable sanitizers and static analyzers when running the tests
 if(FEATURE_TESTS)
   set(ENABLE_CLANG_TIDY "ENABLE_CLANG_TIDY")
   set(ENABLE_CPPCHECK "ENABLE_CPPCHECK")
   set(ENABLE_COVERAGE "ENABLE_COVERAGE")
-  enable_testing()
 
   check_sanitizers_support(ENABLE_SANITIZER_ADDRESS
                            ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
                            ENABLE_SANITIZER_LEAK
                            ENABLE_SANITIZER_THREAD
                            ENABLE_SANITIZER_MEMORY)
+
+  enable_testing()
+
+  # generate a main function for the test executable
+  add_library(nese_catch2 INTERFACE)
+  target_find_dependencies(nese_catch2 INTERFACE_CONFIG Catch2)
+  target_link_libraries(nese_catch2 INTERFACE Catch2::Catch2 Catch2::Catch2WithMain)
+  target_compile_definitions(nese_catch2 INTERFACE DO_NOT_USE_WMAIN)
+  include(Catch)
 endif()
 
-# Initialize project_options variable related to this project
-# This overwrites `project_options` and sets `project_warnings`
-# uncomment to enable the options. Some of them accept one or more inputs:
 project_options(
       PREFIX "nese"
       ENABLE_CACHE
