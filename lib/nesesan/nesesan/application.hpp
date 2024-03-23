@@ -20,6 +20,10 @@ public:
     void exit();
 
 private:
+    void initialize_docking();
+    void begin_docking();
+    void end_docking();
+
     void create_main_menu();
 
     void create_views();
