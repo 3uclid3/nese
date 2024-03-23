@@ -88,12 +88,11 @@ int main(int, char**)
     // IM_ASSERT(font != nullptr);
 
     // Our state
-    nesesan::application application;
+    nese::san::application application;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Main loop
-    bool done = false;
-    while (!done)
+    while (!application.has_exit_requested())
     {
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -105,9 +104,9 @@ int main(int, char**)
         {
             ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT)
-                done = true;
+                application.exit();
             if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
-                done = true;
+                application.exit();
         }
 
         // Start the Dear ImGui frame
@@ -115,7 +114,7 @@ int main(int, char**)
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        application.update();
+        application.update(io.DeltaTime);
 
         // Rendering
         ImGui::Render();

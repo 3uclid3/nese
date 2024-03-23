@@ -2,10 +2,12 @@
 
 #include <imgui.h>
 
-namespace nesesan {
+namespace nese::san {
 
-void application::update()
+void application::update(f32_t dt)
 {
+    update_main_menu();
+
     const ImGuiIO& io = ImGui::GetIO();
 
     // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
@@ -32,7 +34,7 @@ void application::update()
         ImGui::SameLine();
         ImGui::Text("counter = %d", counter);
 
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS) (%.2f DT)", 1000.0f / io.Framerate, io.Framerate, dt);
         ImGui::End();
     }
 
@@ -45,6 +47,37 @@ void application::update()
             _show_another_window = false;
         ImGui::End();
     }
-};
+}
+
+void application::exit()
+{
+    _exit_requested = true;
+}
+
+
+void application::update_main_menu()
+{
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("Exit"))
+            {
+                exit();
+            }
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Debug"))
+        {
+
+            ImGui::EndMenu();
+        }
+
+
+        ImGui::EndMainMenuBar();
+    }
+}
 
 } // namespace nesesan
