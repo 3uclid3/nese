@@ -9,6 +9,7 @@ set(INCLUDES
     "${DIR}/menu/menu.hpp"
     "${DIR}/menu/view_menu_item.hpp"
     "${DIR}/application.hpp"
+    "${DIR}/extension.hpp"
     "${DIR}/view.hpp"
 )
 
@@ -19,6 +20,7 @@ set(SOURCES
     "${DIR}/menu/menu.cpp"
     "${DIR}/menu/view_menu_item.cpp"
     "${DIR}/application.cpp"
+    "${DIR}/extension.cpp"
     "${DIR}/view.cpp"
 )
 
