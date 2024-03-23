@@ -37,53 +37,53 @@ project(
 
 # Enable sanitizers and static analyzers when running the tests
 if(FEATURE_TESTS)
-  set(ENABLE_CLANG_TIDY "ENABLE_CLANG_TIDY")
-  set(ENABLE_CPPCHECK "ENABLE_CPPCHECK")
-  set(ENABLE_COVERAGE "ENABLE_COVERAGE")
-
-  check_sanitizers_support(ENABLE_SANITIZER_ADDRESS
-                           ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
-                           ENABLE_SANITIZER_LEAK
-                           ENABLE_SANITIZER_THREAD
-                           ENABLE_SANITIZER_MEMORY)
-
-  enable_testing()
-
-  # generate a main function for the test executable
-  add_library(nese_catch2 INTERFACE)
-  target_find_dependencies(nese_catch2 INTERFACE_CONFIG Catch2)
-  target_link_libraries(nese_catch2 INTERFACE Catch2::Catch2 Catch2::Catch2WithMain)
-  target_compile_definitions(nese_catch2 INTERFACE DO_NOT_USE_WMAIN)
-  include(Catch)
+    set(ENABLE_CLANG_TIDY "ENABLE_CLANG_TIDY")
+    set(ENABLE_CPPCHECK "ENABLE_CPPCHECK")
+    set(ENABLE_COVERAGE "ENABLE_COVERAGE")
+    
+    check_sanitizers_support(ENABLE_SANITIZER_ADDRESS
+                             ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
+                             ENABLE_SANITIZER_LEAK
+                             ENABLE_SANITIZER_THREAD
+                             ENABLE_SANITIZER_MEMORY)
+    
+    enable_testing()
+    
+    # generate a main function for the test executable
+    add_library(nese_catch2 INTERFACE)
+    target_find_dependencies(nese_catch2 INTERFACE_CONFIG Catch2)
+    target_link_libraries(nese_catch2 INTERFACE Catch2::Catch2 Catch2::Catch2WithMain)
+    target_compile_definitions(nese_catch2 INTERFACE DO_NOT_USE_WMAIN)
+    include(Catch)
 endif()
 
 project_options(
-      PREFIX "nese"
-      ENABLE_CACHE
-      # ${ENABLE_CPPCHECK}
-      # ${ENABLE_CLANG_TIDY}
-      ENABLE_VS_ANALYSIS
-      # ENABLE_INTERPROCEDURAL_OPTIMIZATION
-      # ENABLE_NATIVE_OPTIMIZATION
-      # ${ENABLE_COVERAGE}
-      ${ENABLE_SANITIZER_ADDRESS}
-      ${ENABLE_SANITIZER_UNDEFINED_BEHAVIOR}
-      # ${ENABLE_SANITIZER_THREAD}
-      # ${ENABLE_SANITIZER_MEMORY}
-      # ENABLE_CONTROL_FLOW_PROTECTION
-      # ENABLE_STACK_PROTECTION
-      # ENABLE_OVERFLOW_PROTECTION
-      # ENABLE_ELF_PROTECTION
-      # ENABLE_RUNTIME_SYMBOLS_RESOLUTION
-      # ENABLE_COMPILE_COMMANDS_SYMLINK
-      # ENABLE_PCH
-      # PCH_HEADERS
-      WARNINGS_AS_ERRORS
-      # ENABLE_INCLUDE_WHAT_YOU_USE
-      # ENABLE_GCC_ANALYZER
-      # ENABLE_BUILD_WITH_TIME_TRACE
-      # ENABLE_UNITY
-      # LINKER "lld"
+    PREFIX "nese"
+    ENABLE_CACHE
+    # ${ENABLE_CPPCHECK}
+    # ${ENABLE_CLANG_TIDY}
+    ENABLE_VS_ANALYSIS
+    # ENABLE_INTERPROCEDURAL_OPTIMIZATION
+    # ENABLE_NATIVE_OPTIMIZATION
+    # ${ENABLE_COVERAGE}
+    ${ENABLE_SANITIZER_ADDRESS}
+    ${ENABLE_SANITIZER_UNDEFINED_BEHAVIOR}
+    # ${ENABLE_SANITIZER_THREAD}
+    # ${ENABLE_SANITIZER_MEMORY}
+    # ENABLE_CONTROL_FLOW_PROTECTION
+    # ENABLE_STACK_PROTECTION
+    # ENABLE_OVERFLOW_PROTECTION
+    # ENABLE_ELF_PROTECTION
+    # ENABLE_RUNTIME_SYMBOLS_RESOLUTION
+    # ENABLE_COMPILE_COMMANDS_SYMLINK
+    # ENABLE_PCH
+    # PCH_HEADERS
+    WARNINGS_AS_ERRORS
+    # ENABLE_INCLUDE_WHAT_YOU_USE
+    # ENABLE_GCC_ANALYZER
+    # ENABLE_BUILD_WITH_TIME_TRACE
+    # ENABLE_UNITY
+    # LINKER "lld"
 )
 
 add_subdirectory("lib")
