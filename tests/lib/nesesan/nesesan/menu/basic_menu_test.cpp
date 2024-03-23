@@ -28,9 +28,26 @@ using basic_menu_mock = basic_menu<null_scope, leaf_menu_item_mock>;
 using basic_menu_item_mock = basic_menu_mock::menu_item;
 using basic_submenu_menu_item_mock = basic_menu_mock::submenu_menu_item;
 
+bool is_branch(const basic_menu_item_mock& item)
+{
+    return std::holds_alternative<basic_submenu_menu_item_mock>(item);
+}
+
 bool is_leaf(const basic_menu_item_mock& item)
 {
     return std::holds_alternative<leaf_menu_item_mock>(item);
+}
+
+bool has_branch(const basic_menu_item_mock& menu, std::string_view name)
+{
+    if (!std::holds_alternative<basic_submenu_menu_item_mock>(menu))
+    {
+        return false;
+    }
+
+    const auto* item = std::get<basic_submenu_menu_item_mock>(menu).find_item(name);
+
+    return item && is_branch(*item);
 }
 
 bool has_leaf(const basic_menu_item_mock& menu, std::string_view name)
@@ -45,11 +62,25 @@ bool has_leaf(const basic_menu_item_mock& menu, std::string_view name)
     return item && is_leaf(*item);
 }
 
+bool has_branch(const basic_submenu_menu_item_mock& menu, std::string_view name)
+{
+    const auto* item = menu.find_item(name);
+
+    return item && is_branch(*item);
+}
+
 bool has_leaf(const basic_submenu_menu_item_mock& menu, std::string_view name)
 {
     const auto* item = menu.find_item(name);
 
     return item && is_leaf(*item);
+}
+
+bool has_branch(const basic_menu_mock& menu, std::string_view name)
+{
+    const auto* item = menu.find_item(name);
+
+    return item && is_branch(*item);
 }
 
 bool has_leaf(const basic_menu_mock& menu, std::string_view name)
@@ -104,6 +135,15 @@ TEST_CASE("basic_menu")
 
     CHECK(has_leaf(*subchild2, "leaf"));
     CHECK(has_leaf(*subchild2, "leaf 2"));
+}
+
+TEST_CASE("basic_menu - adding a submenu")
+{
+    basic_menu_mock menu;
+
+    menu.add<basic_submenu_menu_item_mock>("root");
+
+    CHECK(has_branch(menu, "root"));
 }
 
 } // namespace nese::cpu
