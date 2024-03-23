@@ -1,13 +1,8 @@
 #include <nese/emulator.hpp>
 
-#include <nese/cpu/processor.hpp>
-#include <nese/memory/ram.hpp>
 #include <nese/utility/log.hpp>
 
 namespace nese {
-
-emulator::emulator() = default;
-emulator::~emulator() = default;
 
 void emulator::power_on()
 {
@@ -15,8 +10,8 @@ void emulator::power_on()
 
     _cycle = {};
 
-    _ram->power_on();
-    _cpu->power_on();
+    _ram.power_on();
+    _cpu.power_on();
 }
 
 void emulator::reset()
@@ -25,8 +20,8 @@ void emulator::reset()
 
     _cycle = {};
 
-    _ram->reset();
-    _cpu->reset();
+    _ram.reset();
+    _cpu.reset();
 }
 
 void emulator::step(cycle_t count)
@@ -35,19 +30,19 @@ void emulator::step(cycle_t count)
 
     _cycle += count;
 
-    _cpu->step_to(_cycle);
+    _cpu.step_to(_cycle);
 }
 
 bool emulator::has_stop_requested() const
 {
-    return _cpu->has_stop_requested();
+    return _cpu.has_stop_requested();
 }
 
 void emulator::stop()
 {
     NESE_TRACE("[emulator] stop");
 
-    _cpu->stop();
+    _cpu.stop();
 }
 
 } // namespace nese
