@@ -24,15 +24,11 @@ target_include_interface_directories(nesesan "${CMAKE_CURRENT_SOURCE_DIR}")
 target_find_dependencies(
     nesesan
     PRIVATE_CONFIG
-        fmt
         imgui
-        spdlog
 )
 
 target_link_system_libraries(
     nesesan
     PRIVATE 
-        fmt::fmt
         imgui::imgui
-        spdlog::spdlog
 )

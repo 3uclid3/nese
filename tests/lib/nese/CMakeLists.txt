@@ -27,16 +27,12 @@ target_link_libraries(
 target_find_dependencies(
     nese_test
     PRIVATE_CONFIG
-        fmt
-        spdlog
         Catch2
 )
 
 target_link_system_libraries(
     nese_test
     PRIVATE 
-        fmt::fmt
-        spdlog::spdlog
         Catch2::Catch2WithMain
 )
 

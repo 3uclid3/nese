@@ -30,18 +30,14 @@ target_include_interface_directories(nesesan.sdl2 "${CMAKE_CURRENT_SOURCE_DIR}")
 target_find_dependencies(
     nesesan.sdl2
     PRIVATE_CONFIG
-        fmt
         imgui
         sdl2
-        spdlog
 )
 
 target_link_system_libraries(
     nesesan.sdl2
     PRIVATE 
-        fmt::fmt
         imgui::imgui
         SDL2::SDL2
         SDL2::SDL2main
-        spdlog::spdlog
 )

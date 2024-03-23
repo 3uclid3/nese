@@ -42,7 +42,7 @@ target_find_dependencies(
 
 target_link_system_libraries(
     nese
-    PRIVATE 
-        fmt::fmt
+    PUBLIC
         spdlog::spdlog
+        fmt::fmt
 )
