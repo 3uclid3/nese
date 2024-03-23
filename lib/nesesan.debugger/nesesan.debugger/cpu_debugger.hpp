@@ -39,6 +39,8 @@ public:
     void unpause();
 
     [[nodiscard]] const cpu::processor& get_cpu() const { return _cpu; }
+    [[nodiscard]] const memory::rom& get_rom() const { return _rom; }
+    [[nodiscard]] const memory::ram& get_ram() const { return _ram; }
 
 private:
     void update_starting(f32_t dt);
