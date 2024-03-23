@@ -8,10 +8,8 @@ namespace nese::san {
 application::application()
 {
     _main_menu.add<callback_menu_item>("File/Exit").execute = [this] { exit(); };
-
-    // add_callback("File/Exit", [this]() { exit(); });
-
-    // add_view("Help/Dear ImGui Demo", [=](f32_t, bool& is_visible) { imgui::ShowDemoWindow(&is_visible); });
+    _main_menu.add<main_menu::submenu_item>("View");
+    _main_menu.add<main_menu::submenu_item>("Help");
 }
 
 void application::update(f32_t dt)
