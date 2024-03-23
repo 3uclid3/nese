@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include <nese/basic_types.hpp>
 #include <nesesan/menu/basic_menu.hpp>
 
 namespace nese::san {
@@ -15,7 +16,6 @@ struct null_scope
 
     static void end()
     {
-        
     }
 };
 
@@ -24,7 +24,13 @@ struct leaf_menu_item_mock
     std::string name;
 };
 
-using basic_menu_mock = basic_menu<null_scope, leaf_menu_item_mock>;
+struct leaf_with_arg_menu_item_mock
+{
+    std::string name;
+    size_t size{};
+};
+
+using basic_menu_mock = basic_menu<null_scope, leaf_menu_item_mock, leaf_with_arg_menu_item_mock>;
 using basic_menu_item_mock = basic_menu_mock::menu_item;
 using basic_submenu_item_mock = basic_menu_mock::submenu_item;
 
@@ -146,4 +152,13 @@ TEST_CASE("basic_menu - adding a submenu")
     CHECK(has_branch(menu, "root"));
 }
 
-} // namespace nese::cpu
+TEST_CASE("basic_menu - adding with arg")
+{
+    basic_menu_mock menu;
+
+    const leaf_with_arg_menu_item_mock& menu_item = menu.add<leaf_with_arg_menu_item_mock>("root", size_t{42});
+
+    CHECK(menu_item.size == 42);
+}
+
+} // namespace nese::san

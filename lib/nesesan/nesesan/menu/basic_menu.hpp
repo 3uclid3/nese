@@ -22,8 +22,8 @@ public:
     using submenu_item = basic_submenu_menu_item<MenuItemsT...>;
     using menu_item = typename submenu_item::menu_item;
 
-    template<typename T>
-    T& add(std::string_view path);
+    template<typename T, typename... ArgsT>
+    T& add(std::string_view path, ArgsT&&... args);
 
     void update() const;
 
@@ -34,8 +34,8 @@ private:
 };
 
 template<basic_menu_bar_imgui_scope ScopeT, typename... MenuItemsT>
-template<typename T>
-T& basic_menu<ScopeT, MenuItemsT...>::add(std::string_view path)
+template<typename T, typename... ArgsT>
+T& basic_menu<ScopeT, MenuItemsT...>::add(std::string_view path, ArgsT&&... args)
 {
     submenu_item* current_item = &_root;
 
@@ -56,12 +56,9 @@ T& basic_menu<ScopeT, MenuItemsT...>::add(std::string_view path)
         {
             NESE_ASSERT(std::none_of(current_item->items.begin(), current_item->items.end(), is_item));
 
-            current_item->items.emplace_back(T{});
+            current_item->items.emplace_back(T{std::string(name), std::forward<ArgsT>(args)...});
 
-            T& item = std::get<T>(current_item->items.back());
-            item.name = name;
-
-            return item;
+            return std::get<T>(current_item->items.back());
         }
         else
         {

@@ -3,20 +3,19 @@
 #include <functional>
 #include <string>
 
+#include <nesesan/view.hpp>
+
 namespace nese::san {
 
-struct callback_menu_item
+struct view_menu_item
 {
     using is_enabled_callback = std::function<bool()>;
-    using is_checked_callback = std::function<bool()>;
-    using execute_callback = std::function<void()>;
 
     void update() const;
 
     std::string name;
-    execute_callback execute{};
+    std::reference_wrapper<view> view;
     is_enabled_callback is_enabled{};
-    is_checked_callback is_checked{};
 };
 
 } // namespace nese::san

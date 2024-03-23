@@ -25,8 +25,8 @@ struct basic_submenu_menu_item
     const menu_item* find_item(std::string_view name) const;
 
     std::string name;
-    std::vector<menu_item> items;
-    is_enabled_callback is_enabled;
+    std::vector<menu_item> items{};
+    is_enabled_callback is_enabled{};
 };
 
 template<typename... MenuItemsT>
