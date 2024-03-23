@@ -84,8 +84,8 @@ project_options(
       # LINKER "lld"
 )
 
-add_subdirectory("nese")
-add_subdirectory("nesesan")
+add_subdirectory("lib")
+add_subdirectory("app")
 
 if(FEATURE_TESTS)
     add_subdirectory("tests")

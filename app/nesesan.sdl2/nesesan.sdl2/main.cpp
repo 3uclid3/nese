@@ -14,8 +14,8 @@
 #include <SDL.h>
 #include <stdio.h>
 
-#include <nesesan/imgui_impl_sdl2.h>
-#include <nesesan/imgui_impl_sdlrenderer2.h>
+#include <nesesan.sdl2/imgui_impl_sdl2.h>
+#include <nesesan.sdl2/imgui_impl_sdlrenderer2.h>
 
 #if !SDL_VERSION_ATLEAST(2, 0, 17)
 #error This backend requires SDL 2.0.17+ because of SDL_RenderGeometry() function

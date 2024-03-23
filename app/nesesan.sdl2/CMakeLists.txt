@@ -1,4 +1,4 @@
-set(DIR "${CMAKE_CURRENT_SOURCE_DIR}/nesesan")
+set(DIR "${CMAKE_CURRENT_SOURCE_DIR}/nesesan.sdl2")
 
 set(INCLUDES
     "${DIR}/imgui_impl_sdlrenderer2.h"
@@ -11,19 +11,24 @@ set(SOURCES
     "${DIR}/main.cpp"
 )
 
-add_executable(nesesan ${INCLUDES} ${SOURCES})
+add_executable(nesesan.sdl2 ${INCLUDES} ${SOURCES})
+
+set_target_properties(nesesan.sdl2 PROPERTIES
+    OUTPUT_NAME nesesan
+)
 
 target_link_libraries(
-    nesesan
-    PRIVATE 
+    nesesan.sdl2
+    PRIVATE
+        nesesan
         nese_project_options
         nese_project_warnings
 )
 
-target_include_interface_directories(nesesan "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_interface_directories(nesesan.sdl2 "${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_find_dependencies(
-    nesesan
+    nesesan.sdl2
     PRIVATE_CONFIG
         fmt
         imgui
@@ -32,7 +37,7 @@ target_find_dependencies(
 )
 
 target_link_system_libraries(
-    nesesan
+    nesesan.sdl2
     PRIVATE 
         fmt::fmt
         imgui::imgui
