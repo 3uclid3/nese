@@ -12,11 +12,12 @@
 
 #include <SDL.h>
 #include <imgui.h>
-
-#include <nese/utility/log.hpp>
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_sdlrenderer2.h>
+
+#include <nese/utility/log.hpp>
 #include <nesesan/application.hpp>
+#include <nesesan/imgui/extension.hpp>
 
 #if !SDL_VERSION_ATLEAST(2, 0, 17)
 #error This backend requires SDL 2.0.17+ because of SDL_RenderGeometry() function
@@ -25,6 +26,9 @@
 // Main code
 int main(int, char**)
 {
+    using namespace nese;
+    using namespace nese::san;
+
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
     {
@@ -88,8 +92,10 @@ int main(int, char**)
     // IM_ASSERT(font != nullptr);
 
     // Our state
-    nese::san::application application;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    application application;
+    application.install_extension<imgui::extension>();
+
+    constexpr ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Main loop
     while (!application.has_exit_requested())
