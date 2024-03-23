@@ -28,14 +28,13 @@ public:
     static rom from_file(const char* path);
 
 public:
+    rom() = default;
+
     const header& get_header() const;
     const prg& get_prg() const;
     const chr& get_chr() const;
 
     u8_t get_mapper() const;
-
-private:
-    rom() = default;
 
 private:
     header _header;

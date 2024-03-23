@@ -17,6 +17,7 @@ target_link_libraries(
     nesesan.sdl2
     PRIVATE
         nesesan
+        nesesan.debugger
         nese_project_options
         nese_project_warnings
 )

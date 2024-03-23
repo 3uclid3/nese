@@ -16,6 +16,7 @@
 #include <imgui_impl_sdlrenderer2.h>
 
 #include <nese/utility/log.hpp>
+#include <nesesan.debugger/extension.hpp>
 #include <nesesan/application.hpp>
 #include <nesesan/imgui/extension.hpp>
 
@@ -93,6 +94,7 @@ int main(int, char**)
 
     // Our state
     application application;
+    application.install_extension<debugger::extension>();
     application.install_extension<imgui::extension>();
 
     constexpr ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
