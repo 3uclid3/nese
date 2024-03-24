@@ -85,7 +85,6 @@ int main(int, char**)
 
     // Helps with 4k screen
     io.FontAllowUserScaling = true;
-    io.FontGlobalScale = 2.0f;
 
     // io.ConfigViewportsNoAutoMerge = true;
     // io.ConfigViewportsNoTaskBarIcon = true;
