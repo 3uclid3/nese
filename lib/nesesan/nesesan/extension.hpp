@@ -23,7 +23,7 @@ public:
         void add_main_menu_callback(std::string_view path, F&& update_callback);
 
         template<typename F>
-        void add_view(std::string_view path, std::string name, F&& update_callback);
+        void add_view(std::string_view path, std::string name, F&& update_callback, bool start_visible = false, int flags = 0);
 
         template<typename F>
         void add_view_no_scope(std::string_view path, std::string name, F&& update_callback);
@@ -58,9 +58,12 @@ void extension::install_context::add_main_menu_callback(std::string_view path, F
 }
 
 template<typename F>
-void extension::install_context::add_view(std::string_view path, std::string name, F&& update_callback)
+void extension::install_context::add_view(std::string_view path, std::string name, F&& update_callback, bool start_visible, int flags)
 {
     _views.emplace_back(view::make_unique(std::move(name), std::forward<F>(update_callback)));
+
+    _views.back()->set_visible(start_visible);
+    _views.back()->set_flags(flags);
 
     _main_menu.add<view_menu_item>(path, std::ref(*_views.back()));
 }

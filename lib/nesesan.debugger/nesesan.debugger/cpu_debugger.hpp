@@ -12,26 +12,29 @@ public:
     enum class mode
     {
         step,
-        until_done
+        until_pc,
+        until_off
     };
 
     enum class state
     {
         off,
-        starting,
-        stopping,
         running,
-        stepping,
-        stepped,
         paused
     };
 
+    [[nodiscard]] mode get_mode() const { return _mode; }
+    void set_mode(mode mode) { _mode = mode; }
+
     [[nodiscard]] state get_state() const { return _state; }
+
+    [[nodiscard]] addr_t get_until_pc() const { return _until_pc; }
+    void set_until_pc(addr_t until_pc) { _until_pc = until_pc; }
 
     void update(f32_t dt);
 
-    void start(memory::rom&& rom);
-    void stop();
+    void power_on(memory::rom&& rom, bool start_running = false);
+    void reset();
 
     void step();
 
@@ -43,17 +46,13 @@ public:
     [[nodiscard]] const memory::ram& get_ram() const { return _ram; }
 
 private:
-    void update_starting(f32_t dt);
-    void update_stopping(f32_t dt);
-    void update_running(f32_t dt);
-    void update_stepping(f32_t dt);
-
     memory::rom _rom;
     memory::ram _ram;
     cpu::processor _cpu{_ram};
 
     mode _mode{mode::step};
     state _state{state::off};
+    addr_t _until_pc{0};
 };
 
 } // namespace nese::san::debugger
