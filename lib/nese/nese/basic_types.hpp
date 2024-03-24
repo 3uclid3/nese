@@ -2,8 +2,17 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
+#include <string>
+#include <string_view>
 
 namespace nese {
+
+template<typename T>
+using ref_wrap = std::reference_wrapper<T>;
+
+using std::string;
+using std::string_view;
 
 using s8_t = std::int8_t;
 using s16_t = std::int16_t;
