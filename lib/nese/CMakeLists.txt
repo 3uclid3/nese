@@ -6,6 +6,7 @@ set(INCLUDES
     "${DIR}/cpu/processor_fmt.inl"
     "${DIR}/cpu/registers.hpp"
     "${DIR}/cpu/status_flag.hpp"
+    "${DIR}/memory/mapper.hpp"
     "${DIR}/memory/ram.hpp"
     "${DIR}/memory/rom.hpp"
     "${DIR}/utility/assert.hpp"
@@ -17,6 +18,7 @@ set(INCLUDES
 
 set(SOURCES
     "${DIR}/cpu/processor.cpp"
+    "${DIR}/memory/mapper.cpp"
     "${DIR}/memory/ram.cpp"
     "${DIR}/memory/rom.cpp"
     "${DIR}/emulator.cpp"
