@@ -69,7 +69,7 @@ thread_local local_data data;
 
 } // namespace details
 
-const char* vformat(fmt::string_view format, fmt::format_args args)
+const char* formatv(fmt::string_view format, fmt::format_args args)
 {
     details::output out(details::data.next_buffer());
 
