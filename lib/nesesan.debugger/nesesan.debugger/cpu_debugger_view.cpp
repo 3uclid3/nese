@@ -16,7 +16,7 @@ void cpu_debugger_view::update(f32_t dt, bool&)
 
     if (_debugger.get_state() == cpu_debugger::state::off)
     {
-        if (ImGui::Button("Power ON"))
+        if (ImGui::Button("Start"))
         {
             _debugger.power_on(memory::rom::from_file("D:\\nese\\tests\\lib\\nese\\test_roms\\nestest.nes"));
         }
@@ -24,7 +24,7 @@ void cpu_debugger_view::update(f32_t dt, bool&)
     else
     {
         imgui::color_scope color(ImGuiCol_Button, IM_COL32(255, 0, 0, 255));
-        if (ImGui::Button("Power OFF"))
+        if (ImGui::Button("Stop"))
         {
             _debugger.reset();
         }
@@ -52,16 +52,19 @@ void cpu_debugger_view::update(f32_t dt, bool&)
         }
         else
         {
-            if (ImGui::Button(_debugger.get_until_pc() != 0 ? "Continue Until" : "Continue"))
+            if (ImGui::Button("Continue"))
             {
-                _debugger.pause();
+                _debugger.set_mode(_debugger.get_until_pc() != 0 ? cpu_debugger::mode::until_pc : cpu_debugger::mode::until_off);
+                _debugger.unpause();
             }
         }
     }
 
     {
         imgui::same_line();
-        imgui::disabled_scope disabled(_debugger.get_state() != cpu_debugger::state::paused);
+        imgui::disabled_scope disabled(_debugger.get_state() == cpu_debugger::state::running);
+        
+        ImGui::SetNextItemWidth(200.0f);
 
         if (ImGui::InputText("Address", &_pc_input))
         {
@@ -94,6 +97,104 @@ void cpu_debugger_view::update(f32_t dt, bool&)
 
             _debugger.set_until_pc(addr);
         }
+    }
+
+    if (ImGui::BeginTable("#Instructions", 12, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_NoBordersInBody))
+    {
+        const f32_t hex_width = ImGui::CalcTextSize("X").x;
+
+        // Step #
+        ImGui::TableSetupColumn("#", ImGuiTableColumnFlags_WidthStretch);
+
+        // PC
+        ImGui::TableSetupColumn("PC", ImGuiTableColumnFlags_WidthFixed, hex_width * 4.f);
+
+        // instruction byte 0
+        ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, hex_width * 2.f);
+
+        // instruction byte 1
+        ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, hex_width * 2.f);
+
+        // instruction byte 2
+        ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, hex_width * 2.f);
+
+        // instruction str
+        ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, hex_width * 4.f);
+
+        // operand
+        ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, hex_width * 28.f);
+
+        // a
+        ImGui::TableSetupColumn("A", ImGuiTableColumnFlags_WidthFixed, hex_width * 2.f);
+
+        // x
+        ImGui::TableSetupColumn("X", ImGuiTableColumnFlags_WidthFixed, hex_width * 2.f);
+
+        // y
+        ImGui::TableSetupColumn("Y", ImGuiTableColumnFlags_WidthFixed, hex_width * 2.f);
+
+        // p
+        ImGui::TableSetupColumn("P", ImGuiTableColumnFlags_WidthFixed, hex_width * 2.f);
+
+        // sp
+        ImGui::TableSetupColumn("SP", ImGuiTableColumnFlags_WidthFixed, hex_width * 2.f);
+
+        ImGui::TableHeadersRow();
+
+        imgui::begin_group();
+        {
+                
+            // Step #
+            ImGui::TableNextColumn();
+            imgui::text("0");
+
+            // PC
+            ImGui::TableNextColumn();
+            imgui::text("C000");
+
+            // instruction byte 0
+            ImGui::TableNextColumn();
+            imgui::text("4C");
+
+            // instruction byte 1
+            ImGui::TableNextColumn();
+            imgui::text("F5");
+
+            // instruction byte 2
+            ImGui::TableNextColumn();
+            imgui::text("C5");
+
+            // instruction str
+            ImGui::TableNextColumn();
+            imgui::text(" JMP");
+
+            // operand
+            ImGui::TableNextColumn();
+            imgui::text("$C5F5");
+
+            // a
+            ImGui::TableNextColumn();
+            imgui::text("00");
+
+            // x
+            ImGui::TableNextColumn();
+            imgui::text("00");
+
+            // y
+            ImGui::TableNextColumn();
+            imgui::text("00");
+
+            // p
+            ImGui::TableNextColumn();
+            imgui::text("24");
+
+            // sp
+            ImGui::TableNextColumn();
+            imgui::text("FD");
+        }
+        imgui::end_group();
+
+        ImGui::EndTable();
     }
 }
 
