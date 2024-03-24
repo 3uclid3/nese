@@ -5,13 +5,13 @@ set(TEST_ROMS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test_roms")
 configure_file("test_config.hpp.in" "${DIR}/test_config.hpp")
 
 set(INCLUDES
-    "${DIR}/cpu/processor_mock.hpp"
+    "${DIR}/cpu/state_mock.hpp"
     "${DIR}/test_config.hpp"
 )
 
 set(SOURCES
+    "${DIR}/cpu/instruction_rom_test.cpp"
     "${DIR}/cpu/instruction_test.cpp"
-    "${DIR}/cpu/processor_test.cpp"
 )
 
 add_executable(nese_test ${INCLUDES} ${SOURCES})

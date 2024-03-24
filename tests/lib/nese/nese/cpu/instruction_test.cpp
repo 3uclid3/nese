@@ -1,28 +1,11 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <nese/cpu/instruction.hpp>
-#include <nese/cpu/state.hpp>
+#include <nese/cpu/state_mock.hpp>
 #include <nese/memory/mapper.hpp>
 #include <nese/utility/assert.hpp>
 
 namespace nese::cpu::instruction {
-
-struct state_mock : state
-{
-    state_mock()
-        : state{.memory = owned_memory}
-    {
-        owned_memory.set_zero();
-    }
-
-    explicit state_mock(cpu::registers new_registers)
-        : state_mock()
-    {
-        registers = new_registers;
-    }
-
-    memory::mapper owned_memory{};
-};
 
 struct fixture
 {
@@ -82,7 +65,7 @@ struct fixture
 constexpr auto minus_two = static_cast<byte_t>(-2);
 constexpr auto minus_one = static_cast<byte_t>(-1);
 
-TEST_CASE_METHOD(fixture, "inx with addr_mode implied")
+TEST_CASE_METHOD(fixture, "inx with addr_mode implied", "[cpu], [instruction]")
 {
     SECTION("increment to negative")
     {
@@ -166,7 +149,7 @@ TEST_CASE_METHOD(fixture, "iny with addr_mode implied")
     }
 }
 
-TEST_CASE_METHOD(fixture, "lda with addr_mode immediate")
+TEST_CASE_METHOD(fixture, "lda with addr_mode immediate", "[cpu], [instruction]")
 {
     for (addr_t addr = 0x10; addr < 0x80; addr += 0x10)
     {
