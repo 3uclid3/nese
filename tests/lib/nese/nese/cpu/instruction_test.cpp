@@ -12,6 +12,7 @@ struct state_mock : state
     state_mock()
         : state{.memory = owned_memory}
     {
+        owned_memory.set_zero();
     }
 
     explicit state_mock(cpu::registers new_registers)
@@ -25,13 +26,13 @@ struct state_mock : state
 
 struct fixture
 {
-    void check_state() const
+    void check_state(const state& expected_state) const
     {
-        check_registers();
-        check_memory();
+        check_registers(expected_state);
+        check_memory(expected_state);
     }
 
-    void check_registers() const
+    void check_registers(const state& expected_state) const
     {
         CHECK(state.registers.a == expected_state.registers.a);
         CHECK(state.registers.x == expected_state.registers.x);
@@ -52,7 +53,7 @@ struct fixture
         }
     }
 
-    void check_memory() const
+    void check_memory(const state& expected_state) const
     {
         const auto& expected_memory_buffer = expected_state.memory.get().get_bytes();
         const auto& memory_buffer = state.memory.get().get_bytes();
@@ -76,7 +77,6 @@ struct fixture
     }
 
     state_mock state{};
-    state_mock expected_state{};
 };
 
 constexpr auto minus_two = static_cast<byte_t>(-2);
@@ -88,36 +88,39 @@ TEST_CASE_METHOD(fixture, "inx with addr_mode implied")
     {
         state.registers.x = minus_two;
 
+        state_mock expected_state = state;
         expected_state.registers.x = minus_one;
         expected_state.registers.set_alu_flag(minus_one);
 
         execute_inx<addr_mode::implied>(state);
 
-        check_state();
+        check_state(expected_state);
     }
 
     SECTION("increment to zero")
     {
         state.registers.x = minus_one;
 
+        state_mock expected_state = state;
         expected_state.registers.x = 0;
         expected_state.registers.set_alu_flag(0);
 
         execute_inx<addr_mode::implied>(state);
 
-        check_state();
+        check_state(expected_state);
     }
 
     SECTION("increment to positive")
     {
         state.registers.x = 0;
 
+        state_mock expected_state = state;
         expected_state.registers.x = 1;
         expected_state.registers.set_alu_flag(1);
 
         execute_inx<addr_mode::implied>(state);
 
-        check_state();
+        check_state(expected_state);
     }
 }
 
@@ -127,80 +130,91 @@ TEST_CASE_METHOD(fixture, "iny with addr_mode implied")
     {
         state.registers.y = minus_two;
 
+        state_mock expected_state = state;
         expected_state.registers.y = minus_one;
         expected_state.registers.set_alu_flag(minus_one);
 
         execute_iny<addr_mode::implied>(state);
 
-        check_state();
+        check_state(expected_state);
     }
 
     SECTION("increment to zero")
     {
         state.registers.y = minus_one;
 
+        state_mock expected_state = state;
         expected_state.registers.y = 0;
         expected_state.registers.set_alu_flag(0);
 
         execute_iny<addr_mode::implied>(state);
 
-        check_state();
+        check_state(expected_state);
     }
 
     SECTION("increment to positive")
     {
         state.registers.y = 0;
 
+        state_mock expected_state = state;
         expected_state.registers.y = 1;
         expected_state.registers.set_alu_flag(1);
 
         execute_iny<addr_mode::implied>(state);
 
-        check_state();
+        check_state(expected_state);
     }
 }
 
 TEST_CASE_METHOD(fixture, "lda with addr_mode immediate")
 {
-    constexpr addr_t addr = 0x10;
+    for (addr_t addr = 0x10; addr < 0x80; addr += 0x10)
+    {
+        SECTION("load a negative")
+        {
+            state.memory.get().set_byte(addr, minus_one);
+            state.registers.pc = addr;
 
-    state.memory.get().set_byte(addr, static_cast<byte_t>(-1));
-    state.registers.pc = addr;
+            state_mock expected_state = state;
+            expected_state.registers.pc = addr + 1;
+            expected_state.registers.a = minus_one;
+            expected_state.registers.set_alu_flag(minus_one);
 
-    execute_lda<addr_mode::immediate>(state);
+            execute_lda<addr_mode::immediate>(state);
 
-    CHECK(state.registers.pc == addr + 1);
-    CHECK(state.registers.a == static_cast<byte_t>(-1));
-    CHECK_FALSE(state.registers.has_flag(status_flag::zero));
-    CHECK(state.registers.has_flag(status_flag::negative));
-}
+            check_state(expected_state);
+        }
 
-TEST_CASE_METHOD(fixture, "lda with addr_mode zero_page")
-{
-}
+        SECTION("load a zero")
+        {
+            state.memory.get().set_byte(addr, 0);
+            state.registers.pc = addr;
 
-TEST_CASE_METHOD(fixture, "lda with addr_mode zero_page_x")
-{
-}
+            state_mock expected_state = state;
+            expected_state.registers.pc = addr + 1;
+            expected_state.registers.a = 0;
+            expected_state.registers.set_alu_flag(0);
 
-TEST_CASE_METHOD(fixture, "lda with addr_mode absolute")
-{
-}
+            execute_lda<addr_mode::immediate>(state);
 
-TEST_CASE_METHOD(fixture, "lda with addr_mode absolute_x")
-{
-}
+            check_state(expected_state);
+        }
 
-TEST_CASE_METHOD(fixture, "lda with addr_mode absolute_y")
-{
-}
+        SECTION("load a positive")
+        {
+            state.memory.get().set_byte(addr, 1);
+            state.registers.pc = addr;
 
-TEST_CASE_METHOD(fixture, "lda with addr_mode indexed_indirect")
-{
-}
+            state_mock expected_state = state;
+            expected_state.registers.pc = addr + 1;
+            expected_state.registers.a = 1;
+            expected_state.registers.set_alu_flag(1);
 
-TEST_CASE_METHOD(fixture, "lda with addr_mode indirect_indexed")
-{
+            execute_lda<addr_mode::immediate>(state);
+
+            check_state(expected_state);
+        }
+    }
 }
 
 } // namespace nese::cpu::instruction
