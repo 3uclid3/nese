@@ -88,14 +88,15 @@ T& basic_menu<ScopeT, MenuItemsT...>::add(std::string_view path, ArgsT&&... args
 template<basic_menu_bar_imgui_scope ScopeT, typename... MenuItemsT>
 void basic_menu<ScopeT, MenuItemsT...>::update() const
 {
-    ScopeT::begin();
-
-    for (auto& item : _root.items)
+    if (ScopeT::begin())
     {
-        std::visit([](auto&& arg) { arg.update(); }, item);
-    }
+        for (auto& item : _root.items)
+        {
+            std::visit([](auto&& arg) { arg.update(); }, item);
+        }
 
-    ScopeT::end();
+        ScopeT::end();
+    }
 }
 
 template<basic_menu_bar_imgui_scope ScopeT, typename... MenuItemsT>
