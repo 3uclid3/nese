@@ -3,6 +3,7 @@
 #include <imgui.h>
 
 #include <nese/basic_types.hpp>
+#include <nesesan/imgui/icons.hpp>
 #include <nesesan/imgui/format.hpp>
 
 namespace nese::san::imgui {

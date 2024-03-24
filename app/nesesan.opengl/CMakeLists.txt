@@ -42,3 +42,11 @@ target_link_system_libraries(
         glad::glad
         glfw
 )
+ 
+#add_custom_target(nesesan_copy_fonts ALL
+add_custom_command(TARGET nesesan.opengl POST_BUILD
+                  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                  "${PROJECT_SOURCE_DIR}/fonts/fa-regular-400.ttf" "${PROJECT_SOURCE_DIR}/fonts/fa-solid-900.ttf" "${CMAKE_CURRENT_BINARY_DIR}/"
+                  COMMENT "Copying fonts to runtime directory from ${PROJECT_SOURCE_DIR}/fonts/ to ${CMAKE_CURRENT_BINARY_DIR}/")
+
+# add_dependencies(nesesan.opengl nesesan_copy_fonts)

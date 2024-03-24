@@ -23,6 +23,7 @@
 #include <nesesan.debugger/extension.hpp>
 #include <nesesan/application.hpp>
 #include <nesesan/imgui/extension.hpp>
+#include <nesesan/imgui/icons.hpp>
 
 namespace {
 
@@ -88,7 +89,6 @@ int main(int, char**)
 
     // io.ConfigViewportsNoAutoMerge = true;
     // io.ConfigViewportsNoTaskBarIcon = true;
-    
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -121,13 +121,17 @@ int main(int, char**)
     // - Read 'docs/FONTS.md' for more instructions and details.
     // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
     // - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
-    // io.Fonts->AddFontDefault();
-    // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
-    // io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-    // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-    // ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
-    // IM_ASSERT(font != nullptr);
+    io.Fonts->AddFontDefault();
+
+    constexpr float base_font_size = 13.0f;                        // 13.0f is the size of the default font. Change to the font size you use.
+    constexpr float icon_font_size = base_font_size * 2.0f / 3.0f; // FontAwesome fonts need to have their sizes reduced by 2.0f/3.0f in order to align correctly
+
+    constexpr ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
+    ImFontConfig icons_config;
+    icons_config.MergeMode = true;
+    icons_config.PixelSnapH = true;
+    icons_config.GlyphMinAdvanceX = icon_font_size;
+    io.Fonts->AddFontFromFileTTF(  FONT_ICON_FILE_NAME_FAS, icon_font_size, &icons_config, icons_ranges);
 
     // Our state
     application application;
