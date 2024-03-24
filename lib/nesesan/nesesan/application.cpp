@@ -36,16 +36,16 @@ void application::exit()
 
 void application::initialize_docking()
 {
-    imgui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 }
 void application::begin_docking()
 {
     {
         const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-        imgui::SetNextWindowPos(viewport->Pos);
-        imgui::SetNextWindowSize(viewport->Size);
-        imgui::SetNextWindowViewport(viewport->ID);
+        ImGui::SetNextWindowPos(viewport->Pos);
+        ImGui::SetNextWindowSize(viewport->Size);
+        ImGui::SetNextWindowViewport(viewport->ID);
 
         imgui::style_var_scope window_rounding_scope{ImGuiStyleVar_WindowRounding, 0.0f};
         imgui::style_var_scope window_border_size_scope{ImGuiStyleVar_WindowBorderSize, 0.0f};
@@ -57,19 +57,19 @@ void application::begin_docking()
             ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | 
             ImGuiWindowFlags_NoBackground;
 
-        imgui::Begin("Main DockSpace", nullptr, window_flags);
+        ImGui::Begin("Main DockSpace", nullptr, window_flags);
     }
 
     // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
     // and handle the pass-thru hole, so we ask Begin() to not render a background.
     constexpr ImGuiDockNodeFlags dock_space_flags = ImGuiDockNodeFlags_PassthruCentralNode;
 
-    imgui::DockSpace(ImGui::GetID("MainDockSpace"), ImVec2(0.0f, 0.0f), dock_space_flags);
+    ImGui::DockSpace(ImGui::GetID("MainDockSpace"), ImVec2(0.0f, 0.0f), dock_space_flags);
 }
 
 void application::end_docking()
 {
-    imgui::End();
+    ImGui::End();
 }
 
 void application::create_main_menu_base()

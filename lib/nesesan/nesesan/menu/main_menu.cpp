@@ -6,12 +6,12 @@ namespace nese::san {
 
 bool main_menu_bar_imgui_scope::begin()
 {
-    return imgui::BeginMainMenuBar();
+    return ImGui::BeginMainMenuBar();
 }
 
 void main_menu_bar_imgui_scope::end()
 {
-    imgui::EndMainMenuBar();
+    ImGui::EndMainMenuBar();
 }
 
 } // namespace nese::san

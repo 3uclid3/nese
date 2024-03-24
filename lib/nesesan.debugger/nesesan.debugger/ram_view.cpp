@@ -12,36 +12,33 @@ ram_view::ram_view(const memory::ram& ram)
 
 void ram_view::update(f32_t, bool&)
 {
-    static char buffer[20]={'\0'};
-    imgui::InputText("Address", &buffer[0], 20, ImGuiInputTextFlags_CharsHexadecimal);
+    static char buffer[20] = {'\0'};
+    ImGui::InputText("Address", &buffer[0], 20, ImGuiInputTextFlags_CharsHexadecimal);
 
-    imgui::SameLine();
-    if (imgui::BeginCombo("Columns", "2"))
+    ImGui::SameLine();
+    if (ImGui::BeginCombo("Columns", "2"))
     {
-        imgui::Selectable("2");
-        imgui::Selectable("4");
-        imgui::Selectable("8");
-        imgui::Selectable("16");
+        ImGui::Selectable("2");
+        ImGui::Selectable("4");
+        ImGui::Selectable("8");
+        ImGui::Selectable("16");
 
-        imgui::EndCombo();    
+        ImGui::EndCombo();
     }
 
-    imgui::Separator();
+    ImGui::Separator();
 
-    if (imgui::BeginListBox("Data"))
+    if (ImGui::BeginListBox("Data"))
     {
         for (size_t i = 0; i < memory::ram::max_size; ++i)
         {
-            const auto addr_str  = fmt::format("0x{:04X}", i);
-
-            imgui::TextDisabled("%s", addr_str.c_str());
-
-            auto value_str = fmt::format("{:02X}", _ram.get_byte(i));
+            imgui::text_disabled("0x{:04X}", i);
 
             ImGui::SameLine();
-            imgui::Text("%s", value_str.c_str());
+            imgui::text("{:02X}", _ram.get_byte(i));
         }
-        imgui::EndListBox();
+
+        ImGui::EndListBox();
     }
 }
 

@@ -20,12 +20,12 @@ void view::update(f32_t dt)
 
 void view::begin(const char* name, bool& is_visible, flags flags)
 {
-    imgui::Begin(name, &is_visible, flags);
+    ImGui::Begin(name, &is_visible, flags);
 }
 
 void view::end()
 {
-    imgui::End();
+    ImGui::End();
 }
 
 } // namespace nese::san
