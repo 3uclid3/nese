@@ -8,6 +8,9 @@
 #endif
 #endif
 
+#define NESE_ASSUME_IMPL(condition) __builtin_assume(condition)
+#define NESE_UNREACHABLE_IMPL() __builtin_unreachable()
+
 #if NESE_ASSERT_ENABLED
 
 #include <chrono>
@@ -36,6 +39,23 @@
         } \
     } while (false)
 
+
+#define NESE_ASSUME(condition) \
+    NESE_ASSERT(condition); \
+    NESE_ASSUME_IMPL(condition)
+
+#define NESE_ASSUME_LOG(condition, ...) \
+    NESE_ASSERT_LOG(condition, __VA_ARGS__); \
+    NESE_ASSUME_IMPL(condition)
+
+#define NESE_UNREACHABLE() \
+    NESE_ASSERT(false); \
+    NESE_UNREACHABLE_IMPL()
+
+#define NESE_UNREACHABLE_LOG(...) \
+    NESE_ASSERT_LOG(false, __VA_ARGS__); \
+    NESE_UNREACHABLE_IMPL()
+
 namespace nese {
 
 inline void debug_trigger_assert()
@@ -60,6 +80,12 @@ inline void debug_trigger_assert()
 
 #define NESE_ASSERT(...)
 #define NESE_ASSERT_LOG(...)
+
+#define NESE_ASSUME(condition) NESE_ASSUME_IMPL(condition)
+#define NESE_ASSUME_LOG(condition, ...) NESE_ASSUME_IMPL(condition)
+
+#define NESE_UNREACHABLE() NESE_UNREACHABLE_IMPL()
+#define NESE_UNREACHABLE_LOG(...) NESE_UNREACHABLE_IMPL()
 
 namespace nese {
 
