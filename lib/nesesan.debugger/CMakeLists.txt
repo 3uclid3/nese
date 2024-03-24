@@ -6,7 +6,7 @@ set(INCLUDES
     "${DIR}/extension.hpp"
     "${DIR}/ram_view.hpp"
 )
-
+ 
 set(SOURCES
     "${DIR}/cpu_debugger.cpp"
     "${DIR}/cpu_debugger_view.cpp"
@@ -19,6 +19,7 @@ add_library(nesesan.debugger ${INCLUDES} ${SOURCES})
 target_link_libraries(
     nesesan.debugger
     PUBLIC
+        nese.debug
         nesesan
     PRIVATE
         nese_project_options

@@ -28,9 +28,13 @@ void emulator::step(cycle_t count)
 {
     NESE_TRACE("[emulator] step {}", count);
 
-    _cycle += count;
+    const cycle_t end = _cycle + count;
 
-    _cpu.step_to(_cycle);
+    for (;_cycle < end; _cycle += cycle_t{1})
+    {
+        // TODO Review
+        _cpu.step();
+    }
 }
 
 bool emulator::has_stop_requested() const

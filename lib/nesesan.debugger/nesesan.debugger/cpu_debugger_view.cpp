@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <nese.debug/cpu/snapshot.hpp>
 #include <nese/utility/assert.hpp>
 #include <nesesan.debugger/cpu_debugger_view.hpp>
 
@@ -99,7 +100,7 @@ void cpu_debugger_view::update(f32_t dt, bool&)
         }
     }
 
-    if (ImGui::BeginTable("#Instructions", 12, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_NoBordersInBody))
+    if (ImGui::BeginTable("#Instructions", 12, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_ScrollY))
     {
         const f32_t hex_width = ImGui::CalcTextSize("X").x;
 
@@ -141,16 +142,39 @@ void cpu_debugger_view::update(f32_t dt, bool&)
 
         ImGui::TableHeadersRow();
 
-        imgui::begin_group();
+        const f32_t row_height = ImGui::GetTextLineHeightWithSpacing(); // Or your custom row height
+        const size_t rows_total = _debugger.get_snapshotter().get_snapshots().size();
+
+        // Get the position of the scroll and the height of the visible area (clip rect)
+        const f32_t scroll_y = ImGui::GetScrollY();
+        const f32_t visible_height = ImGui::GetContentRegionAvail().y;
+
+        NESE_ASSERT(true);
+
+        // Calculate the range of visible rows
+        const size_t row_start = std::max(0, static_cast<int>(scroll_y / row_height));
+        const size_t row_end = std::min(rows_total, row_start + static_cast<int>(visible_height / row_height) + 1);
+
+        if (row_start > 0)
         {
-                
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Dummy(ImVec2(-1, row_height * (row_start - 1)));
+            ImGui::TableNextRow();
+        }
+
+        for (size_t row = row_start; row < row_end; ++row)
+        {
+            imgui::begin_group();
+
+            const cpu::snapshot& snapshot = *_debugger.get_snapshotter().get_snapshots()[row];
+
             // Step #
             ImGui::TableNextColumn();
-            imgui::text("0");
+            imgui::text("{}", row);
 
             // PC
             ImGui::TableNextColumn();
-            imgui::text("C000");
+            imgui::text("{:04X}", snapshot.registers.pc);
 
             // instruction byte 0
             ImGui::TableNextColumn();
@@ -174,25 +198,33 @@ void cpu_debugger_view::update(f32_t dt, bool&)
 
             // a
             ImGui::TableNextColumn();
-            imgui::text("00");
+            imgui::text("{:02X}", snapshot.registers.a);
 
             // x
             ImGui::TableNextColumn();
-            imgui::text("00");
+            imgui::text("{:02X}", snapshot.registers.x);
 
             // y
             ImGui::TableNextColumn();
-            imgui::text("00");
+            imgui::text("{:02X}", snapshot.registers.y);
 
             // p
             ImGui::TableNextColumn();
-            imgui::text("24");
+            imgui::text("{:02X}", snapshot.registers.p);
 
             // sp
             ImGui::TableNextColumn();
-            imgui::text("FD");
+            imgui::text("{:02X}", snapshot.registers.s);
+
+            imgui::end_group();
         }
-        imgui::end_group();
+
+        int rows_after = rows_total - row_end;
+        if (rows_after > 0)
+        {
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Dummy(ImVec2(-1, row_height * rows_after));
+        }
 
         ImGui::EndTable();
     }

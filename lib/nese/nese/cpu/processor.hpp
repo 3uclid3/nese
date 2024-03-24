@@ -30,6 +30,9 @@ public:
     void power_on();
     void reset();
 
+    void step();
+
+    [[deprecated("use step() instead")]]
     void step_to(cycle_t system_cycle);
 
     [[nodiscard]] bool has_stop_requested() const;

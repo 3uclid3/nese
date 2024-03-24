@@ -16,7 +16,8 @@ void cpu_debugger::update(f32_t)
         return;
     }
 
-    _cpu.step_to(_cpu.get_cycle() + cycle_t{1});
+    _cpu.step();
+    _cpu_snapshotter.take_snapshot(_cpu);
 }
 
 void cpu_debugger::power_on(memory::rom&& rom, bool start_running)
@@ -38,6 +39,10 @@ void cpu_debugger::power_on(memory::rom&& rom, bool start_running)
         _ram.set_bytes(0xc000, _rom.get_prg().data(), _rom.get_prg().size());
     }
 
+    // initial state after loading
+    _cpu_snapshotter.reset();
+    _cpu_snapshotter.take_snapshot(_cpu);
+
     _state = start_running ? state::running : state::paused;
 }
 
@@ -55,7 +60,8 @@ void cpu_debugger::step()
 {
     NESE_ASSERT(_state == state::paused);
 
-    _cpu.step_to(_cpu.get_cycle() + cycle_t{1});
+    _cpu.step();
+    _cpu_snapshotter.take_snapshot(_cpu);
 }
 
 void cpu_debugger::pause()

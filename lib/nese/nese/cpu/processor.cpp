@@ -301,6 +301,13 @@ void processor::reset()
 {
 }
 
+void processor::step()
+{
+    execute_next_instruction();
+
+    _cycle += cycle_t{1}; // TODO handle cycle
+}
+
 void processor::step_to(cycle_t cycle)
 {
     while (_cycle < cycle && !has_stop_requested())
