@@ -10,6 +10,7 @@ set(INCLUDES
 )
 
 set(SOURCES
+    "${DIR}/cpu/instruction_test.cpp"
     "${DIR}/cpu/processor_test.cpp"
 )
 
