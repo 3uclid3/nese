@@ -33,4 +33,6 @@ using byte_t = u8_t;
 using word_t = u16_t;
 using addr_t = word_t;
 
+constexpr addr_t null_addr = addr_t{0};
+
 } // namespace nese
