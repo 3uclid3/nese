@@ -222,6 +222,10 @@ struct fmt::formatter<nese::cpu::state>
         return ctx.begin();
     }
 
+    // Follow Nintendulator log format
+    // 0         1         2         3         4         5         6         7         8
+    // 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+    // C000  4C F5 C5  JMP $C5F5                       A:00 X:00 Y:00 P:24 SP:FD PPU:  0, 21 CYC:7
     auto format(const nese::cpu::state& state, auto& ctx) const
     {
         using namespace nese::cpu::details;
