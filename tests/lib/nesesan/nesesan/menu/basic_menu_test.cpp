@@ -96,7 +96,7 @@ bool has_leaf(const basic_menu_mock& menu, std::string_view name)
     return item && is_leaf(*item);
 }
 
-TEST_CASE("basic_menu")
+TEST_CASE("basic_menu add", "[imgui]")
 {
     basic_menu_mock menu;
 
@@ -143,7 +143,7 @@ TEST_CASE("basic_menu")
     CHECK(has_leaf(*subchild2, "leaf 2"));
 }
 
-TEST_CASE("basic_menu - adding a submenu")
+TEST_CASE("basic_menu add a submenu", "[imgui]")
 {
     basic_menu_mock menu;
 
@@ -152,7 +152,7 @@ TEST_CASE("basic_menu - adding a submenu")
     CHECK(has_branch(menu, "root"));
 }
 
-TEST_CASE("basic_menu - adding with arg")
+TEST_CASE("basic_menu add with arg", "[imgui]")
 {
     basic_menu_mock menu;
 
