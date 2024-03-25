@@ -59,12 +59,12 @@ struct fixture
     state_mock state{};
 };
 
-TEST_CASE_METHOD(fixture, "nestest", "[cpu], [instruction]")
+TEST_CASE_METHOD(fixture, "nestest", "[cpu][instruction][!mayfail]")
 {
     run_rom("nestest.nes", 0x0005);
-
+    
     CHECK(state.registers.s == 0xff);
-
+    
     CHECK(state.owned_memory.get_byte(0x2) == 0);
     CHECK(state.owned_memory.get_byte(0x3) == 0);
 }

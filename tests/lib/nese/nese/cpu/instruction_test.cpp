@@ -65,7 +65,7 @@ struct fixture
 constexpr auto minus_two = static_cast<byte_t>(-2);
 constexpr auto minus_one = static_cast<byte_t>(-1);
 
-TEST_CASE_METHOD(fixture, "inx with addr_mode implied", "[cpu], [instruction]")
+TEST_CASE_METHOD(fixture, "inx with addr_mode implied", "[cpu][instruction]")
 {
     SECTION("increment to negative")
     {
@@ -107,7 +107,7 @@ TEST_CASE_METHOD(fixture, "inx with addr_mode implied", "[cpu], [instruction]")
     }
 }
 
-TEST_CASE_METHOD(fixture, "iny with addr_mode implied")
+TEST_CASE_METHOD(fixture, "iny with addr_mode implied", "[cpu][instruction]")
 {
     SECTION("increment to negative")
     {
@@ -149,7 +149,7 @@ TEST_CASE_METHOD(fixture, "iny with addr_mode implied")
     }
 }
 
-TEST_CASE_METHOD(fixture, "lda with addr_mode immediate", "[cpu], [instruction]")
+TEST_CASE_METHOD(fixture, "jmp with addr_mode absolute", "[cpu][instruction]")
 {
     for (addr_t addr = 0x10; addr < 0x80; addr += 0x10)
     {
