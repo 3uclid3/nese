@@ -25,7 +25,7 @@ template<addr_mode AddrModeT>
 void execute_adc(state& state);
 
 // DEY (Decrement X Register):
-// Decreases the value in the Y register by one, affecting the zero and negative flags.
+// Decreases the value in the X register by one, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
 void execute_dex(state& state);
 
@@ -35,12 +35,12 @@ template<addr_mode AddrModeT>
 void execute_dey(state& state);
 
 // INX (Increment Register):
-// Increases a register by one, affecting the zero and negative flags.
+// Increases the X register by one, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
 void execute_inx(state& state);
 
 // INX (Increment X Register):
-// Increases the X register by one, affecting the zero and negative flags.
+// Increases the Y register by one, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
 void execute_iny(state& state);
 
