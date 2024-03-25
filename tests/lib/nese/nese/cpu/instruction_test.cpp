@@ -211,7 +211,17 @@ struct ld_fixture : fixture
 
 TEST_CASE_METHOD(ld_fixture, "lda::immediate", "[cpu][instruction]")
 {
-    test_addr_mode_immediate(execute_lda<addr_mode::immediate> ,set_register_a);
+    test_addr_mode_immediate(execute_lda<addr_mode::immediate>, set_register_a);
+}
+
+TEST_CASE_METHOD(ld_fixture, "ldx::immediate", "[cpu][instruction]")
+{
+    test_addr_mode_immediate(execute_ldx<addr_mode::immediate>, set_register_x);
+}
+
+TEST_CASE_METHOD(ld_fixture, "ldy::immediate", "[cpu][instruction]")
+{
+    test_addr_mode_immediate(execute_ldy<addr_mode::immediate>, set_register_y);
 }
 
 } // namespace nese::cpu::instruction

@@ -281,13 +281,13 @@ void execute_lda(state& state)
 template<addr_mode AddrModeT>
 void execute_ldx(state& state)
 {
-    execute_ld_impl<AddrModeT>(state, state.registers.y);
+    execute_ld_impl<AddrModeT>(state, state.registers.x);
 }
 
 template<addr_mode AddrModeT>
 void execute_ldy(state& state)
 {
-    execute_ld_impl<AddrModeT>(state, state.registers.x);
+    execute_ld_impl<AddrModeT>(state, state.registers.y);
 }
 
 #define EXPLICIT_INSTANTIATE(mnemonic, addr_mode) \
