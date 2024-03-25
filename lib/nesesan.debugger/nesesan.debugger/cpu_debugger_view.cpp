@@ -178,21 +178,38 @@ void cpu_debugger_view::update(f32_t dt, bool&)
             ImGui::TableNextColumn();
             imgui::text("{:04X}", snapshot.registers.pc);
 
-            // instruction byte 0
+            // instruction byte 0 (opcode)
+            const cpu::instruction::opcode_t opcode = snapshot.memory.get_byte(snapshot.registers.pc);
             ImGui::TableNextColumn();
-            imgui::text("4C");
+            imgui::text("{:02X}", opcode);
 
-            // instruction byte 1
-            ImGui::TableNextColumn();
-            imgui::text("F5");
+            const size_t operand_count = cpu::instruction::get_opcode_operand_count(opcode);
 
-            // instruction byte 2
+            // instruction byte 1 (operand)
             ImGui::TableNextColumn();
-            imgui::text("C5");
+            if (operand_count >=1)
+            {
+                imgui::text("{:02X}", snapshot.memory.get_byte(snapshot.registers.pc + 1));
+            }
+            else
+            {
+                imgui::text("  ");
+            }
+
+            // instruction byte 2 (operand)
+            ImGui::TableNextColumn();
+            if (operand_count >= 2)
+            {
+                imgui::text("{:02X}", snapshot.memory.get_byte(snapshot.registers.pc + 2));
+            }
+            else
+            {
+                imgui::text("  ");
+            }
 
             // instruction str
             ImGui::TableNextColumn();
-            imgui::text(" JMP");
+            imgui::text(" {}", cpu::instruction::get_opcode_mnemonic(opcode));
 
             // operand
             ImGui::TableNextColumn();
