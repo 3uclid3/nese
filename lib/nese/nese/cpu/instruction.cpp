@@ -73,6 +73,7 @@ struct table
 
         ADD(inx, 0xe8, addr_mode::implied);
         ADD(iny, 0xc8, addr_mode::implied);
+        ADD(jmp, 0x4c, addr_mode::absolute);
 
 #undef ADD_ALU
 #undef ALU_OPCODE
@@ -261,6 +262,12 @@ void execute_lda(state& state)
     execute_ld_impl<AddrModeT>(state, state.registers.a);
 }
 
+template<addr_mode AddrModeT>
+void execute_jmp(state& state)
+{
+    state.registers.pc = decode_operand_addr<AddrModeT>(state);
+}
+
 #define EXPLICIT_INSTANTIATE(mnemonic, addr_mode) \
     template void execute_##mnemonic<addr_mode>(state & state)
 
@@ -279,6 +286,7 @@ EXPLICIT_INSTANTIATE_ALU(lda);
 EXPLICIT_INSTANTIATE(adc, addr_mode::immediate);
 EXPLICIT_INSTANTIATE(inx, addr_mode::implied);
 EXPLICIT_INSTANTIATE(iny, addr_mode::implied);
+EXPLICIT_INSTANTIATE(jmp, addr_mode::absolute);
 
 #undef EXPLICIT_INSTANTIATE_ALU
 #undef EXPLICIT_INSTANTIATE

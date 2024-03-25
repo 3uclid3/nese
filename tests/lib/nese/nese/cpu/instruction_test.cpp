@@ -151,6 +151,24 @@ TEST_CASE_METHOD(fixture, "iny with addr_mode implied", "[cpu][instruction]")
 
 TEST_CASE_METHOD(fixture, "jmp with addr_mode absolute", "[cpu][instruction]")
 {
+    for (addr_t addr = 0x1000; addr < 0x8008; addr += 0x1001)
+    {
+        const addr_t jmp_to = addr + 0x0010;
+
+        state.memory.get().set_word(addr, jmp_to);
+        state.registers.pc = addr;
+
+        state_mock expected_state = state;
+        expected_state.registers.pc = state.memory.get().get_word(addr);
+
+        execute_jmp<addr_mode::absolute>(state);
+
+        check_state(expected_state);
+    }
+}
+
+TEST_CASE_METHOD(fixture, "lda with addr_mode immediate", "[cpu][instruction]")
+{
     for (addr_t addr = 0x10; addr < 0x80; addr += 0x10)
     {
         SECTION("load a negative")

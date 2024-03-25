@@ -49,6 +49,8 @@ void execute_iny(state& state);
 template<addr_mode AddrModeT>
 void execute_lda(state& state);
 
+// JMP (Jump):
+// Sets the program counter to the address specified by the operand, effectively jumping to a new code location.
 template<addr_mode AddrModeT>
 void execute_jmp(state& state);
 
@@ -70,6 +72,7 @@ EXPLICIT_INSTANTIATION_ALU(lda);
 EXPLICIT_INSTANTIATION(adc, addr_mode::immediate);
 EXPLICIT_INSTANTIATION(inx, addr_mode::implied);
 EXPLICIT_INSTANTIATION(iny, addr_mode::implied);
+EXPLICIT_INSTANTIATION(jmp, addr_mode::absolute);
 
 #undef EXPLICIT_INSTANTIATION_ALU
 #undef EXPLICIT_INSTANTIATION
