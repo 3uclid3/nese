@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <fmt/format.h>
+#include <spdlog/sinks/basic_file_sink.h>
 
 #include <nese/cpu/instruction.hpp>
 #include <nese/cpu/state_mock.hpp>
@@ -14,6 +15,10 @@ struct fixture
 {
     void run_rom(std::string_view rom_name, word_t end_pc)
     {
+        std::shared_ptr<spdlog::logger> nintendulator_logger = spdlog::basic_logger_st("nintendulator", fmt::format("cpu_nintendulator_{}.log", rom_name), true);
+        nintendulator_logger->set_level(spdlog::level::trace);
+        nintendulator_logger->set_pattern("%v");
+
         const std::string path = fmt::format("{}/{}", test_roms_path, rom_name);
         const memory::rom rom = memory::rom::from_file(path.c_str());
 
@@ -32,7 +37,7 @@ struct fixture
         {
             previous_state = state;
 
-            NESE_TRACE("{}", state);
+            nintendulator_logger->trace("{}", state);
 
             const auto opcode = state.owned_memory.get_byte(state.registers.pc++);
             last_instruction_succeeded = instruction::execute(opcode, state);
