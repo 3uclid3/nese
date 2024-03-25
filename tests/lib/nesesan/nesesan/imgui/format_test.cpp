@@ -7,7 +7,7 @@
 
 namespace nese::san::imgui {
 
-TEST_CASE("imgui::format")
+TEST_CASE("imgui::format", "[imgui]")
 {
     CHECK(strcmp(format("Lorem {}", "Ipsum"), "Lorem Ipsum") == 0);
     CHECK(strcmp(format("u8 = {}, s8 = {}", u8_t(42), s8_t(-42)), "u8 = 42, s8 = -42") == 0);
