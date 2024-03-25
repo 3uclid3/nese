@@ -74,6 +74,16 @@ struct table
         ADD(inx, 0xe8, addr_mode::implied);
         ADD(iny, 0xc8, addr_mode::implied);
         ADD(jmp, 0x4c, addr_mode::absolute);
+        ADD(ldx, 0xa2, addr_mode::immediate);
+        ADD(ldx, 0xa6, addr_mode::zero_page);
+        ADD(ldx, 0xae, addr_mode::absolute);
+        ADD(ldx, 0xb6, addr_mode::zero_page_y);
+        ADD(ldx, 0xbe, addr_mode::absolute_y);
+        ADD(ldy, 0xa0, addr_mode::immediate);
+        ADD(ldy, 0xa4, addr_mode::zero_page);
+        ADD(ldy, 0xac, addr_mode::absolute);
+        ADD(ldy, 0xb4, addr_mode::zero_page_x);
+        ADD(ldy, 0xbc, addr_mode::absolute_x);
 
 #undef ADD_ALU
 #undef ALU_OPCODE
@@ -249,6 +259,12 @@ void execute_iny(state& state)
 }
 
 template<addr_mode AddrModeT>
+void execute_jmp(state& state)
+{
+    state.registers.pc = decode_operand_addr<AddrModeT>(state);
+}
+
+template<addr_mode AddrModeT>
 void execute_ld_impl(state& state, byte_t& register_value)
 {
     register_value = decode_operand<AddrModeT>(state);
@@ -263,9 +279,15 @@ void execute_lda(state& state)
 }
 
 template<addr_mode AddrModeT>
-void execute_jmp(state& state)
+void execute_ldx(state& state)
 {
-    state.registers.pc = decode_operand_addr<AddrModeT>(state);
+    execute_ld_impl<AddrModeT>(state, state.registers.y);
+}
+
+template<addr_mode AddrModeT>
+void execute_ldy(state& state)
+{
+    execute_ld_impl<AddrModeT>(state, state.registers.x);
 }
 
 #define EXPLICIT_INSTANTIATE(mnemonic, addr_mode) \
@@ -287,6 +309,16 @@ EXPLICIT_INSTANTIATE(adc, addr_mode::immediate);
 EXPLICIT_INSTANTIATE(inx, addr_mode::implied);
 EXPLICIT_INSTANTIATE(iny, addr_mode::implied);
 EXPLICIT_INSTANTIATE(jmp, addr_mode::absolute);
+EXPLICIT_INSTANTIATE(ldx, addr_mode::absolute);
+EXPLICIT_INSTANTIATE(ldx, addr_mode::absolute_y);
+EXPLICIT_INSTANTIATE(ldx, addr_mode::immediate);
+EXPLICIT_INSTANTIATE(ldx, addr_mode::zero_page);
+EXPLICIT_INSTANTIATE(ldx, addr_mode::zero_page_y);
+EXPLICIT_INSTANTIATE(ldy, addr_mode::absolute);
+EXPLICIT_INSTANTIATE(ldy, addr_mode::absolute_x);
+EXPLICIT_INSTANTIATE(ldy, addr_mode::immediate);
+EXPLICIT_INSTANTIATE(ldy, addr_mode::zero_page);
+EXPLICIT_INSTANTIATE(ldy, addr_mode::zero_page_x);
 
 #undef EXPLICIT_INSTANTIATE_ALU
 #undef EXPLICIT_INSTANTIATE

@@ -44,15 +44,25 @@ void execute_inx(state& state);
 template<addr_mode AddrModeT>
 void execute_iny(state& state);
 
+// JMP (Jump):
+// Sets the program counter to the address specified by the operand, effectively jumping to a new code location.
+template<addr_mode AddrModeT>
+void execute_jmp(state& state);
+
 // LDA (Load Accumulator):
 // Loads a value into the accumulator from memory or an immediate value, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
 void execute_lda(state& state);
 
-// JMP (Jump):
-// Sets the program counter to the address specified by the operand, effectively jumping to a new code location.
+// LDX (Load X Register):
+// Loads a value into the X register from memory or an immediate value, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
-void execute_jmp(state& state);
+void execute_ldx(state& state);
+
+// LDY (Load Y Register):
+// Loads a value into the Y register from memory or an immediate value, affecting the zero and negative flags.
+template<addr_mode AddrModeT>
+void execute_ldy(state& state);
 
 #define EXPLICIT_INSTANTIATION(mnemonic, addr_mode) \
     extern template void execute_##mnemonic<addr_mode>(state&)
