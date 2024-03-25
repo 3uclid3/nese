@@ -21,4 +21,9 @@ struct state_mock : state
     memory::mapper owned_memory{};
 };
 
+constexpr const state& format_as(const state_mock& mock)
+{
+    return mock;
+}
+
 } // namespace nese::cpu

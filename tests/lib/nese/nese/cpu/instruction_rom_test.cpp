@@ -6,12 +6,13 @@
 #include <nese/cpu/state_mock.hpp>
 #include <nese/memory/rom.hpp>
 #include <nese/test_config.hpp>
+#include <nese/utility/log.hpp>
 
 namespace nese::cpu {
 
 struct fixture
 {
-    void run_rom(std::string_view rom_name, byte_t end_pc)
+    void run_rom(std::string_view rom_name, word_t end_pc)
     {
         const std::string path = fmt::format("{}/{}", test_roms_path, rom_name);
         const memory::rom rom = memory::rom::from_file(path.c_str());
@@ -30,19 +31,22 @@ struct fixture
         while (last_instruction_succeeded && state.registers.pc != end_pc)
         {
             previous_state = state;
+
+            NESE_TRACE("{}", state);
+
             const auto opcode = state.owned_memory.get_byte(state.registers.pc++);
             last_instruction_succeeded = instruction::execute(opcode, state);
         }
 
         if (state.registers.pc != end_pc)
         {
-            //const auto message =
-            //    fmt::format("Mismatch PC: expected 0x{:04X}, actual 0x{:04X}\nPrevious CPU State:\n{}\nCurrent CPU State:\n{}",
-            //                end_pc,
-            //                state.registers.pc,
-            //                previous_state,
-            //                state);
-            //FAIL(message.c_str());
+            const auto message =
+                fmt::format("Mismatch PC: expected 0x{:04X}, actual 0x{:04X}\nPrevious CPU State:\n{}\nCurrent CPU State:\n{}",
+                            end_pc,
+                            state.registers.pc,
+                            previous_state,
+                            state);
+            FAIL(message.c_str());
         }
     }
 

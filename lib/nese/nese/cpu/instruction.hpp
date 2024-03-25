@@ -15,7 +15,9 @@ using operand_t = byte_t;
 using instruction::opcode_t;
 using instruction::operand_t;
 
-opcode_t get_opcode(const state& state);
+string_view get_opcode_mnemonic(opcode_t opcode);
+addr_mode get_opcode_addr_mode(opcode_t opcode);
+byte_t get_opcode_operand_count(opcode_t opcode);
 
 bool execute(opcode_t opcode, state& state);
 

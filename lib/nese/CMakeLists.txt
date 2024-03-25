@@ -7,6 +7,7 @@ set(INCLUDES
     "${DIR}/cpu/processor_fmt.inl"
     "${DIR}/cpu/registers.hpp"
     "${DIR}/cpu/state.hpp"
+    "${DIR}/cpu/state_fmt.inl"
     "${DIR}/cpu/status_flag.hpp"
     "${DIR}/memory/mapper.hpp"
     "${DIR}/memory/ram.hpp"

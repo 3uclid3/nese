@@ -179,6 +179,43 @@ operand_t decode_operand(state& state)
     return static_cast<operand_t>(decode_operand_addr<AddrModeT>(state));
 }
 
+string_view get_opcode_mnemonic(opcode_t opcode)
+{
+    return table.mnemonics[opcode];
+}
+
+addr_mode get_opcode_addr_mode(opcode_t opcode)
+{
+    return table.addr_modes[opcode];
+}
+
+byte_t get_opcode_operand_count(opcode_t opcode)
+{
+    switch (table.addr_modes[opcode])
+    {
+    case addr_mode::implied:
+    case addr_mode::accumulator:
+        return 0;
+
+    case addr_mode::relative:
+    case addr_mode::immediate:
+    case addr_mode::zero_page:
+    case addr_mode::zero_page_x:
+    case addr_mode::zero_page_y:
+    case addr_mode::indexed_indirect:
+    case addr_mode::indirect_indexed:
+        return 1;
+
+    case addr_mode::indirect:
+    case addr_mode::absolute:
+    case addr_mode::absolute_x:
+    case addr_mode::absolute_y:
+        return 2;
+    }
+
+    NESE_ASSUME(false);
+}
+
 bool execute(opcode_t opcode, state& state)
 {
     const auto callback = table.callbacks[opcode];

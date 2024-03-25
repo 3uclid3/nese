@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fmt/core.h>
+
 #include <nese/basic_types.hpp>
 #include <nese/cpu/registers.hpp>
 #include <nese/cycle.hpp>
@@ -18,3 +20,5 @@ struct state
 };
 
 } // namespace nese::cpu
+
+#include <nese/cpu/state_fmt.inl>
