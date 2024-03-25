@@ -13,7 +13,7 @@ private:
 
 private:
     cpu_debugger_view _cpu_debugger_view;
-    ram_view _ram_view{_cpu_debugger_view.get_debugger().get_ram()};
+    //ram_view _ram_view{_cpu_debugger_view.get_debugger().get_ram()};
 };
 
 } // namespace nese::san::debugger

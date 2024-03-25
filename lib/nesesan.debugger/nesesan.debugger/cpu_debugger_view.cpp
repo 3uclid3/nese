@@ -142,8 +142,10 @@ void cpu_debugger_view::update(f32_t dt, bool&)
 
         ImGui::TableHeadersRow();
 
+        const auto& snapshots = _debugger.get_cpu_snapshotter().get_snapshots();
+
         const f32_t row_height = ImGui::GetTextLineHeightWithSpacing(); // Or your custom row height
-        const size_t rows_total = _debugger.get_snapshotter().get_snapshots().size();
+        const size_t rows_total = snapshots.size();
 
         // Get the position of the scroll and the height of the visible area (clip rect)
         const f32_t scroll_y = ImGui::GetScrollY();
@@ -166,7 +168,7 @@ void cpu_debugger_view::update(f32_t dt, bool&)
         {
             imgui::begin_group();
 
-            const cpu::snapshot& snapshot = *_debugger.get_snapshotter().get_snapshots()[row];
+            const cpu::snapshot& snapshot = *snapshots[row];
 
             // Step #
             ImGui::TableNextColumn();
@@ -219,11 +221,10 @@ void cpu_debugger_view::update(f32_t dt, bool&)
             imgui::end_group();
         }
 
-        int rows_after = rows_total - row_end;
-        if (rows_after > 0)
+        if (const auto rows_after = rows_total - row_end; rows_after > 0)
         {
             ImGui::TableSetColumnIndex(0);
-            ImGui::Dummy(ImVec2(-1, row_height * rows_after));
+            ImGui::Dummy(ImVec2(-1, row_height * static_cast<f32_t>(rows_after)));
         }
 
         ImGui::EndTable();

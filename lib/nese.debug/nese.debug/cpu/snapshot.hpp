@@ -1,14 +1,14 @@
 #pragma once
 
-#include <nese/cycle.hpp>
 #include <nese/cpu/registers.hpp>
-#include <nese/memory/ram.hpp>
+#include <nese/cycle.hpp>
+#include <nese/memory/mapper.hpp>
 
 namespace nese::cpu {
 
 struct snapshot
 {
-    memory::ram ram;
+    memory::mapper memory;
     registers registers;
     cycle_t cycle;
 };

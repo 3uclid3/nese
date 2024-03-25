@@ -1,8 +1,8 @@
 #pragma once
 
 #include <nese.debug/cpu/snapshotter.hpp>
-#include <nese/cpu/processor.hpp>
-#include <nese/memory/ram.hpp>
+#include <nese/cpu/state.hpp>
+#include <nese/memory/mapper.hpp>
 #include <nese/memory/rom.hpp>
 
 namespace nese::san::debugger {
@@ -42,15 +42,15 @@ public:
     void pause();
     void unpause();
 
-    [[nodiscard]] const cpu::snapshotter& get_snapshotter() const { return _cpu_snapshotter; }
-    [[nodiscard]] const cpu::processor& get_cpu() const { return _cpu; }
+    [[nodiscard]] const cpu::snapshotter& get_cpu_snapshotter() const { return _cpu_snapshotter; }
+    [[nodiscard]] const cpu::state& get_cpu_state() const { return _cpu_state; }
     [[nodiscard]] const memory::rom& get_rom() const { return _rom; }
-    [[nodiscard]] const memory::ram& get_ram() const { return _ram; }
+    [[nodiscard]] const memory::mapper& get_memory() const { return _memory; }
 
 private:
     memory::rom _rom;
-    memory::ram _ram;
-    cpu::processor _cpu{_ram};
+    memory::mapper _memory;
+    cpu::state _cpu_state{_memory};
 
     cpu::snapshotter _cpu_snapshotter;
 

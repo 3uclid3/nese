@@ -5,7 +5,7 @@
 
 namespace nese::cpu {
 
-class processor;
+struct state;
 struct snapshot;
 
 class snapshotter
@@ -14,7 +14,7 @@ public:
     snapshotter();
     ~snapshotter();
 
-    void take_snapshot(const processor& cpu);
+    void take_snapshot(const state& state);
 
     void reset();
 
