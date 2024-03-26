@@ -10,7 +10,7 @@ namespace nese::memory {
 class mapper
 {
 public:
-    static constexpr auto capacity = 0x10000;
+    static constexpr size_t capacity = 0x10000;
 
 public:
     void set_zero();
