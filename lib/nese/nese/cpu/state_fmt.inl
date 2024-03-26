@@ -33,7 +33,7 @@ void append_instruction_bytes(auto& out, const state& state)
     constexpr byte_t max_count = 3;
     constexpr byte_t opcode_count = 1;
 
-    const byte_t count = opcode_count + instruction::get_opcode_operand_count(state.memory.get().get_byte(state.registers.pc));
+    const byte_t count = opcode_count + instruction::get_opcode_operand_byte_count(state.memory.get().get_byte(state.registers.pc));
 
     assert(count <= max_count);
 
