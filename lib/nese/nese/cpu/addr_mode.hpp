@@ -1,5 +1,7 @@
 #pragma once
 
+#include <nese/utility/assert.hpp>
+
 namespace nese::cpu {
 
 enum class addr_mode
@@ -44,4 +46,51 @@ enum class addr_mode
     indirect_indexed
 };
 
+constexpr std::string_view to_string_view(addr_mode mode)
+{
+    switch (mode)
+    {
+    case addr_mode::implied:
+        return "implied";
+
+    case addr_mode::accumulator:
+        return "accumulator";
+
+    case addr_mode::immediate:
+        return "immediate";
+
+    case addr_mode::zero_page:
+        return "zero_page";
+
+    case addr_mode::zero_page_x:
+        return "zero_page_x";
+
+    case addr_mode::zero_page_y:
+        return "zero_page_y";
+
+    case addr_mode::absolute:
+        return "absolute";
+
+    case addr_mode::absolute_x:
+        return "absolute_x";
+
+    case addr_mode::absolute_y:
+        return "absolute_y";
+
+    case addr_mode::relative:
+        return "relative";
+
+    case addr_mode::indirect:
+        return "indirect";
+
+    case addr_mode::indexed_indirect:
+        return "indexed_indirect";
+
+    case addr_mode::indirect_indexed:
+        return "indirect_indexed";
+    }
+
+    NESE_ASSUME(false);
 }
+
+} // namespace nese::cpu
