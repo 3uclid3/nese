@@ -6,6 +6,14 @@
 #include <nese/memory/mapper.hpp>
 #include <nese/utility/assert.hpp>
 
+// clang-format off
+#define GENERATE_ADDR() \
+            GENERATE(0x0000, 0xFFFF,  \
+                     0x00FF, 0x0100,  \
+                     0x0001, 0x0010, 0x0100, 0x1000,  \
+                     0x000F, 0x00F0, 0x0F00, 0xF000)
+// clang-format on
+
 namespace nese::cpu::instruction {
 
 template<addr_mode AddrModeT>
@@ -219,17 +227,8 @@ struct jmp_fixture : fixture
     {
         DYNAMIC_SECTION(to_string_view(AddrModeT))
         {
-            // clang-format off
-            const addr_t addr = GENERATE(0x0000, 0xFFFF, // memory boundary
-                                         0x00FF, 0x0100, // page boundary crossing
-                                         0x0001, 0x0010, 0x0100, 0x1000,
-                                         0x000F, 0x00F0, 0x0F00, 0xF000);
-            
-            const addr_t addr_to = GENERATE(0x0000, 0xFFFF, // memory boundary
-                                            0x00FF, 0x0100, // page boundary crossing
-                                            0x0001, 0x0010, 0x0100, 0x1000,
-                                            0x000F, 0x00F0, 0x0F00, 0xF000);
-            // clang-format on
+            const addr_t addr = GENERATE_ADDR();
+            const addr_t addr_to = GENERATE_ADDR();
 
             state.registers.pc = addr;
             set_operand_addr<AddrModeT>(state, addr_to);
@@ -256,12 +255,7 @@ struct ld_fixture : fixture
     {
         DYNAMIC_SECTION(to_string_view(AddrModeT))
         {
-            // clang-format off
-            const addr_t addr = GENERATE(0x0000, 0xFFFF, // memory boundary
-                                         0x00FF, 0x0100, // page boundary crossing
-                                         0x0001, 0x0010, 0x0100, 0x1000,
-                                         0x000F, 0x00F0, 0x0F00, 0xF000);
-            // clang-format on
+            const addr_t addr = GENERATE_ADDR();
 
             SECTION("load a zero")
             {
