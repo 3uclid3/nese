@@ -215,15 +215,27 @@ TEST_CASE_METHOD(in_fixture, "iny", "[cpu][instruction]")
 struct jmp_fixture : fixture
 {
     template<addr_mode AddrModeT>
-    void test_instruction(const char* name, addr_t addr, addr_t jmp_to)
+    void test_instruction()
     {
-        SECTION(name)
+        DYNAMIC_SECTION(to_string_view(AddrModeT))
         {
+            // clang-format off
+            const addr_t addr = GENERATE(0x0000, 0xFFFF, // memory boundary
+                                         0x00FF, 0x0100, // page boundary crossing
+                                         0x0001, 0x0010, 0x0100, 0x1000,
+                                         0x000F, 0x00F0, 0x0F00, 0xF000);
+            
+            const addr_t addr_to = GENERATE(0x0000, 0xFFFF, // memory boundary
+                                            0x00FF, 0x0100, // page boundary crossing
+                                            0x0001, 0x0010, 0x0100, 0x1000,
+                                            0x000F, 0x00F0, 0x0F00, 0xF000);
+            // clang-format on
+
             state.registers.pc = addr;
-            set_operand_addr<AddrModeT>(state, jmp_to);
+            set_operand_addr<AddrModeT>(state, addr_to);
 
             state_mock expected_state = state;
-            expected_state.registers.pc = jmp_to;
+            expected_state.registers.pc = addr_to;
 
             execute_jmp<AddrModeT>(state);
 
@@ -234,21 +246,7 @@ struct jmp_fixture : fixture
 
 TEST_CASE_METHOD(jmp_fixture, "jmp", "[cpu][instruction]")
 {
-    SECTION("absolute")
-    {
-        test_instruction<addr_mode::absolute>("pc = 0x0000 to 0xFFFF", 0x0000, 0xFFFF);
-        test_instruction<addr_mode::absolute>("pc = 0xFFFF to 0x0000", 0xFFFF, 0x0000);
-
-        test_instruction<addr_mode::absolute>("pc = 0x0001 to 0xDEAD", 0x0001, 0xDEAD);
-        test_instruction<addr_mode::absolute>("pc = 0x0010 to 0xDEAD", 0x0010, 0xDEAD);
-        test_instruction<addr_mode::absolute>("pc = 0x0100 to 0xDEAD", 0x0100, 0xDEAD);
-        test_instruction<addr_mode::absolute>("pc = 0x1000 to 0xDEAD", 0x1000, 0xDEAD);
-
-        test_instruction<addr_mode::absolute>("pc = 0x000F to 0xDEAD", 0x000F, 0xDEAD);
-        test_instruction<addr_mode::absolute>("pc = 0x00F0 to 0xDEAD", 0x00F0, 0xDEAD);
-        test_instruction<addr_mode::absolute>("pc = 0x0F00 to 0xDEAD", 0x0F00, 0xDEAD);
-        test_instruction<addr_mode::absolute>("pc = 0xF000 to 0xDEAD", 0xF000, 0xDEAD);
-    }
+    test_instruction<addr_mode::absolute>();
 }
 
 struct ld_fixture : fixture
@@ -259,27 +257,11 @@ struct ld_fixture : fixture
         DYNAMIC_SECTION(to_string_view(AddrModeT))
         {
             // clang-format off
-            const addr_t addr = GENERATE(0x0000, 0xFFFF,
+            const addr_t addr = GENERATE(0x0000, 0xFFFF, // memory boundary
+                                         0x00FF, 0x0100, // page boundary crossing
                                          0x0001, 0x0010, 0x0100, 0x1000,
                                          0x000F, 0x00F0, 0x0F00, 0xF000);
             // clang-format on
-
-            SECTION("load a negative")
-            {
-                state.registers.pc = addr;
-                set_operand<AddrModeT>(state, minus_one);
-
-                state_mock expected_state = state;
-                set_register(expected_state.registers, minus_one);
-
-                expected_state.registers.pc = addr + get_addr_mode_operand_byte_count(AddrModeT);
-                expected_state.registers.set_flag(status_flag::zero, false);
-                expected_state.registers.set_flag(status_flag::negative, true);
-
-                execute(state);
-
-                check_state(expected_state);
-            }
 
             SECTION("load a zero")
             {
@@ -297,13 +279,46 @@ struct ld_fixture : fixture
                 check_state(expected_state);
             }
 
-            SECTION("load a positive")
+            SECTION("load a negative")
             {
+                const byte_t value = GENERATE(
+                    0x80, // minimum
+                    0x81,
+                    0xC0,
+                    0xFE,
+                    0xFF // maximum
+                );
+
                 state.registers.pc = addr;
-                set_operand<AddrModeT>(state, 1);
+                set_operand<AddrModeT>(state, value);
 
                 state_mock expected_state = state;
-                set_register(expected_state.registers, 1);
+                set_register(expected_state.registers, value);
+
+                expected_state.registers.pc = addr + get_addr_mode_operand_byte_count(AddrModeT);
+                expected_state.registers.set_flag(status_flag::zero, false);
+                expected_state.registers.set_flag(status_flag::negative, true);
+
+                execute(state);
+
+                check_state(expected_state);
+            }
+
+            SECTION("load a positive")
+            {
+                const byte_t value = GENERATE(
+                    0x01, // minimum
+                    0x10, // Commonly used value (power of two)
+                    0x40,
+                    0x7E,
+                    0x7F // maximum
+                );
+
+                state.registers.pc = addr;
+                set_operand<AddrModeT>(state, value);
+
+                state_mock expected_state = state;
+                set_register(expected_state.registers, value);
                 expected_state.registers.pc = addr + get_addr_mode_operand_byte_count(AddrModeT);
                 expected_state.registers.set_flag(status_flag::zero, false);
                 expected_state.registers.set_flag(status_flag::negative, false);
