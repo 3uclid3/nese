@@ -31,7 +31,7 @@ void mapper::set_byte(addr_t addr, byte_t value)
     {
         // TODO IO reg
         // NESE_ASSERT(false);
-        return;
+        // return;
     }
 
     _data[addr] = value;
