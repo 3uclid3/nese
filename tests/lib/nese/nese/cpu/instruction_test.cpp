@@ -289,8 +289,8 @@ TEST_CASE_METHOD(in_fixture, "iny", "[cpu][instruction]")
 
 struct jmp_fixture : fixture
 {
-    template<addr_mode AddrModeT>
-    void test_instruction()
+    template<addr_mode AddrModeT, typename ExecuteFunctorT>
+    void test_instruction(const ExecuteFunctorT& execute)
     {
         DYNAMIC_SECTION(to_string_view(AddrModeT))
         {
@@ -303,7 +303,7 @@ struct jmp_fixture : fixture
             state_mock expected_state = state;
             expected_state.registers.pc = addr_to;
 
-            execute_jmp<AddrModeT>(state);
+            execute(state);
 
             check_state(expected_state);
         }
@@ -312,7 +312,7 @@ struct jmp_fixture : fixture
 
 TEST_CASE_METHOD(jmp_fixture, "jmp", "[cpu][instruction]")
 {
-    test_instruction<addr_mode::absolute>();
+    test_instruction<addr_mode::absolute>(execute_jmp<addr_mode::absolute>);
 }
 
 struct ld_fixture : fixture
