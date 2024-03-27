@@ -6,16 +6,47 @@ namespace nese::cpu {
 
 struct state_mock : state
 {
-    state_mock()
+    constexpr state_mock()
         : state{.memory = owned_memory}
     {
-        owned_memory.set_zero();
     }
 
-    explicit state_mock(cpu::registers new_registers)
+    constexpr explicit state_mock(cpu::registers new_registers)
         : state_mock()
     {
         registers = new_registers;
+    }
+
+    constexpr state_mock(state_mock&& other)
+        : state_mock()
+    {
+        registers = other.registers;
+        owned_memory = other.owned_memory;
+        cycle = other.cycle;
+    }
+
+    constexpr state_mock(const state_mock& other)
+        : state_mock()
+    {
+        registers = other.registers;
+        owned_memory = other.owned_memory;
+        cycle = other.cycle;
+    }
+
+    constexpr state_mock& operator=(state_mock&& other)
+    {
+        registers = other.registers;
+        owned_memory = other.owned_memory;
+        cycle = other.cycle;
+        return *this;
+    }
+
+    constexpr state_mock& operator=(const state_mock& other)
+    {
+        registers = other.registers;
+        owned_memory = other.owned_memory;
+        cycle = other.cycle;
+        return *this;
     }
 
     memory::mapper owned_memory{};
