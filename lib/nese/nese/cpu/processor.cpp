@@ -221,19 +221,6 @@ struct processor::instruction_table
 
         SET_ADDR_CALLBACK(table, stx, 0x86, addr_mode::zero_page);
         SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
-        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
-        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
-        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
-        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
-        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
-        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
-        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
-        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
-        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
-        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
-        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
-        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
-        SET_ADDR_CALLBACK(table, stx, 0x96, addr_mode::zero_page_y);
         SET_ADDR_CALLBACK(table, stx, 0x8e, addr_mode::absolute);
 
         SET_ADDR_CALLBACK(table, sty, 0x84, addr_mode::zero_page);
