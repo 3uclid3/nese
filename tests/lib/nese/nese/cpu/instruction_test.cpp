@@ -789,22 +789,23 @@ struct st_fixture : fixture
     }
 
     template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_instruction_zero_page(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    void test_zero_page(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
     {
         const addr_t pc = GENERATE_ADDR();
-        const byte_t value_addr = GENERATE_BYTE_ADDR();
-        const byte_t value = GENERATE_BYTE();
+        const byte_t val_addr = GENERATE_BYTE_ADDR();
+
+        const byte_t val = GENERATE(0x00, 0xC0, 0xFF);
 
         SECTION("zero_page")
         {
-            INFO(fmt::format("pc = 0x{:04X}; value addr = 0x{:02X}); value = 0x{:02X}", pc, value_addr, value));
+            INFO(fmt::format("pc = 0x{:04X}; val addr = 0x{:02X}); value = 0x{:02X}", pc, val_addr, val));
 
             state.registers.pc = pc;
-            state.owned_memory.set_byte(pc, value_addr);
-            set_register(state.registers, value);
+            state.owned_memory.set_byte(pc, val_addr);
+            set_register(state.registers, val);
 
             state_mock expected_state = state;
-            expected_state.owned_memory.set_byte(value_addr, value);
+            expected_state.owned_memory.set_byte(val_addr, val);
             expected_state.registers.pc = pc + 1;
 
             execute(state);
@@ -812,16 +813,49 @@ struct st_fixture : fixture
             check_state(expected_state);
         }
     }
+
+    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
+    void test_zero_page_x(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    {
+        const addr_t pc = GENERATE_ADDR();
+        const byte_t val_addr = GENERATE_BYTE_ADDR();
+        const byte_t x = GENERATE_BYTE_OFFSET();
+        const byte_t val_addr_x = val_addr + x & 0xff;
+
+        const byte_t val = GENERATE(0x00, 0xC0, 0xFF);
+
+        if (static_cast<byte_t>(pc) != val_addr_x)
+        {
+            SECTION("zero_page")
+            {
+                INFO(fmt::format("pc = 0x{:04X}; value addr = 0x{:02X}); x = 0x{:02X}; value = 0x{:02X}", pc, val_addr, x, val));
+
+                state.registers.pc = pc;
+                state.registers.x = x;
+                state.owned_memory.set_byte(pc, val_addr);
+                set_register(state.registers, val);
+
+                state_mock expected_state = state;
+                expected_state.owned_memory.set_byte(val_addr_x, val);
+                expected_state.registers.pc = pc + 1;
+
+                execute(state);
+
+                check_state(expected_state);
+            }
+        }
+    }
 };
 
 TEST_CASE_METHOD(st_fixture, "stx", "[cpu][instruction]")
 {
-    test_instruction_zero_page(execute_stx<addr_mode::zero_page>, set_register_x);
+    test_zero_page(execute_stx<addr_mode::zero_page>, set_register_x);
 }
 
 TEST_CASE_METHOD(st_fixture, "sty", "[cpu][instruction]")
 {
-    test_instruction_zero_page(execute_sty<addr_mode::zero_page>, set_register_y);
+    test_zero_page(execute_sty<addr_mode::zero_page>, set_register_y);
+    test_zero_page_x(execute_sty<addr_mode::zero_page_x>, set_register_y);
 }
 
 } // namespace nese::cpu::instruction
