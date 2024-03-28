@@ -12,11 +12,7 @@
       "hidden": true,
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/out/build/${presetName}",
-      "installDir": "${sourceDir}/out/install/${presetName}",
-      "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++"
-      }
+      "installDir": "${sourceDir}/out/install/${presetName}"
     },
 
     {
@@ -38,6 +34,8 @@
         "strategy": "external"
       },
       "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-cl",
+        "CMAKE_CXX_COMPILER": "clang-cl",
         "ENABLE_CPPCHECK_DEFAULT": "FALSE",
         "ENABLE_CLANG_TIDY_DEFAULT": "FALSE"
       }
@@ -53,6 +51,10 @@
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
       },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      },
       "vendor": {
         "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
           "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
@@ -67,11 +69,6 @@
       "inherits": "windows-common",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
-      },
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "intelliSenseMode": "windows-clang-x64"
-        }
       }
     },
     {
@@ -81,11 +78,6 @@
       "inherits": "windows-common",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
-      },
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "intelliSenseMode": "windows-clang-x64"
-        }
       }
     },
 
