@@ -1,12 +1,22 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-  "name": "myproject",
+  "name": "nese",
   "version-string": "0.1.0",
   "builtin-baseline": "10e052511428d6b0c7fcc63a139e8024bb146032",
   "dependencies": [
     {
-      "name": "sfml",
-      "version>=": "2.6.1"
+      "name": "glad",
+      "version>=": "0.1.36",
+      "features": [ "gl-api-latest" ]
+    },
+    {
+      "name": "glfw3",
+      "version>=": "3.3.9"
+    },
+    {
+      "name": "imgui",
+      "version>=": "1.90",
+      "features": [ "docking-experimental", "glfw-binding", "opengl3-binding" ]
     },
     {
       "name": "spdlog",
@@ -15,10 +25,6 @@
     {
       "name": "fmt",
       "version>=": "10.1.1"
-    },
-    {
-      "name": "catch2",
-      "version>=": "3.5.2"
     }
   ],
   "features": {
