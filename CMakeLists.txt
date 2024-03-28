@@ -8,7 +8,7 @@ include(FetchContent)
 cmake_policy(SET CMP0135 NEW)
 
 # Add project_options from https://github.com/aminya/project_options
-set(PROJECT_OPTIONS_VERSION "v0.37.0")
+set(PROJECT_OPTIONS_VERSION "v0.35.1")
 FetchContent_Declare(_project_options URL https://github.com/aminya/project_options/archive/refs/tags/${PROJECT_OPTIONS_VERSION}.zip)
 FetchContent_MakeAvailable(_project_options)
 include(${_project_options_SOURCE_DIR}/Index.cmake)
