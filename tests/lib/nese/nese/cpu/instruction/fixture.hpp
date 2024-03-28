@@ -94,7 +94,7 @@ struct fixture
         r.y = y;
     }
 
-    state_mock state{default_state_mock};
+    inline static state_mock state{default_state_mock};
 };
 
 } // namespace nese::cpu::instruction
