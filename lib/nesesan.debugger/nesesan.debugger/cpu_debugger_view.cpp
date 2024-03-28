@@ -183,7 +183,7 @@ void cpu_debugger_view::update(f32_t dt, bool&)
             ImGui::TableNextColumn();
             imgui::text("{:02X}", opcode);
 
-            const size_t operand_count = cpu::instruction::get_opcode_operand_count(opcode);
+            const size_t operand_count = cpu::instruction::get_opcode_operand_byte_count(opcode);
 
             // instruction byte 1 (operand)
             ImGui::TableNextColumn();
