@@ -13,21 +13,6 @@
                      0x7FFE, 0xFFFE, \
                      0x00FF, 0x0100)
 
-#define GENERATE_ADDR_FOR_WORD() \
-            GENERATE(0x0000, \
-                     0x00FE, 0x01FE, \
-                     0x7FFE, 0xFFFE, \
-                     0x00FF, 0x0100)
-
-#define GENERATE_BYTE_ADDR() \
-            GENERATE(0x00, 0xFF, \
-                     0x01, 0xFE)
-
-#define GENERATE_BYTE_OFFSET() \
-            GENERATE(0x00, \
-                     0x01, 0x02, \
-                     0xFD, 0xFE)
-
 #define GENERATE_NEGATIVE_BYTE() \
             GENERATE(0x80, \
                      0x81, \
@@ -42,16 +27,66 @@
                      0x7E, \
                      0x7F)
 
-#define GENERATE_BYTE() \
-            GENERATE(0x00, \
-                     0x01, \
-                     0x10, \
-                     0x7E, \
-                     0x7F, \
-                     0x80, \
-                     0x81, \
-                     0xFE, \
-                     0xFF)
+#define GENERATE_ADDR_FOR_ZERO_PAGE() \
+     GENERATE(table<addr_t, byte_t>({ \
+                /* Simple zero-page tests */ \
+                {0x0200, 0x00}, /* PC in a common code area, val_addr at zero page start */ \
+                {0x0200, 0xFF}, /* PC in a common code area, val_addr at zero page end */ \
+                /* Boundary conditions */ \
+                {0x01FF, 0x00}, /* PC just before zero page, val_addr at zero page start */ \
+                {0x0200, 0x01}, /* PC in a common code area, val_addr just into zero page */ \
+                {0x01FF, 0xFF}, /* PC just before zero page, val_addr at zero page end */ \
+                {0xF000, 0x80}, /* Higher PC value, val_addr in middle of zero page */ \
+                /* Testing PC at various points */ \
+                {0x0000, 0x02}, /* PC at start of memory, testing very early execution */ \
+                {0x8000, 0x04}, /* PC in a typical ROM area, val_addr early in zero page */ \
+                {0xFFFC, 0xFE}, /* PC at the very end of memory space */ \
+                /* Varied val_addr values to test LDA, LDX, LDY behavior */ \
+                {0x0300, 0x10}, /* Common code area, testing nonzero page value */ \
+                {0x0400, 0x20}  /* Another common code area, testing nonzero page value */ \
+            }))
+
+
+#define GENERATE_ADDR_AND_OFFSET_FOR_ZERO_PAGE() \
+     GENERATE(table<addr_t, byte_t, byte_t>({ \
+                /* Offset within zero-page without wrap */ \
+                {0x0200, 0x00, 0x01}, \
+                {0x0200, 0x10, 0x0F}, \
+                /* Offset causing wrap-around */ \
+                {0x0200, 0xFE, 0x01}, \
+                {0x0200, 0xFD, 0x03}, \
+                /* Varied PC values with offset */ \
+                {0x0000, 0x02, 0x01}, \
+                {0x8000, 0x03, 0x02}, \
+                {0xFFFC, 0xFD, 0x02} \
+            }))
+
+#define GENERATE_ADDR_FOR_ABSOLUTE() \
+     GENERATE(table<addr_t, addr_t>({ \
+                /* Absolute addressing tests in different memory regions */ \
+                {0x0200, 0x0100}, /* PC in common code area, absolute address in lower memory */ \
+                {0x0200, 0x8000}, /* PC in common code area, absolute address in upper memory */ \
+                /* Boundary conditions */ \
+                {0x01FF, 0x0000}, /* PC just before zero page, testing absolute address at memory start */ \
+                {0x0200, 0xFFFF}, /* PC in common code area, testing absolute address at memory end */ \
+                {0xF000, 0x4000}, /* Higher PC value, absolute address in the middle of memory */ \
+                /* Testing PC at various points */ \
+                {0x0000, 0x0200}, /* PC at start of memory, absolute address in common code area */ \
+                {0x8000, 0x0300}, /* PC in a typical ROM area, absolute address in common code area */ \
+                {0xFFFC, 0x0400}  /* PC at the very end of memory space, absolute address in common code area */ \
+            }))
+
+#define GENERATE_ADDR_AND_OFFSET_FOR_ABSOLUTE() \
+     GENERATE(table<addr_t, addr_t, byte_t>({ \
+                /* Conceptual tests with "offsets" for absolute addressing */ \
+                {0x0200, 0x0100, 0x01}, /* Common code area, lower memory with a byte offset */ \
+                {0x0200, 0x8000, 0x10}, /* Common code area, upper memory with a byte offset */ \
+                /* Varied PC values with "offsets" */ \
+                {0x0000, 0x0200, 0x20}, /* PC at start, absolute address in common code area with a byte offset */ \
+                {0x8000, 0x0300, 0x30}, /* PC in ROM area, absolute address in common code area with a byte offset */ \
+                {0xFFFC, 0x0400, 0x40}  /* PC at end, absolute address in common code area with a byte offset */ \
+            }))
+
 // clang-format on
 
 namespace nese::cpu::instruction {
@@ -245,8 +280,7 @@ struct jmp_fixture : fixture
     {
         SECTION("absolute")
         {
-            const addr_t addr = GENERATE_ADDR_FOR_WORD();
-            const addr_t addr_to = GENERATE_ADDR();
+            const auto [addr, addr_to] = GENERATE_ADDR_FOR_ABSOLUTE();
 
             state.registers.pc = addr;
             state.owned_memory.set_word(addr, addr_to);
@@ -341,63 +375,59 @@ struct ld_fixture : fixture
     {
         SECTION("zero_page")
         {
-            const addr_t pc = GENERATE_ADDR();
-            const byte_t val_addr = GENERATE_BYTE_ADDR();
+            const auto [pc, val_addr] = GENERATE_ADDR_FOR_ZERO_PAGE();
 
-            if (static_cast<byte_t>(pc) != val_addr)
+            state.registers.pc = pc;
+            state.owned_memory.set_byte(pc, val_addr);
+
+            SECTION("load zero")
             {
-                state.registers.pc = pc;
-                state.owned_memory.set_byte(pc, val_addr);
+                state.owned_memory.set_byte(val_addr, 0);
 
-                SECTION("load zero")
-                {
-                    state.owned_memory.set_byte(val_addr, 0);
+                state_mock expected_state = state;
+                set_register(expected_state.registers, 0);
+                expected_state.registers.pc = pc + 1;
+                expected_state.registers.set_flag(status_flag::zero, true);
+                expected_state.registers.set_flag(status_flag::negative, false);
 
-                    state_mock expected_state = state;
-                    set_register(expected_state.registers, 0);
-                    expected_state.registers.pc = pc + 1;
-                    expected_state.registers.set_flag(status_flag::zero, true);
-                    expected_state.registers.set_flag(status_flag::negative, false);
+                execute(state);
 
-                    execute(state);
+                check_state(expected_state);
+            }
 
-                    check_state(expected_state);
-                }
+            SECTION("load a negative")
+            {
+                const byte_t value = GENERATE_NEGATIVE_BYTE();
 
-                SECTION("load a negative")
-                {
-                    const byte_t value = GENERATE_NEGATIVE_BYTE();
+                state.owned_memory.set_byte(val_addr, value);
 
-                    state.owned_memory.set_byte(val_addr, value);
+                state_mock expected_state = state;
+                set_register(expected_state.registers, value);
 
-                    state_mock expected_state = state;
-                    set_register(expected_state.registers, value);
+                expected_state.registers.pc = pc + 1;
+                expected_state.registers.set_flag(status_flag::zero, false);
+                expected_state.registers.set_flag(status_flag::negative, true);
 
-                    expected_state.registers.pc = pc + 1;
-                    expected_state.registers.set_flag(status_flag::zero, false);
-                    expected_state.registers.set_flag(status_flag::negative, true);
+                execute(state);
 
-                    execute(state);
+                check_state(expected_state);
+            }
 
-                    check_state(expected_state);
-                }
+            SECTION("load a positive")
+            {
+                const byte_t value = GENERATE_POSITIVE_BYTE();
 
-                SECTION("load a positive")
-                {
-                    const byte_t value = GENERATE_POSITIVE_BYTE();
+                state.owned_memory.set_byte(val_addr, value);
 
-                    state.owned_memory.set_byte(val_addr, value);
+                state_mock expected_state = state;
+                set_register(expected_state.registers, value);
+                expected_state.registers.pc = pc + 1;
+                expected_state.registers.set_flag(status_flag::zero, false);
+                expected_state.registers.set_flag(status_flag::negative, false);
 
-                    state_mock expected_state = state;
-                    set_register(expected_state.registers, value);
-                    expected_state.registers.pc = pc + 1;
-                    expected_state.registers.set_flag(status_flag::zero, false);
-                    expected_state.registers.set_flag(status_flag::negative, false);
+                execute(state);
 
-                    execute(state);
-
-                    check_state(expected_state);
-                }
+                check_state(expected_state);
             }
         }
     }
@@ -407,66 +437,62 @@ struct ld_fixture : fixture
     {
         SECTION("zero_page_x")
         {
-            const addr_t pc = GENERATE_ADDR();
-            const byte_t val_addr = GENERATE_BYTE_ADDR();
-            const byte_t x = GENERATE_BYTE_OFFSET();
+            const auto [pc, val_addr, x] = GENERATE_ADDR_AND_OFFSET_FOR_ZERO_PAGE();
+
             const byte_t val_addr_x = val_addr + x & 0xff;
 
-            if (static_cast<byte_t>(pc) != val_addr_x)
+            state.registers.pc = pc;
+            state.registers.x = x;
+            state.owned_memory.set_byte(pc, val_addr);
+
+            SECTION("load zero")
             {
-                state.registers.pc = pc;
-                state.registers.x = x;
-                state.owned_memory.set_byte(pc, val_addr);
+                state.owned_memory.set_byte(val_addr_x, 0);
 
-                SECTION("load zero")
-                {
-                    state.owned_memory.set_byte(val_addr_x, 0);
+                state_mock expected_state = state;
+                set_register(expected_state.registers, 0);
+                expected_state.registers.pc = pc + 1;
+                expected_state.registers.set_flag(status_flag::zero, true);
+                expected_state.registers.set_flag(status_flag::negative, false);
 
-                    state_mock expected_state = state;
-                    set_register(expected_state.registers, 0);
-                    expected_state.registers.pc = pc + 1;
-                    expected_state.registers.set_flag(status_flag::zero, true);
-                    expected_state.registers.set_flag(status_flag::negative, false);
+                execute(state);
 
-                    execute(state);
+                check_state(expected_state);
+            }
 
-                    check_state(expected_state);
-                }
+            SECTION("load a negative")
+            {
+                const byte_t value = GENERATE_NEGATIVE_BYTE();
 
-                SECTION("load a negative")
-                {
-                    const byte_t value = GENERATE_NEGATIVE_BYTE();
+                state.owned_memory.set_byte(val_addr_x, value);
 
-                    state.owned_memory.set_byte(val_addr_x, value);
+                state_mock expected_state = state;
+                set_register(expected_state.registers, value);
 
-                    state_mock expected_state = state;
-                    set_register(expected_state.registers, value);
+                expected_state.registers.pc = pc + 1;
+                expected_state.registers.set_flag(status_flag::zero, false);
+                expected_state.registers.set_flag(status_flag::negative, true);
 
-                    expected_state.registers.pc = pc + 1;
-                    expected_state.registers.set_flag(status_flag::zero, false);
-                    expected_state.registers.set_flag(status_flag::negative, true);
+                execute(state);
 
-                    execute(state);
+                check_state(expected_state);
+            }
 
-                    check_state(expected_state);
-                }
+            SECTION("load a positive")
+            {
+                const byte_t value = GENERATE_POSITIVE_BYTE();
 
-                SECTION("load a positive")
-                {
-                    const byte_t value = GENERATE_POSITIVE_BYTE();
+                state.owned_memory.set_byte(val_addr_x, value);
 
-                    state.owned_memory.set_byte(val_addr_x, value);
+                state_mock expected_state = state;
+                set_register(expected_state.registers, value);
+                expected_state.registers.pc = pc + 1;
+                expected_state.registers.set_flag(status_flag::zero, false);
+                expected_state.registers.set_flag(status_flag::negative, false);
 
-                    state_mock expected_state = state;
-                    set_register(expected_state.registers, value);
-                    expected_state.registers.pc = pc + 1;
-                    expected_state.registers.set_flag(status_flag::zero, false);
-                    expected_state.registers.set_flag(status_flag::negative, false);
+                execute(state);
 
-                    execute(state);
-
-                    check_state(expected_state);
-                }
+                check_state(expected_state);
             }
         }
     }
@@ -476,66 +502,62 @@ struct ld_fixture : fixture
     {
         SECTION("zero_page_y")
         {
-            const addr_t pc = GENERATE_ADDR();
-            const byte_t val_addr = GENERATE_BYTE_ADDR();
-            const byte_t y = GENERATE_BYTE_OFFSET();
+            const auto [pc, val_addr, y] = GENERATE_ADDR_AND_OFFSET_FOR_ZERO_PAGE();
+
             const byte_t val_addr_y = val_addr + y & 0xff;
 
-            if (static_cast<byte_t>(pc) != val_addr_y)
+            state.registers.pc = pc;
+            state.registers.y = y;
+            state.owned_memory.set_byte(pc, val_addr);
+
+            SECTION("load zero")
             {
-                state.registers.pc = pc;
-                state.registers.y = y;
-                state.owned_memory.set_byte(pc, val_addr);
+                state.owned_memory.set_byte(val_addr_y, 0);
 
-                SECTION("load zero")
-                {
-                    state.owned_memory.set_byte(val_addr_y, 0);
+                state_mock expected_state = state;
+                set_register(expected_state.registers, 0);
+                expected_state.registers.pc = pc + 1;
+                expected_state.registers.set_flag(status_flag::zero, true);
+                expected_state.registers.set_flag(status_flag::negative, false);
 
-                    state_mock expected_state = state;
-                    set_register(expected_state.registers, 0);
-                    expected_state.registers.pc = pc + 1;
-                    expected_state.registers.set_flag(status_flag::zero, true);
-                    expected_state.registers.set_flag(status_flag::negative, false);
+                execute(state);
 
-                    execute(state);
+                check_state(expected_state);
+            }
 
-                    check_state(expected_state);
-                }
+            SECTION("load a negative")
+            {
+                const byte_t value = GENERATE_NEGATIVE_BYTE();
 
-                SECTION("load a negative")
-                {
-                    const byte_t value = GENERATE_NEGATIVE_BYTE();
+                state.owned_memory.set_byte(val_addr_y, value);
 
-                    state.owned_memory.set_byte(val_addr_y, value);
+                state_mock expected_state = state;
+                set_register(expected_state.registers, value);
 
-                    state_mock expected_state = state;
-                    set_register(expected_state.registers, value);
+                expected_state.registers.pc = pc + 1;
+                expected_state.registers.set_flag(status_flag::zero, false);
+                expected_state.registers.set_flag(status_flag::negative, true);
 
-                    expected_state.registers.pc = pc + 1;
-                    expected_state.registers.set_flag(status_flag::zero, false);
-                    expected_state.registers.set_flag(status_flag::negative, true);
+                execute(state);
 
-                    execute(state);
+                check_state(expected_state);
+            }
 
-                    check_state(expected_state);
-                }
+            SECTION("load a positive")
+            {
+                const byte_t value = GENERATE_POSITIVE_BYTE();
 
-                SECTION("load a positive")
-                {
-                    const byte_t value = GENERATE_POSITIVE_BYTE();
+                state.owned_memory.set_byte(val_addr_y, value);
 
-                    state.owned_memory.set_byte(val_addr_y, value);
+                state_mock expected_state = state;
+                set_register(expected_state.registers, value);
+                expected_state.registers.pc = pc + 1;
+                expected_state.registers.set_flag(status_flag::zero, false);
+                expected_state.registers.set_flag(status_flag::negative, false);
 
-                    state_mock expected_state = state;
-                    set_register(expected_state.registers, value);
-                    expected_state.registers.pc = pc + 1;
-                    expected_state.registers.set_flag(status_flag::zero, false);
-                    expected_state.registers.set_flag(status_flag::negative, false);
+                execute(state);
 
-                    execute(state);
-
-                    check_state(expected_state);
-                }
+                check_state(expected_state);
             }
         }
     }
@@ -545,65 +567,61 @@ struct ld_fixture : fixture
     {
         SECTION("absolute")
         {
-            const addr_t pc = GENERATE_ADDR_FOR_WORD();
-            const addr_t val_addr = GENERATE_ADDR();
+            const auto [pc, val_addr] = GENERATE_ADDR_FOR_ABSOLUTE();
 
-            if (std::abs(pc - val_addr) > 1)
+            INFO(fmt::format("pc = 0x{:04X} val_addr = 0x{:04X}", pc, val_addr));
+
+            state.registers.pc = pc;
+            state.owned_memory.set_word(pc, val_addr);
+
+            SECTION("load zero")
             {
-                INFO(fmt::format("pc = 0x{:04X} val_addr = 0x{:04X}", pc, val_addr));
+                state.owned_memory.set_byte(val_addr, 0);
 
-                state.registers.pc = pc;
-                state.owned_memory.set_word(pc, val_addr);
+                state_mock expected_state = state;
+                set_register(expected_state.registers, 0);
+                expected_state.registers.pc = pc + 2;
+                expected_state.registers.set_flag(status_flag::zero, true);
+                expected_state.registers.set_flag(status_flag::negative, false);
 
-                SECTION("load zero")
-                {
-                    state.owned_memory.set_byte(val_addr, 0);
+                execute(state);
 
-                    state_mock expected_state = state;
-                    set_register(expected_state.registers, 0);
-                    expected_state.registers.pc = pc + 2;
-                    expected_state.registers.set_flag(status_flag::zero, true);
-                    expected_state.registers.set_flag(status_flag::negative, false);
+                check_state(expected_state);
+            }
 
-                    execute(state);
+            SECTION("load a negative")
+            {
+                const byte_t value = GENERATE_NEGATIVE_BYTE();
 
-                    check_state(expected_state);
-                }
+                state.owned_memory.set_byte(val_addr, value);
 
-                SECTION("load a negative")
-                {
-                    const byte_t value = GENERATE_NEGATIVE_BYTE();
+                state_mock expected_state = state;
+                set_register(expected_state.registers, value);
 
-                    state.owned_memory.set_byte(val_addr, value);
+                expected_state.registers.pc = pc + 2;
+                expected_state.registers.set_flag(status_flag::zero, false);
+                expected_state.registers.set_flag(status_flag::negative, true);
 
-                    state_mock expected_state = state;
-                    set_register(expected_state.registers, value);
+                execute(state);
 
-                    expected_state.registers.pc = pc + 2;
-                    expected_state.registers.set_flag(status_flag::zero, false);
-                    expected_state.registers.set_flag(status_flag::negative, true);
+                check_state(expected_state);
+            }
 
-                    execute(state);
+            SECTION("load a positive")
+            {
+                const byte_t value = GENERATE_POSITIVE_BYTE();
 
-                    check_state(expected_state);
-                }
+                state.owned_memory.set_byte(val_addr, value);
 
-                SECTION("load a positive")
-                {
-                    const byte_t value = GENERATE_POSITIVE_BYTE();
+                state_mock expected_state = state;
+                set_register(expected_state.registers, value);
+                expected_state.registers.pc = pc + 2;
+                expected_state.registers.set_flag(status_flag::zero, false);
+                expected_state.registers.set_flag(status_flag::negative, false);
 
-                    state.owned_memory.set_byte(val_addr, value);
+                execute(state);
 
-                    state_mock expected_state = state;
-                    set_register(expected_state.registers, value);
-                    expected_state.registers.pc = pc + 2;
-                    expected_state.registers.set_flag(status_flag::zero, false);
-                    expected_state.registers.set_flag(status_flag::negative, false);
-
-                    execute(state);
-
-                    check_state(expected_state);
-                }
+                check_state(expected_state);
             }
         }
     }
@@ -613,9 +631,7 @@ struct ld_fixture : fixture
     {
         SECTION("absolute_x")
         {
-            const addr_t pc = GENERATE_ADDR_FOR_WORD();
-            const addr_t val_addr = GENERATE_ADDR_FOR_WORD();
-            const byte_t x = GENERATE_BYTE_OFFSET();
+            const auto [pc, val_addr, x] = GENERATE_ADDR_AND_OFFSET_FOR_ABSOLUTE();
             const addr_t val_addr_x = val_addr + x;
 
             if (std::abs(pc - val_addr_x) > 1)
@@ -684,9 +700,7 @@ struct ld_fixture : fixture
     {
         SECTION("absolute_y")
         {
-            const addr_t pc = GENERATE_ADDR_FOR_WORD();
-            const addr_t val_addr = GENERATE_ADDR_FOR_WORD();
-            const byte_t y = GENERATE_BYTE_OFFSET();
+            const auto [pc, val_addr, y] = GENERATE_ADDR_AND_OFFSET_FOR_ABSOLUTE();
             const addr_t val_addr_y = val_addr + y;
 
             if (std::abs(pc - val_addr_y) > 1)
@@ -791,8 +805,7 @@ struct st_fixture : fixture
     template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
     void test_zero_page(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
     {
-        const addr_t pc = GENERATE_ADDR();
-        const byte_t val_addr = GENERATE_BYTE_ADDR();
+        auto [pc, val_addr] = GENERATE_ADDR_FOR_ZERO_PAGE();
 
         const byte_t val = GENERATE(0x00, 0xC0, 0xFF);
 
@@ -817,9 +830,7 @@ struct st_fixture : fixture
     template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
     void test_zero_page_x(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
     {
-        const addr_t pc = GENERATE_ADDR();
-        const byte_t val_addr = GENERATE_BYTE_ADDR();
-        const byte_t x = GENERATE_BYTE_OFFSET();
+        auto [pc, val_addr, x] = GENERATE_ADDR_AND_OFFSET_FOR_ZERO_PAGE();
         const byte_t val_addr_x = val_addr + x & 0xff;
 
         const byte_t val = GENERATE(0x00, 0xC0, 0xFF);
