@@ -2,17 +2,21 @@
 
 #include <algorithm>
 #include <concepts>
-#include <nese/utility/assert.hpp>
+#include <string_view>
 
+#include <nese/utility/assert.hpp>
 #include <nesesan/menu/basic_submenu_menu_item.hpp>
 
 namespace nese::san {
-    
+
 template<typename T>
-concept basic_menu_bar_imgui_scope = requires(T a)
-{
-    { T::begin() } -> std::same_as<bool>;
-    { T::end() } -> std::same_as<void>;
+concept basic_menu_bar_imgui_scope = requires(T a) {
+    {
+        T::begin()
+    } -> std::same_as<bool>;
+    {
+        T::end()
+    } -> std::same_as<void>;
 };
 
 template<basic_menu_bar_imgui_scope ScopeT, typename... MenuItemsT>
