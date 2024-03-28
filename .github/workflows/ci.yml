@@ -3,42 +3,53 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  build:
+  build-and-test:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        build_type: [Debug, Release]
-        include:
-          - os: ubuntu-latest
-            cc: clang
-            cxx: clang++
-
-          - os: windows-latest
-            cc: clang-cl
-            cxx: clang-cl
+        os: 
+          - windows-2022
+          - ubuntu-22.04
+        
+        compiler:
+          - llvm-18.0.0
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
+     - uses: actions/checkout@v3
+  
+     - name: Cache
+       uses: actions/cache@v3
+       with:
+         key: ${{ runner.os }}-${{ matrix.compiler }}-${{ env.BUILD_TYPE }}-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('./vcpkg.json')}}
+         restore-keys: |
+            ${{ runner.os }}-${{ env.BUILD_TYPE }}-
+         path: |
+            ~/vcpkg
+            ./build/vcpkg_installed
+            ${{ env.HOME }}/.cache/vcpkg/archives
+            ${{ env.XDG_CACHE_HOME }}/vcpkg/archives
+            ${{ env.LOCALAPPDATA }}\vcpkg\archives
+            ${{ env.APPDATA }}\vcpkg\archives
 
-    - name: Set up Clang
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt update
-        sudo apt install -y clang
+     - name: Setup C++ Environment
+       uses: aminya/setup-cpp@v1
+       with: 
+         compiler: llvm-18.0.0
+         vcvarsall: ${{ contains(matrix.os, 'windows') }}
+         cmake: true
+         ninja: true
+         vcpkg: true
+         cache: true
 
-    - name: Set CC and CXX
-      env:
-        CC: ${{ matrix.cc }}
-        CXX: ${{ matrix.cxx }}
-      run: echo "CC=$CC" >> $GITHUB_ENV && echo "CXX=$CXX" >> $GITHUB_ENV
+     - name: Configure CMake
+       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
 
-    - name: Configure CMake
-      run: |
-        mkdir -p build/${{ matrix.build_type }}
-        cmake -S . -B build/${{ matrix.build_type }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+     - name: Build
+       run: cmake --build build -j4
 
-    - name: Build
-      run: cmake --build build/${{ matrix.build_type }} --config ${{ matrix.build_type }}
-
+     - name: Test and coverage
+       working-directory: ./build
+       run: |
+         ctest --build-config Debug
+        # gcovr -j 4 --delete --root ../ --print-summary --xml-pretty --xml coverage.xml . --gcov-executable gcov
