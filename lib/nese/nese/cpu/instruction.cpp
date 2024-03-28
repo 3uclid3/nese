@@ -99,6 +99,8 @@ struct table
         ADD(ldy, 0xb4, addr_mode::zero_page_x);
         ADD(ldy, 0xbc, addr_mode::absolute_x);
 
+        ADD(nop, 0xea, addr_mode::implied);
+
         ADD(stx, 0x86, addr_mode::zero_page);
         ADD(stx, 0x96, addr_mode::zero_page_y);
         ADD(stx, 0x8e, addr_mode::absolute);
@@ -420,6 +422,11 @@ void execute_ldy(state& state)
 }
 
 template<addr_mode AddrModeT>
+void execute_nop(state& state [[maybe_unused]])
+{
+}
+
+template<addr_mode AddrModeT>
 void execute_st_impl(state& state, byte_t value)
 {
     const operand_t operand = decode_operand<AddrModeT>(state);
@@ -482,6 +489,8 @@ EXPLICIT_INSTANTIATE(ldy, addr_mode::absolute_x);
 EXPLICIT_INSTANTIATE(ldy, addr_mode::immediate);
 EXPLICIT_INSTANTIATE(ldy, addr_mode::zero_page);
 EXPLICIT_INSTANTIATE(ldy, addr_mode::zero_page_x);
+
+EXPLICIT_INSTANTIATE(nop, addr_mode::implied);
 
 EXPLICIT_INSTANTIATE(stx, addr_mode::zero_page);
 EXPLICIT_INSTANTIATE(stx, addr_mode::zero_page_y);

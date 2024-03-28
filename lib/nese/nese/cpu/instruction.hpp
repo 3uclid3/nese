@@ -70,6 +70,11 @@ void execute_ldx(state& state);
 template<addr_mode AddrModeT>
 void execute_ldy(state& state);
 
+// NOP (No Operation):
+// Performs no operation and is used for timing adjustments and code alignment.
+template<addr_mode AddrModeT>
+void execute_nop(state& state);
+
 // STA (Store Accumulator):
 // Stores the value in the accumulator into a specific location in memory.
 template<addr_mode AddrModeT>
@@ -123,6 +128,8 @@ EXPLICIT_INSTANTIATION(ldy, addr_mode::absolute_x);
 EXPLICIT_INSTANTIATION(ldy, addr_mode::immediate);
 EXPLICIT_INSTANTIATION(ldy, addr_mode::zero_page);
 EXPLICIT_INSTANTIATION(ldy, addr_mode::zero_page_x);
+
+EXPLICIT_INSTANTIATION(nop, addr_mode::implied);
 
 EXPLICIT_INSTANTIATION(stx, addr_mode::zero_page);
 EXPLICIT_INSTANTIATION(stx, addr_mode::zero_page_y);
