@@ -276,7 +276,7 @@ struct ld_fixture : fixture
     }
 
     template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_instruction_immediate(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    void test_immediate(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
     {
         SECTION("immediate")
         {
@@ -337,7 +337,7 @@ struct ld_fixture : fixture
     }
 
     template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_instruction_zero_page(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    void test_zero_page(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
     {
         SECTION("zero_page")
         {
@@ -403,7 +403,7 @@ struct ld_fixture : fixture
     }
 
     template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_instruction_zero_page_x(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    void test_zero_page_x(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
     {
         SECTION("zero_page_x")
         {
@@ -472,7 +472,7 @@ struct ld_fixture : fixture
     }
 
     template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_instruction_zero_page_y(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    void test_zero_page_y(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
     {
         SECTION("zero_page_y")
         {
@@ -541,7 +541,7 @@ struct ld_fixture : fixture
     }
 
     template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_instruction_absolute(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    void test_absolute(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
     {
         SECTION("absolute")
         {
@@ -609,7 +609,7 @@ struct ld_fixture : fixture
     }
 
     template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_instruction_absolute_x(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    void test_absolute_x(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
     {
         SECTION("absolute_x")
         {
@@ -680,7 +680,7 @@ struct ld_fixture : fixture
     }
 
     template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_instruction_absolute_y(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    void test_absolute_y(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
     {
         SECTION("absolute_y")
         {
@@ -753,30 +753,30 @@ struct ld_fixture : fixture
 
 TEST_CASE_METHOD(ld_fixture, "lda", "[cpu][instruction]")
 {
-    test_instruction_immediate(execute_lda<addr_mode::immediate>, set_register_a);
-    test_instruction_zero_page(execute_lda<addr_mode::zero_page>, set_register_a);
-    test_instruction_zero_page_x(execute_lda<addr_mode::zero_page_x>, set_register_a);
-    test_instruction_absolute(execute_lda<addr_mode::absolute>, set_register_a);
-    test_instruction_absolute_x(execute_lda<addr_mode::absolute_x>, set_register_a);
-    test_instruction_absolute_y(execute_lda<addr_mode::absolute_y>, set_register_a);
+    test_immediate(execute_lda<addr_mode::immediate>, set_register_a);
+    test_zero_page(execute_lda<addr_mode::zero_page>, set_register_a);
+    test_zero_page_x(execute_lda<addr_mode::zero_page_x>, set_register_a);
+    test_absolute(execute_lda<addr_mode::absolute>, set_register_a);
+    test_absolute_x(execute_lda<addr_mode::absolute_x>, set_register_a);
+    test_absolute_y(execute_lda<addr_mode::absolute_y>, set_register_a);
 }
 
 TEST_CASE_METHOD(ld_fixture, "ldx", "[cpu][instruction]")
 {
-    test_instruction_immediate(execute_ldx<addr_mode::immediate>, set_register_x);
-    test_instruction_zero_page(execute_ldx<addr_mode::zero_page>, set_register_x);
-    test_instruction_zero_page_y(execute_ldx<addr_mode::zero_page_y>, set_register_x);
-    test_instruction_absolute(execute_ldx<addr_mode::absolute>, set_register_x);
-    test_instruction_absolute_y(execute_ldx<addr_mode::absolute_y>, set_register_x);
+    test_immediate(execute_ldx<addr_mode::immediate>, set_register_x);
+    test_zero_page(execute_ldx<addr_mode::zero_page>, set_register_x);
+    test_zero_page_y(execute_ldx<addr_mode::zero_page_y>, set_register_x);
+    test_absolute(execute_ldx<addr_mode::absolute>, set_register_x);
+    test_absolute_y(execute_ldx<addr_mode::absolute_y>, set_register_x);
 }
 
 TEST_CASE_METHOD(ld_fixture, "ldy", "[cpu][instruction]")
 {
-    test_instruction_immediate(execute_ldy<addr_mode::immediate>, set_register_y);
-    test_instruction_zero_page(execute_ldy<addr_mode::zero_page>, set_register_y);
-    test_instruction_zero_page_x(execute_ldy<addr_mode::zero_page_x>, set_register_y);
-    test_instruction_absolute(execute_ldy<addr_mode::absolute>, set_register_y);
-    test_instruction_absolute_x(execute_ldy<addr_mode::absolute_x>, set_register_y);
+    test_immediate(execute_ldy<addr_mode::immediate>, set_register_y);
+    test_zero_page(execute_ldy<addr_mode::zero_page>, set_register_y);
+    test_zero_page_x(execute_ldy<addr_mode::zero_page_x>, set_register_y);
+    test_absolute(execute_ldy<addr_mode::absolute>, set_register_y);
+    test_absolute_x(execute_ldy<addr_mode::absolute_x>, set_register_y);
 }
 
 struct st_fixture : fixture
@@ -795,8 +795,10 @@ struct st_fixture : fixture
         const byte_t value_addr = GENERATE_BYTE_ADDR();
         const byte_t value = GENERATE_BYTE();
 
-        DYNAMIC_SECTION(fmt::format("zero_page (pc = 0x{:04X} value addr = 0x{:02X}), value", pc, value_addr, value))
+        SECTION("zero_page")
         {
+            INFO(fmt::format("pc = 0x{:04X}; value addr = 0x{:02X}); value = 0x{:02X}", pc, value_addr, value));
+
             state.registers.pc = pc;
             state.owned_memory.set_byte(pc, value_addr);
             set_register(state.registers, value);
