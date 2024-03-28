@@ -18,7 +18,6 @@ set(INCLUDES
 )
 
 set(SOURCES
-    "${DIR}/cpu/processor.cpp"
     "${DIR}/cpu/instruction.cpp"
     "${DIR}/memory/mapper.cpp"
     "${DIR}/memory/ram.cpp"
