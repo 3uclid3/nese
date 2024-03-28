@@ -1,5 +1,6 @@
-#include <nese/cpu/state.hpp>
+#pragma once
 
+#include <nese/cpu/state.hpp>
 #include <nese/memory/mapper.hpp>
 
 namespace nese::cpu {
