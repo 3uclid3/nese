@@ -7,6 +7,8 @@ namespace nese::cpu {
 
 struct state;
 
+constexpr addr_t stack_offset = 0x100;
+
 namespace instruction {
 
 using opcode_t = byte_t;
@@ -47,6 +49,11 @@ void execute_iny(state& state);
 // Sets the program counter to the address specified by the operand, effectively jumping to a new code location.
 template<addr_mode AddrModeT>
 void execute_jmp(state& state);
+
+// JSR (Jump to Subroutine):
+// Pushes the address (minus one) of the next operation on to the stack and sets the program counter to the target address, for subroutine calls.
+template<addr_mode AddrModeT>
+void execute_jsr(state& state);
 
 // LDA (Load Accumulator):
 // Loads a value into the accumulator from memory or an immediate value, affecting the zero and negative flags.
@@ -103,6 +110,7 @@ EXPLICIT_INSTANTIATION(inx, addr_mode::implied);
 EXPLICIT_INSTANTIATION(iny, addr_mode::implied);
 
 EXPLICIT_INSTANTIATION(jmp, addr_mode::absolute);
+EXPLICIT_INSTANTIATION(jsr, addr_mode::absolute);
 
 EXPLICIT_INSTANTIATION(ldx, addr_mode::absolute);
 EXPLICIT_INSTANTIATION(ldx, addr_mode::absolute_y);

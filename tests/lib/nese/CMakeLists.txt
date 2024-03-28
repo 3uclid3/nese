@@ -14,6 +14,7 @@ set(INCLUDES
 set(SOURCES
     "${DIR}/cpu/instruction/in_test.cpp"
     "${DIR}/cpu/instruction/jmp_test.cpp"
+    "${DIR}/cpu/instruction/jsr_test.cpp"
     "${DIR}/cpu/instruction/ld_test.cpp"
     "${DIR}/cpu/instruction/st_test.cpp"
     "${DIR}/cpu/instruction_rom_test.cpp"

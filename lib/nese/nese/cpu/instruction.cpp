@@ -85,6 +85,7 @@ struct table
         ADD(iny, 0xc8, addr_mode::implied);
 
         ADD(jmp, 0x4c, addr_mode::absolute);
+        ADD(jsr, 0x20, addr_mode::absolute);
 
         ADD(ldx, 0xa2, addr_mode::immediate);
         ADD(ldx, 0xa6, addr_mode::zero_page);
@@ -119,6 +120,37 @@ struct table
 };
 
 constexpr table table{table::create()};
+
+void push_byte(state& state, byte_t value)
+{
+    // stack grow top->down
+    // no underflow/overflow detection
+    state.memory.get().set_byte(state.registers.s + stack_offset, value);
+
+    --state.registers.s;
+}
+
+byte_t pop_byte(state& state)
+{
+    ++state.registers.s;
+
+    return state.memory.get().get_byte(state.registers.s + stack_offset);
+}
+
+void push_word(state& state, word_t value)
+{
+    // high-order bytes push first since the stack grow top->down and the machine is little-endian
+    push_byte(state, value >> 8);
+    push_byte(state, value & 0xff);
+}
+
+word_t pop_word(state& state)
+{
+    // low-order bytes pop first since the stack grow top->down and the machine is little-endian
+    const byte_t lo = pop_byte(state);
+    const byte_t hi = pop_byte(state);
+    return static_cast<word_t>(hi << 8) + lo;
+}
 
 byte_t decode_byte(state& state)
 {
@@ -351,6 +383,15 @@ void execute_jmp(state& state)
 }
 
 template<addr_mode AddrModeT>
+void execute_jsr(state& state)
+{
+    // we push the actual return address -1, which is the current place (before decoding the 16-bit addr) + 1
+    push_word(state, state.registers.pc + 1);
+
+    state.registers.pc = decode_operand_addr<AddrModeT>(state);
+}
+
+template<addr_mode AddrModeT>
 void execute_ld_impl(state& state, byte_t& register_value)
 {
     const operand_t operand = decode_operand<AddrModeT>(state);
@@ -428,6 +469,7 @@ EXPLICIT_INSTANTIATE(inx, addr_mode::implied);
 EXPLICIT_INSTANTIATE(iny, addr_mode::implied);
 
 EXPLICIT_INSTANTIATE(jmp, addr_mode::absolute);
+EXPLICIT_INSTANTIATE(jsr, addr_mode::absolute);
 
 EXPLICIT_INSTANTIATE(ldx, addr_mode::absolute);
 EXPLICIT_INSTANTIATE(ldx, addr_mode::absolute_y);
