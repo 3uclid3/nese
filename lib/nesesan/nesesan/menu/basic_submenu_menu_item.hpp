@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <string>
+#include <string_view>
 #include <variant>
 #include <vector>
 
@@ -22,7 +23,7 @@ struct basic_submenu_menu_item
 
     void update() const;
 
-    const menu_item* find_item(std::string_view name) const;
+    const menu_item* find_item(std::string_view other_name) const;
 
     std::string name;
     std::vector<menu_item> items{};
@@ -46,18 +47,16 @@ void basic_submenu_menu_item<MenuItemsT...>::update() const
 }
 
 template<typename... MenuItemsT>
-const basic_submenu_menu_item<MenuItemsT...>::menu_item* basic_submenu_menu_item<MenuItemsT...>::find_item(std::string_view name) const
+const basic_submenu_menu_item<MenuItemsT...>::menu_item* basic_submenu_menu_item<MenuItemsT...>::find_item(std::string_view other_name) const
 {
     auto it = std::find_if(
         items.begin(),
         items.end(),
-        [name](const menu_item& i)
-        {
+        [other_name](const menu_item& i) {
             bool is = false;
-            std::visit([&is, name](const auto& item) { is = item.name == name; }, i);
+            std::visit([&is, other_name](const auto& item) { is = item.name == other_name; }, i);
             return is;
-        }
-    );
+        });
 
     return it != items.end() ? &*it : nullptr;
 }

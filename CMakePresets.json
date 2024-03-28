@@ -2,7 +2,7 @@
   "version": 3,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 20,
+    "minor": 25,
     "patch": 0
   },
   "configurePresets": [
@@ -12,7 +12,11 @@
       "hidden": true,
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/out/build/${presetName}",
-      "installDir": "${sourceDir}/out/install/${presetName}"
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
     },
 
     {
@@ -57,36 +61,11 @@
     },
 
     {
-      "name": "msvc-debug",
-      "displayName": "msvc debug",
-      "description": "Target Windows with the msvc compiler, debug build type",
+      "name": "windows-debug",
+      "displayName": "debug",
+      "description": "Target Windows, debug build type",
       "inherits": "windows-common",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "cl",
-        "CMAKE_CXX_COMPILER": "cl",
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "msvc-release",
-      "displayName": "msvc release",
-      "description": "Target Windows with the msvc compiler, release build type",
-      "inherits": "windows-common",
-      "cacheVariables": {
-        "CMAKE_C_COMPILER": "cl",
-        "CMAKE_CXX_COMPILER": "cl",
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    },
-
-    {
-      "name": "clang-cl-debug",
-      "displayName": "clang debug",
-      "description": "Target Windows with the clang compiler, debug build type",
-      "inherits": "windows-common",
-      "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang-cl",
-        "CMAKE_CXX_COMPILER": "clang-cl",
         "CMAKE_BUILD_TYPE": "Debug"
       },
       "vendor": {
@@ -96,13 +75,11 @@
       }
     },
     {
-      "name": "clang-cl-release",
-      "displayName": "clang release",
-      "description": "Target Windows with the clang compiler, release build type",
+      "name": "windows-release",
+      "displayName": "release",
+      "description": "Target Windows, release build type",
       "inherits": "windows-common",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang-cl",
-        "CMAKE_CXX_COMPILER": "clang-cl",
         "CMAKE_BUILD_TYPE": "Release"
       },
       "vendor": {
@@ -112,49 +89,21 @@
       }
     },
 
-
     {
-      "name": "gcc-debug",
-      "displayName": "gcc debug",
-      "description": "Target Linux with the gcc compiler, debug build type",
+      "name": "linux-debug",
+      "displayName": "debug",
+      "description": "Target Linux, debug build type",
       "inherits": "linux-common",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_CXX_COMPILER": "g++",
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "gcc-release",
-      "displayName": "gcc release",
-      "description": "Target Linux with the gcc compiler, release build type",
+      "name": "linux-release",
+      "displayName": "release",
+      "description": "Target Linux, release build type",
       "inherits": "linux-common",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_CXX_COMPILER": "g++",
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    },
-
-    {
-      "name": "clang-debug",
-      "displayName": "clang debug",
-      "description": "Target Linux with the clang compiler, debug build type",
-      "inherits": "linux-common",
-      "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "clang-release",
-      "displayName": "clang release",
-      "description": "Target Linux with the clang compiler, release build type",
-      "inherits": "linux-common",
-      "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_BUILD_TYPE": "Release"
       }
     }

@@ -35,7 +35,7 @@ void ram_view::update(f32_t, bool&)
             imgui::text_disabled("0x{:04X}", i);
 
             ImGui::SameLine();
-            imgui::text("{:02X}", _ram.get_byte(i));
+            imgui::text("{:02X}", _ram.get_byte(static_cast<addr_t>(i)));
         }
 
         ImGui::EndListBox();

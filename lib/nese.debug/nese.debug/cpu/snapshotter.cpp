@@ -1,7 +1,6 @@
 #include <nese.debug/cpu/snapshotter.hpp>
 
 #include <nese.debug/cpu/snapshot.hpp>
-#include <nese/cpu/processor.hpp>
 #include <nese/cpu/state.hpp>
 
 namespace nese::cpu {

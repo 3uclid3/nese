@@ -154,13 +154,13 @@ void cpu_debugger_view::update(f32_t dt, bool&)
         NESE_ASSERT(true);
 
         // Calculate the range of visible rows
-        const size_t row_start = std::max(0, static_cast<int>(scroll_y / row_height));
-        const size_t row_end = std::min(rows_total, row_start + static_cast<int>(visible_height / row_height) + 1);
+        const size_t row_start = std::max<size_t>(0, static_cast<size_t>(scroll_y / row_height));
+        const size_t row_end = std::min<size_t>(rows_total, row_start + static_cast<size_t>(visible_height / row_height) + 1);
 
         if (row_start > 0)
         {
             ImGui::TableSetColumnIndex(0);
-            ImGui::Dummy(ImVec2(-1, row_height * (row_start - 1)));
+            ImGui::Dummy(ImVec2(-1, row_height * static_cast<f32_t>(row_start - 1)));
             ImGui::TableNextRow();
         }
 
