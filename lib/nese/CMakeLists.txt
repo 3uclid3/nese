@@ -14,7 +14,6 @@ set(INCLUDES
     "${DIR}/utility/log.hpp"
     "${DIR}/basic_types.hpp"
     "${DIR}/cycle.hpp"
-    "${DIR}/emulator.hpp"
 )
 
 set(SOURCES
@@ -22,7 +21,6 @@ set(SOURCES
     "${DIR}/memory/mapper.cpp"
     "${DIR}/memory/ram.cpp"
     "${DIR}/memory/rom.cpp"
-    "${DIR}/emulator.cpp"
 )
 
 add_library(nese ${INCLUDES} ${SOURCES})
