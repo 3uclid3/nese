@@ -885,6 +885,7 @@ struct st_fixture : fixture
 TEST_CASE_METHOD(st_fixture, "stx", "[cpu][instruction]")
 {
     test_zero_page(execute_stx<addr_mode::zero_page>, set_register_x);
+    test_zero_page_y(execute_stx<addr_mode::zero_page_y>, set_register_x);
 }
 
 TEST_CASE_METHOD(st_fixture, "sty", "[cpu][instruction]")
