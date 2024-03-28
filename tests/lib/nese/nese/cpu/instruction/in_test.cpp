@@ -43,9 +43,9 @@ struct in_fixture : fixture
 
             SECTION("increment negative")
             {
-                const byte_t value = GENERATE(0x80,
-                                              0xC0,
-                                              0xFE);
+                const byte_t value = GENERATE(byte_t{0x80},
+                                              byte_t{0xC0},
+                                              byte_t{0xFE});
 
                 set_register(state.registers, value);
 
@@ -61,10 +61,10 @@ struct in_fixture : fixture
 
             SECTION("increment positive")
             {
-                const byte_t value = GENERATE(0x00,
-                                              0x10,
-                                              0x40,
-                                              0x7E);
+                const byte_t value = GENERATE(byte_t{0x00},
+                                              byte_t{0x10},
+                                              byte_t{0x40},
+                                              byte_t{0x7E});
 
                 set_register(state.registers, value);
 

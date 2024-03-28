@@ -13,7 +13,7 @@ struct nop_fixture : fixture
     {
         SECTION("implied")
         {
-            const addr_t addr = GENERATE(0x1234, 0x4321);
+            const addr_t addr = GENERATE(addr_t{0x1234}, addr_t{0x4321});
 
             state.registers.pc = addr;
 
