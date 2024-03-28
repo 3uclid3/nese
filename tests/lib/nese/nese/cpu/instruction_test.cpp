@@ -472,6 +472,75 @@ struct ld_fixture : fixture
     }
 
     template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
+    void test_instruction_zero_page_y(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    {
+        SECTION("zero_page_y")
+        {
+            const addr_t pc = GENERATE_ADDR();
+            const byte_t val_addr = GENERATE_BYTE_ADDR();
+            const byte_t y = GENERATE_BYTE_OFFSET();
+            const byte_t val_addr_y = val_addr + y & 0xff;
+
+            if (static_cast<byte_t>(pc) != val_addr_y)
+            {
+                state.registers.pc = pc;
+                state.registers.y = y;
+                state.owned_memory.set_byte(pc, val_addr);
+
+                SECTION("load zero")
+                {
+                    state.owned_memory.set_byte(val_addr_y, 0);
+
+                    state_mock expected_state = state;
+                    set_register(expected_state.registers, 0);
+                    expected_state.registers.pc = pc + 1;
+                    expected_state.registers.set_flag(status_flag::zero, true);
+                    expected_state.registers.set_flag(status_flag::negative, false);
+
+                    execute(state);
+
+                    check_state(expected_state);
+                }
+
+                SECTION("load a negative")
+                {
+                    const byte_t value = GENERATE_NEGATIVE_BYTE();
+
+                    state.owned_memory.set_byte(val_addr_y, value);
+
+                    state_mock expected_state = state;
+                    set_register(expected_state.registers, value);
+
+                    expected_state.registers.pc = pc + 1;
+                    expected_state.registers.set_flag(status_flag::zero, false);
+                    expected_state.registers.set_flag(status_flag::negative, true);
+
+                    execute(state);
+
+                    check_state(expected_state);
+                }
+
+                SECTION("load a positive")
+                {
+                    const byte_t value = GENERATE_POSITIVE_BYTE();
+
+                    state.owned_memory.set_byte(val_addr_y, value);
+
+                    state_mock expected_state = state;
+                    set_register(expected_state.registers, value);
+                    expected_state.registers.pc = pc + 1;
+                    expected_state.registers.set_flag(status_flag::zero, false);
+                    expected_state.registers.set_flag(status_flag::negative, false);
+
+                    execute(state);
+
+                    check_state(expected_state);
+                }
+            }
+        }
+    }
+
+    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
     void test_instruction_absolute(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
     {
         SECTION("absolute")
@@ -552,6 +621,7 @@ TEST_CASE_METHOD(ld_fixture, "ldx", "[cpu][instruction]")
 {
     test_instruction_immediate(execute_ldx<addr_mode::immediate>, set_register_x);
     test_instruction_zero_page(execute_ldx<addr_mode::zero_page>, set_register_x);
+    test_instruction_zero_page_y(execute_ldx<addr_mode::zero_page_y>, set_register_x);
 }
 
 TEST_CASE_METHOD(ld_fixture, "ldy", "[cpu][instruction]")
