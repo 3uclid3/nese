@@ -6,8 +6,7 @@
 
 namespace nese::cpu::instruction {
 
-state_mock create_default_state_mock()
-{
+static inline state_mock default_state_mock{[] {
     state_mock state;
 
     byte_t value = 0xFF;
@@ -19,9 +18,7 @@ state_mock create_default_state_mock()
     }
 
     return state;
-}
-
-state_mock default_state_mock{create_default_state_mock()};
+}()};
 
 struct fixture
 {
@@ -80,6 +77,21 @@ struct fixture
 
             FAIL_CHECK(fail_message.c_str());
         }
+    }
+
+    static void set_register_a(registers& r, byte_t a)
+    {
+        r.a = a;
+    }
+
+    static void set_register_x(registers& r, byte_t x)
+    {
+        r.x = x;
+    }
+
+    static void set_register_y(registers& r, byte_t y)
+    {
+        r.y = y;
     }
 
     state_mock state{default_state_mock};

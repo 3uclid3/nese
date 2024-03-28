@@ -5,14 +5,18 @@ set(TEST_ROMS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test_roms")
 configure_file("test_config.hpp.in" "${DIR}/test_config.hpp")
 
 set(INCLUDES
-    "${DIR}/cpu/fixture.hpp"
+    "${DIR}/cpu/instruction/catch_generators.hpp"
+    "${DIR}/cpu/instruction/fixture.hpp"
     "${DIR}/cpu/state_mock.hpp"
     "${DIR}/test_config.hpp"
 )
 
 set(SOURCES
+    "${DIR}/cpu/instruction/in.cpp"
+    "${DIR}/cpu/instruction/jmp.cpp"
+    "${DIR}/cpu/instruction/ld.cpp"
+    "${DIR}/cpu/instruction/st.cpp"
     "${DIR}/cpu/instruction_rom_test.cpp"
-    "${DIR}/cpu/instruction_test.cpp"
 )
 
 add_executable(nese_test ${INCLUDES} ${SOURCES})
