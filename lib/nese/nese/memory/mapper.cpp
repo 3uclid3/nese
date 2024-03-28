@@ -1,5 +1,7 @@
 #include <nese/memory/mapper.hpp>
 
+#include <cstring>
+
 #include <nese/utility/assert.hpp>
 
 namespace nese::memory {
