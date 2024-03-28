@@ -20,7 +20,7 @@ struct st_fixture : fixture
     {
         auto [pc, val_addr] = GENERATE_ADDR_FOR_ZERO_PAGE();
 
-        const byte_t val = GENERATE(0x00, 0xC0, 0xFF);
+        const byte_t val = GENERATE(byte_t{0x00}, byte_t{0xC0}, byte_t{0xFF});
 
         SECTION("zero_page")
         {
@@ -46,7 +46,7 @@ struct st_fixture : fixture
         auto [pc, val_addr, x] = GENERATE_ADDR_AND_OFFSET_FOR_ZERO_PAGE();
         const byte_t val_addr_x = val_addr + x & 0xff;
 
-        const byte_t val = GENERATE(0x00, 0xC0, 0xFF);
+        const byte_t val = GENERATE(byte_t{0x00}, byte_t{0xC0}, byte_t{0xFF});
 
         if (static_cast<byte_t>(pc) != val_addr_x)
         {
@@ -76,7 +76,7 @@ struct st_fixture : fixture
         auto [pc, val_addr, y] = GENERATE_ADDR_AND_OFFSET_FOR_ZERO_PAGE();
         const byte_t val_addr_y = val_addr + y & 0xff;
 
-        const byte_t val = GENERATE(0x00, 0xC0, 0xFF);
+        const byte_t val = GENERATE(byte_t{0x00}, byte_t{0xC0}, byte_t{0xFF});
 
         if (static_cast<byte_t>(pc) != val_addr_y)
         {
@@ -107,7 +107,7 @@ struct st_fixture : fixture
         {
             auto [pc, val_addr] = GENERATE_ADDR_FOR_ABSOLUTE();
 
-            const byte_t val = GENERATE(0x00, 0xC0, 0xFF);
+            const byte_t val = GENERATE(byte_t{0x00}, byte_t{0xC0}, byte_t{0xFF});
 
             INFO(fmt::format("pc = 0x{:04X}; val addr = 0x{:04X}); value = 0x{:02X}", pc, val_addr, val));
 

@@ -236,7 +236,7 @@ addr_t decode_operand_addr<addr_mode::indirect_indexed>(state& state, bool& page
 {
     const memory::mapper& memory = state.memory;
     const byte_t addr_arg = decode_byte(state);
-    const addr_t addr = memory.get_byte(addr_arg) + (static_cast<uint16_t>((memory.get_byte(addr_arg + 1) & 0xff)) << 8);
+    const addr_t addr = static_cast<addr_t>(memory.get_byte(addr_arg)) + static_cast<addr_t>(static_cast<uint16_t>((memory.get_byte(addr_arg + 1) & 0xff)) << 8);
     const addr_t new_addr = addr + state.registers.y;
 
     page_crossing = is_page_crossing(addr, new_addr);
@@ -284,7 +284,7 @@ byte_t read_operand(state& state, operand_t operand)
 
     if constexpr (AddrModeT == addr_mode::immediate)
     {
-        return operand;
+        return static_cast<byte_t>(operand);
     }
 
     return state.memory.get().get_byte(operand);

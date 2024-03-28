@@ -169,7 +169,8 @@ void append_operand(auto& out, const state& state)
     case addr_mode::indexed_indirect:
     {
         const addr_t addr = state.memory.get().get_byte(pc);
-        const addr_t final_addr = state.memory.get().get_byte((addr + state.registers.x) & 0xff) + (static_cast<nese::word_t>(state.memory.get().get_byte((addr + state.registers.x + 1) & 0xff)) << 8);
+        const addr_t final_addr = static_cast<nese::word_t>(state.memory.get().get_byte((addr + state.registers.x) & 0xff)) + 
+                                  static_cast<nese::word_t>(static_cast<nese::word_t>(state.memory.get().get_byte((addr + state.registers.x + 1) & 0xff)) << 8);
 
         out = fmt::format_to(out, "(${:02X},X) @ {:02X} = {:04X} = {:02X}", addr, addr + state.registers.x, final_addr, state.memory.get().get_byte(final_addr));
         current_length += 24;
@@ -179,7 +180,7 @@ void append_operand(auto& out, const state& state)
     case addr_mode::indirect_indexed:
     {
         const addr_t addr = state.memory.get().get_byte(pc);
-        const addr_t inter_addr = state.memory.get().get_byte(addr) + (static_cast<word_t>(state.memory.get().get_byte((addr + 1) & 0xff)) << 8);
+        const addr_t inter_addr = static_cast<nese::word_t>(state.memory.get().get_byte(addr)) + static_cast<nese::word_t>(static_cast<word_t>(state.memory.get().get_byte((addr + 1) & 0xff)) << 8);
         const addr_t final_addr = inter_addr + static_cast<word_t>(state.registers.y);
 
         out = fmt::format_to(out, "(${:02X}), Y = {:04X} @ {:04X} = {:02X}", addr, inter_addr, final_addr, state.memory.get().get_byte(final_addr));
