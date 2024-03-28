@@ -12,10 +12,10 @@ set(INCLUDES
 )
 
 set(SOURCES
-    "${DIR}/cpu/instruction/in.cpp"
-    "${DIR}/cpu/instruction/jmp.cpp"
-    "${DIR}/cpu/instruction/ld.cpp"
-    "${DIR}/cpu/instruction/st.cpp"
+    "${DIR}/cpu/instruction/in_test.cpp"
+    "${DIR}/cpu/instruction/jmp_test.cpp"
+    "${DIR}/cpu/instruction/ld_test.cpp"
+    "${DIR}/cpu/instruction/st_test.cpp"
     "${DIR}/cpu/instruction_rom_test.cpp"
 )
 

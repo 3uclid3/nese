@@ -3,7 +3,6 @@
 #include <nese/cpu/instruction.hpp>
 #include <nese/cpu/instruction/catch_generators.hpp>
 #include <nese/cpu/instruction/fixture.hpp>
-#include <nese/cpu/state_mock.hpp>
 
 namespace nese::cpu::instruction {
 
