@@ -81,8 +81,7 @@ T& basic_menu<ScopeT, MenuItemsT...>::add(std::string_view path, ArgsT&&... args
         }
     }
 
-    NESE_ASSERT(false);
-    __assume(false);
+    NESE_ASSUME(false);
 }
 
 template<basic_menu_bar_imgui_scope ScopeT, typename... MenuItemsT>
