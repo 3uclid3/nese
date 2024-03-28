@@ -5,6 +5,7 @@ on: [push, pull_request]
 jobs:
   build-and-test:
     strategy:
+      fail-fast: false
       matrix:
         os: 
           - windows-2022
@@ -35,12 +36,12 @@ jobs:
      - name: Setup C++ Environment
        uses: aminya/setup-cpp@v1
        with: 
-         compiler: llvm-18.0.0
          vcvarsall: ${{ contains(matrix.os, 'windows') }}
          cmake: true
          ninja: true
          vcpkg: true
-         cache: true
+         ccache: true
+         llvm: 18.1.0
 
      - name: Configure CMake
        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
