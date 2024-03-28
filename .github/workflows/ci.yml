@@ -19,6 +19,13 @@ jobs:
     steps:
      - uses: actions/checkout@v3
   
+     # Add a step to install system dependencies on Ubuntu
+     - name: Install system dependencies (Ubuntu)
+       if: runner.os == 'Linux'
+       run: |
+         sudo apt-get update
+         sudo apt-get install -y xorg-dev libglu1-mesa-dev libxinerama-dev libxcursor-dev libxi-dev libxrandr-dev pkg-config
+
      - name: Cache
        uses: actions/cache@v3
        with:
