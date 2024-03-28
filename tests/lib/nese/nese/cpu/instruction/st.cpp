@@ -100,18 +100,46 @@ struct st_fixture : fixture
             }
         }
     }
+
+    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
+    void test_absolute(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    {
+        SECTION("absolute")
+        {
+            auto [pc, val_addr] = GENERATE_ADDR_FOR_ABSOLUTE();
+
+            const byte_t val = GENERATE(0x00, 0xC0, 0xFF);
+
+            INFO(fmt::format("pc = 0x{:04X}; val addr = 0x{:04X}); value = 0x{:02X}", pc, val_addr, val));
+
+            state.registers.pc = pc;
+            state.owned_memory.set_word(pc, val_addr);
+
+            set_register(state.registers, val);
+
+            state_mock expected_state = state;
+            expected_state.owned_memory.set_byte(val_addr, val);
+            expected_state.registers.pc = pc + 2;
+
+            execute(state);
+
+            check_state(expected_state);
+        }
+    }
 };
 
 TEST_CASE_METHOD(st_fixture, "stx", "[cpu][instruction]")
 {
     test_zero_page(execute_stx<addr_mode::zero_page>, set_register_x);
     test_zero_page_y(execute_stx<addr_mode::zero_page_y>, set_register_x);
+    test_absolute(execute_stx<addr_mode::absolute>, set_register_x);
 }
 
 TEST_CASE_METHOD(st_fixture, "sty", "[cpu][instruction]")
 {
     test_zero_page(execute_sty<addr_mode::zero_page>, set_register_y);
     test_zero_page_x(execute_sty<addr_mode::zero_page_x>, set_register_y);
+    test_absolute(execute_sty<addr_mode::absolute>, set_register_y);
 }
 
 } // namespace nese::cpu::instruction
