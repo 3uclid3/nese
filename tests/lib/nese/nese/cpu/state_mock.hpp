@@ -50,6 +50,8 @@ struct state_mock : state
         return *this;
     }
 
+    constexpr ~state_mock() = default;
+
     memory::mapper owned_memory{};
 };
 
