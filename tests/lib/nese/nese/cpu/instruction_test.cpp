@@ -13,6 +13,11 @@
                      0x0001, 0x0010, 0x0100, 0x1000,  \
                      0x000F, 0x00F0, 0x0F00, 0xF000)
 
+#define GENERATE_BYTE_ADDR() \
+            GENERATE(0x00, 0xFF, \
+                     0x01, 0x10, \
+                     0x0F, 0xF0)
+
 #define GENERATE_NEGATIVE_BYTE() \
             GENERATE(0x80, \
                      0x81, \
@@ -29,81 +34,6 @@
 // clang-format on
 
 namespace nese::cpu::instruction {
-
-template<addr_mode AddrModeT>
-void encode_operand_addr(state& state, word_t value);
-
-template<>
-void encode_operand_addr<addr_mode::zero_page>(state& state, word_t value)
-{
-    state.memory.get().set_byte(state.registers.pc, static_cast<byte_t>(value));
-}
-
-template<>
-void encode_operand_addr<addr_mode::zero_page_x>(state& state, word_t value)
-{
-    state.memory.get().set_byte(state.registers.pc, (static_cast<byte_t>(value) + state.registers.x) & 0xff);
-}
-
-template<>
-void encode_operand_addr<addr_mode::zero_page_y>(state& state, word_t value)
-{
-    state.memory.get().set_byte(state.registers.pc, (static_cast<byte_t>(value) + state.registers.y) & 0xff);
-}
-
-template<>
-void encode_operand_addr<addr_mode::absolute>(state& state, word_t value)
-{
-    state.memory.get().set_word(state.registers.pc, value);
-}
-
-template<>
-void encode_operand_addr<addr_mode::absolute_x>(state& state, word_t value)
-{
-    state.memory.get().set_word(state.registers.pc + state.registers.x, value);
-}
-
-template<>
-void encode_operand_addr<addr_mode::absolute_y>(state& state, word_t value)
-{
-    state.memory.get().set_word(state.registers.pc + state.registers.y, value);
-}
-
-template<addr_mode AddrModeT>
-void encode_operand(state& state, operand_t operand)
-{
-    if constexpr (AddrModeT == addr_mode::accumulator)
-    {
-        // Nothing to do
-        // return 0;
-    }
-    else if constexpr (AddrModeT == addr_mode::immediate)
-    {
-        state.memory.get().set_byte(state.registers.pc, operand);
-    }
-    else
-    {
-        encode_operand_addr<AddrModeT>(state, operand);
-    }
-}
-
-template<addr_mode AddrModeT>
-void write_operand(state& state, byte_t value)
-{
-    if constexpr (AddrModeT == addr_mode::accumulator)
-    {
-        state.registers.a = value;
-    }
-    else if constexpr (AddrModeT == addr_mode::immediate)
-    {
-        // Nothing to do
-        // return operand;
-    }
-    else
-    {
-        state.memory.get().set_byte(state.registers.pc + 1, value);
-    }
-}
 
 void set_register_a(registers& r, byte_t a)
 {
@@ -204,10 +134,10 @@ struct fixture
 
 struct in_fixture : fixture
 {
-    template<addr_mode AddrModeT, typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_instruction(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    template<typename InstructionExecuteT, typename SetRegisterFunctorT>
+    void test_implied(const InstructionExecuteT& execute, const SetRegisterFunctorT& set_register)
     {
-        DYNAMIC_SECTION(to_string_view(AddrModeT))
+        SECTION("implied")
         {
             SECTION("increment 0xFF results in overflow to 0x00")
             {
@@ -279,26 +209,26 @@ struct in_fixture : fixture
 
 TEST_CASE_METHOD(in_fixture, "inx", "[cpu][instruction]")
 {
-    test_instruction<addr_mode::implied>(execute_inx<addr_mode::implied>, set_register_x);
+    test_implied(execute_inx<addr_mode::implied>, set_register_x);
 }
 
 TEST_CASE_METHOD(in_fixture, "iny", "[cpu][instruction]")
 {
-    test_instruction<addr_mode::implied>(execute_iny<addr_mode::implied>, set_register_y);
+    test_implied(execute_iny<addr_mode::implied>, set_register_y);
 }
 
 struct jmp_fixture : fixture
 {
-    template<addr_mode AddrModeT, typename ExecuteFunctorT>
-    void test_instruction(const ExecuteFunctorT& execute)
+    template<typename ExecuteFunctorT>
+    void test_absolute(const ExecuteFunctorT& execute)
     {
-        DYNAMIC_SECTION(to_string_view(AddrModeT))
+        SECTION("absolute")
         {
             const addr_t addr = GENERATE_ADDR();
             const addr_t addr_to = GENERATE_ADDR();
 
             state.registers.pc = addr;
-            encode_operand_addr<AddrModeT>(state, addr_to);
+            state.owned_memory.set_word(addr, addr_to);
 
             state_mock expected_state = state;
             expected_state.registers.pc = addr_to;
@@ -312,27 +242,26 @@ struct jmp_fixture : fixture
 
 TEST_CASE_METHOD(jmp_fixture, "jmp", "[cpu][instruction]")
 {
-    test_instruction<addr_mode::absolute>(execute_jmp<addr_mode::absolute>);
+    test_absolute(execute_jmp<addr_mode::absolute>);
 }
 
 struct ld_fixture : fixture
 {
-    template<addr_mode AddrModeT, typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_instruction(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
+    void test_instruction_immediate(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
     {
-        DYNAMIC_SECTION(to_string_view(AddrModeT))
+        SECTION("immediate")
         {
             const addr_t addr = GENERATE_ADDR();
 
-            DYNAMIC_SECTION(fmt::format("load a zero pc = 0x{:04X}", addr))
+            SECTION("load zero")
             {
                 state.registers.pc = addr;
-                encode_operand<AddrModeT>(state, 0);
-                write_operand<AddrModeT>(state, 0);
+                state.owned_memory.set_byte(addr, 0);
 
                 state_mock expected_state = state;
                 set_register(expected_state.registers, 0);
-                expected_state.registers.pc = addr + get_addr_mode_operand_byte_count(AddrModeT);
+                expected_state.registers.pc = addr + 1;
                 expected_state.registers.set_flag(status_flag::zero, true);
                 expected_state.registers.set_flag(status_flag::negative, false);
 
@@ -341,17 +270,17 @@ struct ld_fixture : fixture
                 check_state(expected_state);
             }
 
-            DYNAMIC_SECTION(fmt::format("load a negative pc = 0x{:04X}", addr))
+            SECTION("load a negative")
             {
                 const byte_t value = GENERATE_NEGATIVE_BYTE();
 
                 state.registers.pc = addr;
-                write_operand<AddrModeT>(state, value);
+                state.owned_memory.set_byte(addr, value);
 
                 state_mock expected_state = state;
                 set_register(expected_state.registers, value);
 
-                expected_state.registers.pc = addr + get_addr_mode_operand_byte_count(AddrModeT);
+                expected_state.registers.pc = addr + 1;
                 expected_state.registers.set_flag(status_flag::zero, false);
                 expected_state.registers.set_flag(status_flag::negative, true);
 
@@ -360,16 +289,78 @@ struct ld_fixture : fixture
                 check_state(expected_state);
             }
 
-            DYNAMIC_SECTION(fmt::format("load a positive pc = 0x{:04X}", addr))
+            SECTION("load a positive")
             {
                 const byte_t value = GENERATE_POSITIVE_BYTE();
 
                 state.registers.pc = addr;
-                write_operand<AddrModeT>(state, value);
+                state.owned_memory.set_byte(addr, value);
 
                 state_mock expected_state = state;
                 set_register(expected_state.registers, value);
-                expected_state.registers.pc = addr + get_addr_mode_operand_byte_count(AddrModeT);
+                expected_state.registers.pc = addr + 1;
+                expected_state.registers.set_flag(status_flag::zero, false);
+                expected_state.registers.set_flag(status_flag::negative, false);
+
+                execute(state);
+
+                check_state(expected_state);
+            }
+        }
+    }
+
+    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
+    void test_instruction_zero_page(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    {
+        SECTION("zero_page")
+        {
+            const addr_t addr = GENERATE_ADDR();
+
+            SECTION("load zero")
+            {
+                state.registers.pc = addr;
+                state.owned_memory.set_byte(addr, 0);
+
+                state_mock expected_state = state;
+                set_register(expected_state.registers, 0);
+                expected_state.registers.pc = addr + 1;
+                expected_state.registers.set_flag(status_flag::zero, true);
+                expected_state.registers.set_flag(status_flag::negative, false);
+
+                execute(state);
+
+                check_state(expected_state);
+            }
+
+            SECTION("load a negative")
+            {
+                const byte_t value = GENERATE_NEGATIVE_BYTE();
+
+                state.registers.pc = addr;
+                state.owned_memory.set_byte(addr, value);
+
+                state_mock expected_state = state;
+                set_register(expected_state.registers, value);
+
+                expected_state.registers.pc = addr + 1;
+                expected_state.registers.set_flag(status_flag::zero, false);
+                expected_state.registers.set_flag(status_flag::negative, true);
+
+                execute(state);
+
+                check_state(expected_state);
+            }
+
+            SECTION("load a positive")
+            {
+                const byte_t value = GENERATE_POSITIVE_BYTE();
+
+                state.registers.pc = addr;
+                state.owned_memory.set_byte(addr, value);
+
+                state_mock expected_state = state;
+                set_register(expected_state.registers, value);
+                expected_state.registers.pc = addr + 1;
                 expected_state.registers.set_flag(status_flag::zero, false);
                 expected_state.registers.set_flag(status_flag::negative, false);
 
@@ -383,32 +374,20 @@ struct ld_fixture : fixture
 
 TEST_CASE_METHOD(ld_fixture, "lda", "[cpu][instruction]")
 {
-    // test_instruction<addr_mode::immediate>(execute_lda<addr_mode::immediate>, set_register_a);
-    // test_instruction<addr_mode::zero_page>(execute_lda<addr_mode::zero_page>, set_register_a);
-    // test_instruction<addr_mode::zero_page_x>(execute_lda<addr_mode::zero_page_x>, set_register_a);
-    // test_instruction<addr_mode::absolute>(execute_lda<addr_mode::absolute>, set_register_a);
-    // test_instruction<addr_mode::absolute_x>(execute_lda<addr_mode::absolute_x>, set_register_a);
-    // test_instruction<addr_mode::absolute_y>(execute_lda<addr_mode::absolute_y>, set_register_a);
-    // test_instruction<addr_mode::indexed_indirect>(execute_lda<addr_mode::immediate>, set_register_a);
-    // test_instruction<addr_mode::indirect_indexed>(execute_lda<addr_mode::immediate>, set_register_a);
+    test_instruction_immediate(execute_lda<addr_mode::immediate>, set_register_a);
+    test_instruction_zero_page(execute_lda<addr_mode::zero_page>, set_register_a);
 }
 
-TEST_CASE_METHOD(ld_fixture, "ldx", "[cpu][instruction][!mayfail]")
+TEST_CASE_METHOD(ld_fixture, "ldx", "[cpu][instruction]")
 {
-    // test_instruction<addr_mode::immediate>(execute_ldx<addr_mode::immediate>, set_register_x);
-    // test_instruction<addr_mode::zero_page>(execute_ldx<addr_mode::zero_page>, set_register_x);
-    // test_instruction<addr_mode::zero_page_y>(execute_ldx<addr_mode::zero_page_y>, set_register_x);
-    // test_instruction<addr_mode::absolute>(execute_ldx<addr_mode::absolute>, set_register_x);
-    // test_instruction<addr_mode::absolute_y>(execute_ldx<addr_mode::absolute_y>, set_register_x);
+    test_instruction_immediate(execute_ldx<addr_mode::immediate>, set_register_x);
+    test_instruction_zero_page(execute_ldx<addr_mode::zero_page>, set_register_x);
 }
 
-TEST_CASE_METHOD(ld_fixture, "ldy", "[cpu][instruction][!mayfail]")
+TEST_CASE_METHOD(ld_fixture, "ldy", "[cpu][instruction]")
 {
-    // test_instruction<addr_mode::immediate>(execute_ldy<addr_mode::immediate>, set_register_y);
-    // test_instruction<addr_mode::zero_page>(execute_ldy<addr_mode::zero_page>, set_register_y);
-    // test_instruction<addr_mode::zero_page_x>(execute_ldy<addr_mode::zero_page_x>, set_register_y);
-    // test_instruction<addr_mode::absolute>(execute_ldy<addr_mode::absolute>, set_register_y);
-    // test_instruction<addr_mode::absolute_x>(execute_ldy<addr_mode::absolute_x>, set_register_y);
+    test_instruction_immediate(execute_ldy<addr_mode::immediate>, set_register_y);
+    test_instruction_zero_page(execute_ldy<addr_mode::zero_page>, set_register_y);
 }
 
 struct st_fixture : fixture
@@ -420,53 +399,57 @@ struct st_fixture : fixture
         state.registers.y = 0xC;
     }
 
-    template<addr_mode AddrModeT, typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_instruction(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
+    void test_instruction_zero_page(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
     {
-        DYNAMIC_SECTION(to_string_view(AddrModeT))
-        {
-            const addr_t addr = GENERATE_ADDR();
+        const addr_t pc = GENERATE_ADDR();
+        const byte_t value_addr = GENERATE_BYTE_ADDR();
 
-            DYNAMIC_SECTION(fmt::format("store a zero at address 0x{:04X}", addr))
+        DYNAMIC_SECTION(fmt::format("zero_page (pc = 0x{:04X} value addr = 0x{:02X})", pc, value_addr))
+        {
+            SECTION("store zero")
             {
-                state.registers.pc = addr;
+                state.registers.pc = pc;
+                state.owned_memory.set_byte(pc, value_addr);
                 set_register(state.registers, 0);
 
                 state_mock expected_state = state;
-                encode_operand_addr<AddrModeT>(expected_state, 0);
-                expected_state.registers.pc = addr + get_addr_mode_operand_byte_count(AddrModeT);
+                expected_state.owned_memory.set_byte(value_addr, 0);
+                expected_state.registers.pc = pc + 1;
 
                 execute(state);
 
                 check_state(expected_state);
             }
 
-            DYNAMIC_SECTION(fmt::format("store a negative at address 0x{:04X}", addr))
+            SECTION("store a negative")
             {
                 const byte_t value = GENERATE_NEGATIVE_BYTE();
 
-                state.registers.pc = addr;
+                state.registers.pc = pc;
+                state.owned_memory.set_byte(pc, value_addr);
                 set_register(state.registers, value);
 
                 state_mock expected_state = state;
-                encode_operand_addr<AddrModeT>(expected_state, value);
-                expected_state.registers.pc = addr + get_addr_mode_operand_byte_count(AddrModeT);
+                expected_state.owned_memory.set_byte(value_addr, value);
+                expected_state.registers.pc = pc + 1;
 
                 execute(state);
 
                 check_state(expected_state);
             }
 
-            DYNAMIC_SECTION(fmt::format("store a positive at address 0x{:04X}", addr))
+            SECTION("store a positive")
             {
                 const byte_t value = GENERATE_POSITIVE_BYTE();
 
-                state.registers.pc = addr;
+                state.registers.pc = pc;
+                state.owned_memory.set_byte(pc, value_addr);
                 set_register(state.registers, value);
 
                 state_mock expected_state = state;
-                encode_operand_addr<AddrModeT>(expected_state, value);
-                expected_state.registers.pc = addr + get_addr_mode_operand_byte_count(AddrModeT);
+                expected_state.owned_memory.set_byte(value_addr, value);
+                expected_state.registers.pc = pc + 1;
 
                 execute(state);
 
@@ -476,18 +459,14 @@ struct st_fixture : fixture
     }
 };
 
-TEST_CASE_METHOD(st_fixture, "stx", "[cpu][instruction][!mayfail]")
+TEST_CASE_METHOD(st_fixture, "stx", "[cpu][instruction]")
 {
-    // test_instruction<addr_mode::zero_page>(execute_stx<addr_mode::zero_page>, set_register_x);
-    // test_instruction<addr_mode::zero_page_y>(execute_stx<addr_mode::zero_page_y>, set_register_x);
-    // test_instruction<addr_mode::absolute>(execute_stx<addr_mode::absolute>, set_register_x);
+    test_instruction_zero_page(execute_stx<addr_mode::zero_page>, set_register_x);
 }
 
-TEST_CASE_METHOD(st_fixture, "sty", "[cpu][instruction][!mayfail]")
+TEST_CASE_METHOD(st_fixture, "sty", "[cpu][instruction]")
 {
-    // test_instruction<addr_mode::zero_page>(execute_sty<addr_mode::zero_page>, set_register_x);
-    // test_instruction<addr_mode::zero_page_x>(execute_sty<addr_mode::zero_page_x>, set_register_y);
-    // test_instruction<addr_mode::absolute>(execute_sty<addr_mode::absolute>, set_register_y);
+    test_instruction_zero_page(execute_sty<addr_mode::zero_page>, set_register_y);
 }
 
 } // namespace nese::cpu::instruction
