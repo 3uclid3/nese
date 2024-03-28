@@ -39,6 +39,8 @@ void mapper::set_byte(addr_t addr, byte_t value)
 
 word_t mapper::get_word(addr_t addr) const
 {
+    NESE_ASSERT(addr <= 0xFFFE);
+
     addr = redirect_addr(addr);
 
     // NES 6502 CPU is little endian
@@ -47,6 +49,8 @@ word_t mapper::get_word(addr_t addr) const
 
 void mapper::set_word(addr_t addr, word_t value)
 {
+    NESE_ASSERT(addr <= 0xFFFE);
+
     addr = redirect_addr(addr);
 
     // NES 6502 CPU is little endian
