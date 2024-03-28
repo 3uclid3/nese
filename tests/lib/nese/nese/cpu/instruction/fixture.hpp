@@ -37,22 +37,25 @@ struct fixture
 
     void check_registers(const state& expected_state) const
     {
-        CHECK(state.registers.a == expected_state.registers.a);
-        CHECK(state.registers.x == expected_state.registers.x);
-        CHECK(state.registers.y == expected_state.registers.y);
-        CHECK(state.registers.pc == expected_state.registers.pc);
-        CHECK(state.registers.s == expected_state.registers.s);
-
-        if (state.registers.p != expected_state.registers.p)
+        if (std::memcmp(&state.registers, &expected_state.registers, sizeof(registers)) != 0)
         {
-            CHECK(state.registers.has_flag(status_flag::carry) == expected_state.registers.has_flag(status_flag::carry));
-            CHECK(state.registers.has_flag(status_flag::zero) == expected_state.registers.has_flag(status_flag::zero));
-            CHECK(state.registers.has_flag(status_flag::interrupt) == expected_state.registers.has_flag(status_flag::interrupt));
-            CHECK(state.registers.has_flag(status_flag::decimal) == expected_state.registers.has_flag(status_flag::decimal));
-            CHECK(state.registers.has_flag(status_flag::break_cmd) == expected_state.registers.has_flag(status_flag::break_cmd));
-            CHECK(state.registers.has_flag(status_flag::unused) == expected_state.registers.has_flag(status_flag::unused));
-            CHECK(state.registers.has_flag(status_flag::overflow) == expected_state.registers.has_flag(status_flag::overflow));
-            CHECK(state.registers.has_flag(status_flag::negative) == expected_state.registers.has_flag(status_flag::negative));
+            CHECK(state.registers.a == expected_state.registers.a);
+            CHECK(state.registers.x == expected_state.registers.x);
+            CHECK(state.registers.y == expected_state.registers.y);
+            CHECK(state.registers.pc == expected_state.registers.pc);
+            CHECK(state.registers.s == expected_state.registers.s);
+
+            if (state.registers.p != expected_state.registers.p)
+            {
+                CHECK(state.registers.has_flag(status_flag::carry) == expected_state.registers.has_flag(status_flag::carry));
+                CHECK(state.registers.has_flag(status_flag::zero) == expected_state.registers.has_flag(status_flag::zero));
+                CHECK(state.registers.has_flag(status_flag::interrupt) == expected_state.registers.has_flag(status_flag::interrupt));
+                CHECK(state.registers.has_flag(status_flag::decimal) == expected_state.registers.has_flag(status_flag::decimal));
+                CHECK(state.registers.has_flag(status_flag::break_cmd) == expected_state.registers.has_flag(status_flag::break_cmd));
+                CHECK(state.registers.has_flag(status_flag::unused) == expected_state.registers.has_flag(status_flag::unused));
+                CHECK(state.registers.has_flag(status_flag::overflow) == expected_state.registers.has_flag(status_flag::overflow));
+                CHECK(state.registers.has_flag(status_flag::negative) == expected_state.registers.has_flag(status_flag::negative));
+            }
         }
     }
 

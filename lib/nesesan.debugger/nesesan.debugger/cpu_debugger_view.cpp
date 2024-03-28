@@ -64,10 +64,10 @@ void cpu_debugger_view::update(f32_t dt, bool&)
     {
         imgui::same_line();
         imgui::disabled_scope disabled(_debugger.get_state() == cpu_debugger::state::running);
-        
+
         ImGui::SetNextItemWidth(200.0f);
 
-        if (ImGui::InputText("Address", &_pc_input))
+        if (false) // if (ImGui::InputText("Address", &_pc_input, sizeof(_pc_input)))
         {
             NESE_ASSERT(_pc_input.find_first_of("0x") == 0);
 
@@ -94,7 +94,7 @@ void cpu_debugger_view::update(f32_t dt, bool&)
                 addr = static_cast<addr_t>(addr << 4 | (byte & 0xF));
             }
 
-            _pc_input = imgui::format("0x{:04X}", addr);
+            _pc_input = format("0x{:04X}", addr);
 
             _debugger.set_until_pc(addr);
         }
@@ -187,7 +187,7 @@ void cpu_debugger_view::update(f32_t dt, bool&)
 
             // instruction byte 1 (operand)
             ImGui::TableNextColumn();
-            if (operand_count >=1)
+            if (operand_count >= 1)
             {
                 imgui::text("{:02X}", snapshot.memory.get_byte(snapshot.registers.pc + 1));
             }

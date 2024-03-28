@@ -4,7 +4,6 @@ set(INCLUDES
 )
 
 set(SOURCES
-    "${DIR}/imgui/format_test.cpp"
     "${DIR}/menu/basic_menu_test.cpp"
 )
 

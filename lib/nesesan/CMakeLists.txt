@@ -3,7 +3,6 @@ set(DIR "${CMAKE_CURRENT_SOURCE_DIR}/nesesan")
 set(INCLUDES
     "${DIR}/imgui/core.hpp"
     "${DIR}/imgui/extension.hpp"
-    "${DIR}/imgui/format.hpp"
     "${DIR}/menu/basic_menu.hpp"
     "${DIR}/menu/basic_submenu_menu_item.hpp"
     "${DIR}/menu/callback_menu_item.hpp"
@@ -17,7 +16,6 @@ set(INCLUDES
 
 set(SOURCES
     "${DIR}/imgui/extension.cpp"
-    "${DIR}/imgui/format.cpp"
     "${DIR}/menu/basic_submenu_menu_item.cpp"
     "${DIR}/menu/callback_menu_item.cpp"
     "${DIR}/menu/main_menu.cpp"

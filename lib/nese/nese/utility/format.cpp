@@ -1,29 +1,27 @@
-#include <nesesan/imgui/format.hpp>
+#include <nese/utility/format.hpp>
 
 #include <array>
 #include <span>
 #include <windows.h>
 
-namespace nese::san::imgui {
+namespace nese {
 
 namespace details {
 
 struct local_data
 {
-    static constexpr size_t BufferSize = 8192;
-    static constexpr size_t BufferCount = 16;
-    static constexpr size_t LastBufferIndex = BufferCount - 1;
+    static constexpr size_t last_buffer_index = format_circular_buffer::count - 1;
 
     std::span<char> next_buffer()
     {
-        const size_t offset = next_buffer_index * BufferSize;
+        const size_t offset = next_buffer_index * format_circular_buffer::size;
 
-        next_buffer_index = next_buffer_index == LastBufferIndex ? 0 : next_buffer_index + 1;
+        next_buffer_index = next_buffer_index == last_buffer_index ? 0 : next_buffer_index + 1;
 
-        return {&buffer[offset], BufferSize};
+        return {&buffer[offset], format_circular_buffer::size};
     }
 
-    std::array<char, BufferSize * BufferCount> buffer;
+    std::array<char, format_circular_buffer::size * format_circular_buffer::count> buffer{};
     size_t next_buffer_index{0};
 };
 
@@ -61,15 +59,15 @@ struct output
         return out;
     }
 
-    std::span<char> buffer;
+    std::span<char> buffer{};
     size_t size{0};
 };
 
-thread_local local_data data;
+thread_local local_data data{};
 
 } // namespace details
 
-const char* formatv(fmt::string_view format, fmt::format_args args)
+const char* v_format(fmt::string_view format, fmt::format_args args)
 {
     details::output out(details::data.next_buffer());
 
@@ -80,4 +78,4 @@ const char* formatv(fmt::string_view format, fmt::format_args args)
     return out.buffer.data();
 }
 
-} // namespace nese::san::imgui
+} // namespace nese

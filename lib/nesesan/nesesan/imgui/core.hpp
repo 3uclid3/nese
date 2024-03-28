@@ -1,11 +1,9 @@
 #pragma once
 
 #include <imgui.h>
-#include <imgui_stdlib.h>
 
 #include <nese/basic_types.hpp>
-#include <nesesan/imgui/icons.hpp>
-#include <nesesan/imgui/format.hpp>
+#include <nese/utility/format.hpp>
 
 namespace nese::san::imgui {
 
@@ -13,8 +11,8 @@ using vec2 = ImVec2;
 using vec4 = ImVec4;
 using color = vec4;
 
-using style_var  = ImGuiStyleVar;
-using color_style_var  = ImGuiCol;
+using style_var = ImGuiStyleVar;
+using color_style_var = ImGuiCol;
 
 struct color_scope
 {
@@ -75,42 +73,42 @@ inline void separator()
 template<typename... T>
 void text(fmt::format_string<T...> format, T&&... args)
 {
-    const char* result = formatv(format, fmt::make_format_args(args...));
+    const char* result = v_format(format, fmt::make_format_args(args...));
     ImGui::Text(result);
 }
 
 template<typename... T>
 void text_colored(const color& color, fmt::format_string<T...> format, T&&... args)
 {
-    const char* result = formatv(format, fmt::make_format_args(args...));
+    const char* result = v_format(format, fmt::make_format_args(args...));
     ImGui::TextColored(color, result);
 }
 
 template<typename... T>
 void text_disabled(fmt::format_string<T...> format, T&&... args)
 {
-    const char* result = formatv(format, fmt::make_format_args(args...));
+    const char* result = v_format(format, fmt::make_format_args(args...));
     ImGui::TextDisabled(result);
 }
 
 template<typename... T>
 void text_wrapped(fmt::format_string<T...> format, T&&... args)
 {
-    const char* result = formatv(format, fmt::make_format_args(args...));
+    const char* result = v_format(format, fmt::make_format_args(args...));
     ImGui::TextWrapped(result);
 }
 
 template<typename... T>
 void label_text(const char* label, fmt::format_string<T...> format, T&&... args)
 {
-    const char* result = formatv(format, fmt::make_format_args(args...));
+    const char* result = v_format(format, fmt::make_format_args(args...));
     ImGui::LabelText(label, result);
 }
 
 template<typename... T>
 void bullet_text(fmt::format_string<T...> format, T&&... args)
 {
-    const char* result = formatv(format, fmt::make_format_args(args...));
+    const char* result = v_format(format, fmt::make_format_args(args...));
     ImGui::Text(result);
 }
 

@@ -13,6 +13,7 @@ set(INCLUDES
     "${DIR}/memory/ram.hpp"
     "${DIR}/memory/rom.hpp"
     "${DIR}/utility/assert.hpp"
+    "${DIR}/utility/format.hpp"
     "${DIR}/utility/log.hpp"
     "${DIR}/basic_types.hpp"
     "${DIR}/cycle.hpp"
@@ -25,6 +26,7 @@ set(SOURCES
     "${DIR}/memory/mapper.cpp"
     "${DIR}/memory/ram.cpp"
     "${DIR}/memory/rom.cpp"
+    "${DIR}/utility/format.cpp"
     "${DIR}/emulator.cpp"
 )
 
