@@ -679,7 +679,7 @@ struct ld_fixture : fixture
         }
     }
 
-        template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
+    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
     void test_instruction_absolute_y(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
     {
         SECTION("absolute_y")
