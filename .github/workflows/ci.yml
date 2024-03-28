@@ -12,7 +12,7 @@ jobs:
           - ubuntu-22.04
         
         llvm:
-          - 17.0.0
+          - 17.0.6
 
     runs-on: ${{ matrix.os }}
 
