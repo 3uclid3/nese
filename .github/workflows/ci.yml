@@ -44,7 +44,7 @@ jobs:
          llvm: ${{ matrix.llvm }}
 
      - name: Configure CMake
-       run: cmake -S ." -B build -G "Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
+       run: cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
 
      - name: Build
        run: cmake --build build -j4
