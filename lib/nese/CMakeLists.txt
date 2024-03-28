@@ -3,8 +3,6 @@ set(DIR "${CMAKE_CURRENT_SOURCE_DIR}/nese")
 set(INCLUDES
     "${DIR}/cpu/addr_mode.hpp"
     "${DIR}/cpu/instruction.hpp"
-    "${DIR}/cpu/processor.hpp"
-    "${DIR}/cpu/processor_fmt.inl"
     "${DIR}/cpu/registers.hpp"
     "${DIR}/cpu/state.hpp"
     "${DIR}/cpu/state_fmt.inl"
