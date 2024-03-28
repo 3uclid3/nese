@@ -11,8 +11,8 @@ jobs:
           - windows-2022
           - ubuntu-22.04
         
-        compiler:
-          - llvm-18.0.0
+        llvm:
+          - 18.0.0
 
     runs-on: ${{ matrix.os }}
 
@@ -22,7 +22,7 @@ jobs:
      - name: Cache
        uses: actions/cache@v3
        with:
-         key: ${{ runner.os }}-${{ matrix.compiler }}-${{ env.BUILD_TYPE }}-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('./vcpkg.json')}}
+         key: ${{ runner.os }}-llvm-${{ matrix.llvm }}-${{ env.BUILD_TYPE }}-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('./vcpkg.json')}}
          restore-keys: |
             ${{ runner.os }}-${{ env.BUILD_TYPE }}-
          path: |
@@ -44,7 +44,7 @@ jobs:
          llvm: 18.1.0
 
      - name: Configure CMake
-       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
+       run: cmake -S ." -B build -G "Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake
 
      - name: Build
        run: cmake --build build -j4
