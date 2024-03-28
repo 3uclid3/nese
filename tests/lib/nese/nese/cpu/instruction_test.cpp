@@ -31,6 +31,17 @@
                      0x40, \
                      0x7E, \
                      0x7F)
+
+#define GENERATE_BYTE() \
+            GENERATE(0x00, \
+                     0x01, \
+                     0x10, \
+                     0x7E, \
+                     0x7F, \
+                     0x80, \
+                     0x81, \
+                     0xFE, \
+                     0xFF)
 // clang-format on
 
 namespace nese::cpu::instruction {
@@ -404,57 +415,21 @@ struct st_fixture : fixture
     {
         const addr_t pc = GENERATE_ADDR();
         const byte_t value_addr = GENERATE_BYTE_ADDR();
+        const byte_t value = GENERATE_BYTE();
 
-        DYNAMIC_SECTION(fmt::format("zero_page (pc = 0x{:04X} value addr = 0x{:02X})", pc, value_addr))
+        DYNAMIC_SECTION(fmt::format("zero_page (pc = 0x{:04X} value addr = 0x{:02X}), value", pc, value_addr, value))
         {
-            SECTION("store zero")
-            {
-                state.registers.pc = pc;
-                state.owned_memory.set_byte(pc, value_addr);
-                set_register(state.registers, 0);
+            state.registers.pc = pc;
+            state.owned_memory.set_byte(pc, value_addr);
+            set_register(state.registers, value);
 
-                state_mock expected_state = state;
-                expected_state.owned_memory.set_byte(value_addr, 0);
-                expected_state.registers.pc = pc + 1;
+            state_mock expected_state = state;
+            expected_state.owned_memory.set_byte(value_addr, value);
+            expected_state.registers.pc = pc + 1;
 
-                execute(state);
+            execute(state);
 
-                check_state(expected_state);
-            }
-
-            SECTION("store a negative")
-            {
-                const byte_t value = GENERATE_NEGATIVE_BYTE();
-
-                state.registers.pc = pc;
-                state.owned_memory.set_byte(pc, value_addr);
-                set_register(state.registers, value);
-
-                state_mock expected_state = state;
-                expected_state.owned_memory.set_byte(value_addr, value);
-                expected_state.registers.pc = pc + 1;
-
-                execute(state);
-
-                check_state(expected_state);
-            }
-
-            SECTION("store a positive")
-            {
-                const byte_t value = GENERATE_POSITIVE_BYTE();
-
-                state.registers.pc = pc;
-                state.owned_memory.set_byte(pc, value_addr);
-                set_register(state.registers, value);
-
-                state_mock expected_state = state;
-                expected_state.owned_memory.set_byte(value_addr, value);
-                expected_state.registers.pc = pc + 1;
-
-                execute(state);
-
-                check_state(expected_state);
-            }
+            check_state(expected_state);
         }
     }
 };
