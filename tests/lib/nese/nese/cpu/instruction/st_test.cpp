@@ -9,13 +9,6 @@ namespace nese::cpu::instruction {
 
 struct st_fixture : fixture
 {
-    st_fixture()
-    {
-        state.registers.a = 0xA;
-        state.registers.x = 0xB;
-        state.registers.y = 0xC;
-    }
-
     template<typename ExecuteFunctorT>
     void test_zero_page(const ExecuteFunctorT& execute, register_id store_register)
     {
