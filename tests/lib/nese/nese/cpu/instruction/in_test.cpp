@@ -13,12 +13,14 @@ struct in_fixture : fixture
     {
         SECTION("implied")
         {
+            constexpr cycle_t cycle_cost = cpu_cycle_t(2);
+
             SECTION("increment 0xFF results in overflow to 0x00")
             {
                 set_register(state.registers, 0xFF);
 
                 expected_state = state;
-                expected_state.cycle = cpu_cycle_t(2);
+                expected_state.cycle = cycle_cost;
                 set_register(expected_state.registers, 0x00);
                 expected_state.registers.set_flag(status_flag::zero, true);
                 expected_state.registers.set_flag(status_flag::negative, false);
@@ -33,7 +35,7 @@ struct in_fixture : fixture
                 set_register(state.registers, 0x7F);
 
                 expected_state = state;
-                expected_state.cycle = cpu_cycle_t(2);
+                expected_state.cycle = cycle_cost;
                 set_register(expected_state.registers, 0x80);
                 expected_state.registers.set_flag(status_flag::zero, false);
                 expected_state.registers.set_flag(status_flag::negative, true);
@@ -52,7 +54,7 @@ struct in_fixture : fixture
                 set_register(state.registers, value);
 
                 expected_state = state;
-                expected_state.cycle = cpu_cycle_t(2);
+                expected_state.cycle = cycle_cost;
                 set_register(expected_state.registers, value + 1);
                 expected_state.registers.set_flag(status_flag::zero, false);
                 expected_state.registers.set_flag(status_flag::negative, true);
@@ -72,7 +74,7 @@ struct in_fixture : fixture
                 set_register(state.registers, value);
 
                 expected_state = state;
-                expected_state.cycle = cpu_cycle_t(2);
+                expected_state.cycle = cycle_cost;
                 set_register(expected_state.registers, value + 1);
                 expected_state.registers.set_flag(status_flag::zero, false);
                 expected_state.registers.set_flag(status_flag::negative, false);

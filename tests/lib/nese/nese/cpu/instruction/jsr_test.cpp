@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 
 #include <nese/cpu/instruction.hpp>
 #include <nese/cpu/instruction/catch_generators.hpp>
@@ -11,15 +12,17 @@ struct jsr_fixture : fixture
     template<typename ExecuteFunctorT>
     void test_absolute(const ExecuteFunctorT& execute)
     {
+        constexpr cycle_t cycle_cost = cpu_cycle_t(6);
+
         SECTION("absolute")
         {
-            const auto [addr, addr_to] = GENERATE_ADDR_FOR_ABSOLUTE();
+            const auto [addr, addr_to] = GENERATE(from_range(absolute_scenarios));
 
             state.registers.pc = addr;
             state.owned_memory.set_word(addr, addr_to);
 
             expected_state = state;
-            expected_state.cycle = cpu_cycle_t(6);
+            expected_state.cycle = cycle_cost;
             expected_state.registers.pc = addr_to;
 
             // high-order bytes push first since the stack grow top->down and the machine is little-endian

@@ -13,12 +13,14 @@ struct nop_fixture : fixture
     {
         SECTION("implied")
         {
-            const addr_t addr = GENERATE(addr_t{0x1234}, addr_t{0x4321});
+            constexpr cycle_t cycle_cost = cpu_cycle_t(2);
+
+            const addr_t addr = GENERATE(as<addr_t>(), 0x1234, 0x4321);
 
             state.registers.pc = addr;
 
             expected_state = state;
-            expected_state.cycle = cpu_cycle_t(2);
+            expected_state.cycle = cycle_cost;
 
             execute(state);
 

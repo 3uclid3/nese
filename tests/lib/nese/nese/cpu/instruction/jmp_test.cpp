@@ -13,13 +13,15 @@ struct jmp_fixture : fixture
     {
         SECTION("absolute")
         {
+            constexpr cycle_t cycle_cost = cpu_cycle_t(3);
+
             const auto [addr, addr_to] = GENERATE_ADDR_FOR_ABSOLUTE();
 
             state.registers.pc = addr;
             state.owned_memory.set_word(addr, addr_to);
 
             expected_state = state;
-            expected_state.cycle = cpu_cycle_t(3);
+            expected_state.cycle = cycle_cost;
             expected_state.registers.pc = addr_to;
 
             execute(state);

@@ -12,9 +12,11 @@ struct clc_fixture : fixture
     {
         SECTION("implied")
         {
+            constexpr cycle_t cycle_cost = cpu_cycle_t(2);
+
             expected_state = state;
             expected_state.registers.clear_flag(status_flag::carry);
-            expected_state.cycle = cpu_cycle_t(2);
+            expected_state.cycle = cycle_cost;
 
             SECTION("initially clear")
             {

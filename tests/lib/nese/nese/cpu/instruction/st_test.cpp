@@ -14,7 +14,7 @@ struct st_fixture : fixture
     {
         SECTION("zero_page")
         {
-            constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(3);
+            constexpr cycle_t cycle_cost = cpu_cycle_t(3);
 
             SECTION("addressing")
             {
