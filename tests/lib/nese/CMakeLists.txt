@@ -5,7 +5,6 @@ set(TEST_ROMS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test_roms")
 configure_file("test_config.hpp.in" "${DIR}/test_config.hpp")
 
 set(INCLUDES
-    "${DIR}/cpu/instruction/catch_generators.hpp"
     "${DIR}/cpu/instruction/fixture.hpp"
     "${DIR}/cpu/state_mock.hpp"
     "${DIR}/test_config.hpp"
