@@ -17,7 +17,7 @@ struct in_fixture : fixture
             {
                 set_register(state.registers, 0xFF);
 
-                state_mock expected_state = state;
+                expected_state = state;
                 expected_state.cycle = cpu_cycle_t(2);
                 set_register(expected_state.registers, 0x00);
                 expected_state.registers.set_flag(status_flag::zero, true);
@@ -25,14 +25,14 @@ struct in_fixture : fixture
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state();
             }
 
             SECTION("increment 0x7F results in overflow to 0x80")
             {
                 set_register(state.registers, 0x7F);
 
-                state_mock expected_state = state;
+                expected_state = state;
                 expected_state.cycle = cpu_cycle_t(2);
                 set_register(expected_state.registers, 0x80);
                 expected_state.registers.set_flag(status_flag::zero, false);
@@ -40,7 +40,7 @@ struct in_fixture : fixture
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state();
             }
 
             SECTION("increment negative")
@@ -51,7 +51,7 @@ struct in_fixture : fixture
 
                 set_register(state.registers, value);
 
-                state_mock expected_state = state;
+                expected_state = state;
                 expected_state.cycle = cpu_cycle_t(2);
                 set_register(expected_state.registers, value + 1);
                 expected_state.registers.set_flag(status_flag::zero, false);
@@ -59,7 +59,7 @@ struct in_fixture : fixture
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state();
             }
 
             SECTION("increment positive")
@@ -71,7 +71,7 @@ struct in_fixture : fixture
 
                 set_register(state.registers, value);
 
-                state_mock expected_state = state;
+                expected_state = state;
                 expected_state.cycle = cpu_cycle_t(2);
                 set_register(expected_state.registers, value + 1);
                 expected_state.registers.set_flag(status_flag::zero, false);
@@ -79,7 +79,7 @@ struct in_fixture : fixture
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state();
             }
         }
     }

@@ -13,6 +13,10 @@ namespace nese::cpu::instruction {
 static inline state_mock default_state_mock{[] {
     state_mock state;
 
+    state.registers.a = 0xA;
+    state.registers.x = 0xB;
+    state.registers.y = 0xC;
+
     byte_t value = 0xFF;
     for (addr_t i = 0; i < static_cast<addr_t>(memory::mapper::capacity - 1); ++i)
     {
@@ -122,13 +126,6 @@ struct fixture
             0xFF  // The largest value
         });
 
-    fixture()
-    {
-        state.registers.a = 0xA;
-        state.registers.x = 0xB;
-        state.registers.y = 0xC;
-    }
-
     static void set_register(state& state, register_id type, byte_t value)
     {
         switch (type)
@@ -147,16 +144,16 @@ struct fixture
         }
     }
 
-    void check_state(const state& expected_state, bool should_check_cycle = true) const
+    void check_state(bool should_check_cycle = true) const
     {
-        check_registers(expected_state);
-        check_memory(expected_state);
+        check_registers();
+        check_memory();
 
         if (should_check_cycle)
-            check_cycle(expected_state);
+            check_cycle();
     }
 
-    void check_registers(const state& expected_state) const
+    void check_registers() const
     {
         if (std::memcmp(&state.registers, &expected_state.registers, sizeof(registers)) != 0)
         {
@@ -180,7 +177,7 @@ struct fixture
         }
     }
 
-    void check_memory(const state& expected_state) const
+    void check_memory() const
     {
         const auto& expected_memory_buffer = expected_state.memory.get().get_bytes();
         const auto& memory_buffer = state.memory.get().get_bytes();
@@ -203,7 +200,7 @@ struct fixture
         }
     }
 
-    void check_cycle(const state& expected_state) const
+    void check_cycle() const
     {
         CHECK(state.cycle == expected_state.cycle);
     }
@@ -224,6 +221,7 @@ struct fixture
     }
 
     state_mock state{default_state_mock};
+    state_mock expected_state{default_state_mock};
 };
 
 constexpr std::string_view format_as(fixture::register_id type)

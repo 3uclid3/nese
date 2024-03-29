@@ -12,7 +12,7 @@ struct sec_fixture : fixture
     {
         SECTION("implied")
         {
-            state_mock expected_state = state;
+            expected_state = state;
             expected_state.registers.set_flag(status_flag::carry);
             expected_state.cycle = cpu_cycle_t(2);
 
@@ -22,7 +22,7 @@ struct sec_fixture : fixture
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state();
             }
 
             SECTION("initially set")
@@ -31,7 +31,7 @@ struct sec_fixture : fixture
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state();
             }
         }
     }

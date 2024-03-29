@@ -18,13 +18,13 @@ struct jmp_fixture : fixture
             state.registers.pc = addr;
             state.owned_memory.set_word(addr, addr_to);
 
-            state_mock expected_state = state;
+            expected_state = state;
             expected_state.cycle = cpu_cycle_t(3);
             expected_state.registers.pc = addr_to;
 
             execute(state);
 
-            check_state(expected_state);
+            check_state();
         }
     }
 };

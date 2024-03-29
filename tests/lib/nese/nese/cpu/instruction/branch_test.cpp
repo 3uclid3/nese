@@ -45,26 +45,26 @@ struct branch_fixture : fixture
             {
                 state.registers.set_flag(flag);
 
-                state_mock expected_state = state;
+                expected_state = state;
                 expected_state.registers.pc = branch == branch_when::is_set ? addr + offset + 1 : addr + 1;
                 expected_state.cycle = cpu_cycle_t(branch == branch_when::is_set ? (page_crossing ? 4 : 3) : 2);
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state();
             }
 
             DYNAMIC_SECTION(nese::format("branch taken when {} is clear", to_string_view(flag)))
             {
                 state.registers.clear_flag(flag);
 
-                state_mock expected_state = state;
+                expected_state = state;
                 expected_state.registers.pc = branch == branch_when::is_clear ? addr + offset + 1 : addr + 1;
                 expected_state.cycle = cpu_cycle_t(branch == branch_when::is_clear ? (page_crossing ? 4 : 3) : 2);
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state();
             }
         }
     }

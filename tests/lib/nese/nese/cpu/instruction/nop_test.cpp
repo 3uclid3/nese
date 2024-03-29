@@ -17,12 +17,12 @@ struct nop_fixture : fixture
 
             state.registers.pc = addr;
 
-            state_mock expected_state = state;
+            expected_state = state;
             expected_state.cycle = cpu_cycle_t(2);
 
             execute(state);
 
-            check_state(expected_state);
+            check_state();
         }
     }
 };

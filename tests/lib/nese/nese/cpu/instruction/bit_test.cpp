@@ -24,7 +24,7 @@ struct bit_fixture : fixture
 
             state.registers.a = 0xFF;
 
-            state_mock expected_state = state;
+            expected_state = state;
             expected_state.registers.pc = pc + 1;
             expected_state.registers.set_flag(status_flag::zero, (bit & 0xff) == 0);
             expected_state.registers.set_flag(status_flag::overflow, (bit & 0x40) != 0);
@@ -32,7 +32,7 @@ struct bit_fixture : fixture
 
             execute(state);
 
-            check_state(expected_state);
+            check_state();
         }
     }
 };

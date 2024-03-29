@@ -24,14 +24,14 @@ struct st_fixture : fixture
                 state.owned_memory.set_byte(pc_addr, base_addr);
                 set_register(state, store_register, 1);
 
-                state_mock expected_state = state;
+                expected_state = state;
                 expected_state.cycle = cycle_cost;
                 expected_state.owned_memory.set_byte(base_addr, 1);
                 expected_state.registers.pc = pc_addr + 1;
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state();
             }
 
             SECTION("value")
@@ -42,14 +42,14 @@ struct st_fixture : fixture
                 state.owned_memory.set_byte(default_pc_addr, zero_page_base_addr);
                 set_register(state, store_register, value);
 
-                state_mock expected_state = state;
+                expected_state = state;
                 expected_state.cycle = cycle_cost;
                 expected_state.owned_memory.set_byte(zero_page_base_addr, value);
                 expected_state.registers.pc = default_pc_addr + 1;
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state();
             }
         }
     }
@@ -71,14 +71,14 @@ struct st_fixture : fixture
                 set_register(state, index_register, idx);
                 set_register(state, store_register, 1);
 
-                state_mock expected_state = state;
+                expected_state = state;
                 expected_state.cycle = cycle_cost;
                 expected_state.registers.pc = pc_addr + 1;
                 expected_state.owned_memory.set_byte(indexed_addr, 1);
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state();
             }
 
             SECTION("value")
@@ -92,14 +92,14 @@ struct st_fixture : fixture
                 set_register(state, index_register, indexed_offset);
                 set_register(state, store_register, value);
 
-                state_mock expected_state = state;
+                expected_state = state;
                 expected_state.cycle = cycle_cost;
                 expected_state.registers.pc = default_pc_addr + 1;
                 expected_state.owned_memory.set_byte(indexed_addr, value);
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state();
             }
         }
     }
@@ -119,14 +119,14 @@ struct st_fixture : fixture
                 state.owned_memory.set_word(pc_addr, base_addr);
                 set_register(state, store_register, 1);
 
-                state_mock expected_state = state;
+                expected_state = state;
                 expected_state.cycle = cycle_cost;
                 expected_state.owned_memory.set_byte(base_addr, 1);
                 expected_state.registers.pc = pc_addr + 2;
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state();
             }
 
             SECTION("value")
@@ -137,14 +137,14 @@ struct st_fixture : fixture
                 state.owned_memory.set_word(default_pc_addr, zero_page_base_addr);
                 set_register(state, store_register, value);
 
-                state_mock expected_state = state;
+                expected_state = state;
                 expected_state.cycle = cycle_cost;
                 expected_state.owned_memory.set_byte(zero_page_base_addr, value);
                 expected_state.registers.pc = default_pc_addr + 2;
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state();
             }
         }
     }
