@@ -23,7 +23,7 @@ struct registers
     [[nodiscard]] constexpr bool has_flag(status_flag flag) const;
     constexpr void set_flag(status_flag flag, bool value);
     constexpr void set_flag(status_flag flag);
-    constexpr void unset_flag(status_flag flag);
+    constexpr void clear_flag(status_flag flag);
 
     constexpr void set_alu_flag(byte_t value);
 
@@ -50,7 +50,7 @@ constexpr void registers::set_flag(status_flag flag)
     p = p | flag;
 }
 
-constexpr void registers::unset_flag(status_flag flag)
+constexpr void registers::clear_flag(status_flag flag)
 {
     p = p & ~flag;
 }

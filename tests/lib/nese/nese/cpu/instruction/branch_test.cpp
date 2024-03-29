@@ -49,7 +49,7 @@ struct branch_fixture : fixture
 
             SECTION("branch not taken when carry is clear")
             {
-                state.registers.unset_flag(status_flag::carry);
+                state.registers.clear_flag(status_flag::carry);
 
                 state_mock expected_state = state;
                 expected_state.registers.pc = addr + 1;

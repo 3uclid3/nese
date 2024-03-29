@@ -16,9 +16,9 @@ struct sec_fixture : fixture
             expected_state.registers.set_flag(status_flag::carry);
             expected_state.cycle = cpu_cycle_t(2);
 
-            SECTION("initially unset")
+            SECTION("initially clear")
             {
-                state.registers.unset_flag(status_flag::carry);
+                state.registers.clear_flag(status_flag::carry);
 
                 execute(state);
 
