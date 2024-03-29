@@ -40,6 +40,17 @@ if(FEATURE_TESTS)
     set(ENABLE_CLANG_TIDY "ENABLE_CLANG_TIDY")
     set(ENABLE_CPPCHECK "ENABLE_CPPCHECK")
     set(ENABLE_COVERAGE "ENABLE_COVERAGE")
+
+    set(CPPCHECK_OPTIONS
+        --enable=style,performance,warning,portability
+        --inline-suppr
+        # We cannot act on a bug/missing feature of cppcheck
+        --suppress=internalAstError
+        --suppress=functionStatic
+        # if a file does not have an internalAstError, we get an unmatchedSuppression error
+        --suppress=unmatchedSuppression
+        --inconclusive
+    )
     
     check_sanitizers_support(ENABLE_SANITIZER_ADDRESS
                              ENABLE_SANITIZER_UNDEFINED_BEHAVIOR
@@ -60,7 +71,7 @@ endif()
 project_options(
     PREFIX "nese"
     ENABLE_CACHE
-    # ${ENABLE_CPPCHECK}
+    ${ENABLE_CPPCHECK}
     # ${ENABLE_CLANG_TIDY}
     ENABLE_VS_ANALYSIS
     # ENABLE_INTERPROCEDURAL_OPTIMIZATION
@@ -71,6 +82,7 @@ project_options(
     # ${ENABLE_SANITIZER_THREAD}
     # ${ENABLE_SANITIZER_MEMORY}
     WARNINGS_AS_ERRORS
+    CPPCHECK_OPTIONS ${CPPCHECK_OPTIONS}
 )
 
 add_subdirectory("lib")

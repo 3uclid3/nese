@@ -18,6 +18,8 @@ target_link_libraries(
         nesesan
 )
 
+target_disable_static_analysis(nesesan_test)
+
 target_include_interface_directories(nesesan_test "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Set the folder for the project in Visual Studio

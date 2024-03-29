@@ -33,6 +33,8 @@ target_link_libraries(
         nese
 )
 
+target_disable_static_analysis(nese_test)
+
 target_include_interface_directories(nese_test "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Set the folder for the project in Visual Studio

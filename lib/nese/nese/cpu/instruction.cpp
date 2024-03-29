@@ -43,7 +43,8 @@ enum rmw_opcode_base : u8_t
 
 constexpr bool is_page_crossing(addr_t addr, addr_t new_addr)
 {
-    return ((addr & 0xff00) != (new_addr & 0xff00));
+    constexpr addr_t mask = 0xff00;
+    return ((addr & mask) != (new_addr & mask));
 }
 
 using callback = void (*)(state&);

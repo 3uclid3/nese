@@ -29,7 +29,7 @@ byte_t ram::get_byte(addr_t addr) const
     return _data[addr];
 }
 
-void ram::set_byte(addr_t addr, byte_t value)
+void ram::set_byte(addr_t addr, byte_t val)
 {
     addr = redirect_addr(addr);
 
@@ -40,7 +40,7 @@ void ram::set_byte(addr_t addr, byte_t value)
         return;
     }
 
-    _data[addr] = value;
+    _data[addr] = val;
 }
 
 word_t ram::get_word(addr_t addr) const
@@ -51,13 +51,13 @@ word_t ram::get_word(addr_t addr) const
     return get_byte(addr) + static_cast<word_t>(static_cast<word_t>(get_byte(addr + 1)) << 8);
 }
 
-void ram::set_word(addr_t addr, word_t value)
+void ram::set_word(addr_t addr, word_t val)
 {
     addr = redirect_addr(addr);
 
     // NES 6502 CPU is little endian
-    set_byte(addr, value & 0xff);
-    set_byte(addr + 1, value >> 8);
+    set_byte(addr, val & 0xff);
+    set_byte(addr + 1, val >> 8);
 }
 
 void ram::set_bytes(addr_t addr, const byte_t* data, size_t size)

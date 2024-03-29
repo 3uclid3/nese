@@ -11,8 +11,8 @@ namespace nese {
 template<typename T>
 using ref_wrap = std::reference_wrapper<T>;
 
-using std::string;
-using std::string_view;
+using string = std::string;
+using string_view = std::string_view;
 
 using s8_t = std::int8_t;
 using s16_t = std::int16_t;

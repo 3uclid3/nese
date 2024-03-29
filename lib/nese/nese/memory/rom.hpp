@@ -37,7 +37,7 @@ public:
     u8_t get_mapper() const;
 
 private:
-    header _header;
+    header _header{};
     prg _prg;
     chr _chr;
 };
