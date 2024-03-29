@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 
 #include <nese/cpu/instruction.hpp>
 #include <nese/cpu/instruction/catch_generators.hpp>
@@ -15,55 +16,43 @@ struct st_fixture : fixture
         state.registers.y = 0xC;
     }
 
-    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_zero_page(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    template<typename ExecuteFunctorT>
+    void test_zero_page(const ExecuteFunctorT& execute, register_id store_register)
     {
-        auto [pc, val_addr] = GENERATE_ADDR_FOR_ZERO_PAGE();
-
-        const byte_t val = GENERATE(byte_t{0x00}, byte_t{0xC0}, byte_t{0xFF});
-
         SECTION("zero_page")
         {
-            INFO(fmt::format("pc = 0x{:04X}; val addr = 0x{:02X}); value = 0x{:02X}", pc, val_addr, val));
+            constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(3);
 
-            state.registers.pc = pc;
-            state.owned_memory.set_byte(pc, val_addr);
-            set_register(state.registers, val);
-
-            state_mock expected_state = state;
-            expected_state.cycle = cpu_cycle_t(3);
-            expected_state.owned_memory.set_byte(val_addr, val);
-            expected_state.registers.pc = pc + 1;
-
-            execute(state);
-
-            check_state(expected_state);
-        }
-    }
-
-    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_zero_page_x(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
-    {
-        auto [pc, val_addr, x] = GENERATE_ADDR_AND_OFFSET_FOR_ZERO_PAGE();
-        const byte_t val_addr_x = val_addr + x & 0xff;
-
-        const byte_t val = GENERATE(byte_t{0x00}, byte_t{0xC0}, byte_t{0xFF});
-
-        if (static_cast<byte_t>(pc) != val_addr_x)
-        {
-            SECTION("zero_page_x")
+            SECTION("addressing")
             {
-                INFO(fmt::format("pc = 0x{:04X}; value addr = 0x{:02X}); x = 0x{:02X}; value = 0x{:02X}", pc, val_addr, x, val));
+                const auto [pc_addr, base_addr] = GENERATE(from_range(zero_page_scenarios));
 
-                state.registers.pc = pc;
-                state.registers.x = x;
-                state.owned_memory.set_byte(pc, val_addr);
-                set_register(state.registers, val);
+                state.registers.pc = pc_addr;
+                state.owned_memory.set_byte(pc_addr, base_addr);
+                set_register(state, store_register, 1);
 
                 state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(4);
-                expected_state.owned_memory.set_byte(val_addr_x, val);
-                expected_state.registers.pc = pc + 1;
+                expected_state.cycle = cycle_cost;
+                expected_state.owned_memory.set_byte(base_addr, 1);
+                expected_state.registers.pc = pc_addr + 1;
+
+                execute(state);
+
+                check_state(expected_state);
+            }
+
+            SECTION("value")
+            {
+                const byte_t value = GENERATE(byte_t{0x00}, byte_t{0xC0}, byte_t{0xFF});
+
+                state.registers.pc = default_pc_addr;
+                state.owned_memory.set_byte(default_pc_addr, zero_page_base_addr);
+                set_register(state, store_register, value);
+
+                state_mock expected_state = state;
+                expected_state.cycle = cycle_cost;
+                expected_state.owned_memory.set_byte(zero_page_base_addr, value);
+                expected_state.registers.pc = default_pc_addr + 1;
 
                 execute(state);
 
@@ -72,29 +61,48 @@ struct st_fixture : fixture
         }
     }
 
-    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_zero_page_y(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    template<typename ExecuteFunctorT>
+    void test_zero_page_indexed(const ExecuteFunctorT& execute, register_id store_register, register_id index_register)
     {
-        auto [pc, val_addr, y] = GENERATE_ADDR_AND_OFFSET_FOR_ZERO_PAGE();
-        const byte_t val_addr_y = val_addr + y & 0xff;
-
-        const byte_t val = GENERATE(byte_t{0x00}, byte_t{0xC0}, byte_t{0xFF});
-
-        if (static_cast<byte_t>(pc) != val_addr_y)
+        DYNAMIC_SECTION(format("zero_page_{}", index_register))
         {
-            SECTION("zero_page_y")
-            {
-                INFO(fmt::format("pc = 0x{:04X}; value addr = 0x{:02X}); y = 0x{:02X}; value = 0x{:02X}", pc, val_addr, y, val));
+            constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(4);
 
-                state.registers.pc = pc;
-                state.registers.y = y;
-                state.owned_memory.set_byte(pc, val_addr);
-                set_register(state.registers, val);
+            SECTION("addressing")
+            {
+                const auto [pc_addr, base_addr, idx] = GENERATE(from_range(zero_page_indexed_scenarios));
+                const byte_t indexed_addr = base_addr + idx & 0xff;
+
+                state.registers.pc = pc_addr;
+                state.owned_memory.set_byte(pc_addr, base_addr);
+                set_register(state, index_register, idx);
+                set_register(state, store_register, 1);
 
                 state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(4);
-                expected_state.owned_memory.set_byte(val_addr_y, val);
-                expected_state.registers.pc = pc + 1;
+                expected_state.cycle = cycle_cost;
+                expected_state.registers.pc = pc_addr + 1;
+                expected_state.owned_memory.set_byte(indexed_addr, 1);
+
+                execute(state);
+
+                check_state(expected_state);
+            }
+
+            SECTION("value")
+            {
+                constexpr byte_t indexed_addr = zero_page_base_addr + indexed_offset;
+
+                const byte_t value = GENERATE(byte_t{0x00}, byte_t{0xC0}, byte_t{0xFF});
+
+                state.registers.pc = default_pc_addr;
+                state.owned_memory.set_byte(default_pc_addr, zero_page_base_addr);
+                set_register(state, index_register, indexed_offset);
+                set_register(state, store_register, value);
+
+                state_mock expected_state = state;
+                expected_state.cycle = cycle_cost;
+                expected_state.registers.pc = default_pc_addr + 1;
+                expected_state.owned_memory.set_byte(indexed_addr, value);
 
                 execute(state);
 
@@ -103,46 +111,64 @@ struct st_fixture : fixture
         }
     }
 
-    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_absolute(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    template<typename ExecuteFunctorT>
+    void test_absolute(const ExecuteFunctorT& execute, register_id store_register)
     {
         SECTION("absolute")
         {
-            auto [pc, val_addr] = GENERATE_ADDR_FOR_ABSOLUTE();
+            constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(4);
 
-            const byte_t val = GENERATE(byte_t{0x00}, byte_t{0xC0}, byte_t{0xFF});
+            SECTION("addressing")
+            {
+                const auto [pc_addr, base_addr] = GENERATE(from_range(absolute_scenarios));
 
-            INFO(fmt::format("pc = 0x{:04X}; val addr = 0x{:04X}); value = 0x{:02X}", pc, val_addr, val));
+                state.registers.pc = pc_addr;
+                state.owned_memory.set_word(pc_addr, base_addr);
+                set_register(state, store_register, 1);
 
-            state.registers.pc = pc;
-            state.owned_memory.set_word(pc, val_addr);
+                state_mock expected_state = state;
+                expected_state.cycle = cycle_cost;
+                expected_state.owned_memory.set_byte(base_addr, 1);
+                expected_state.registers.pc = pc_addr + 2;
 
-            set_register(state.registers, val);
+                execute(state);
 
-            state_mock expected_state = state;
-            expected_state.cycle = cpu_cycle_t(4);
-            expected_state.owned_memory.set_byte(val_addr, val);
-            expected_state.registers.pc = pc + 2;
+                check_state(expected_state);
+            }
 
-            execute(state);
+            SECTION("value")
+            {
+                const byte_t value = GENERATE(byte_t{0x00}, byte_t{0xC0}, byte_t{0xFF});
 
-            check_state(expected_state);
+                state.registers.pc = default_pc_addr;
+                state.owned_memory.set_word(default_pc_addr, zero_page_base_addr);
+                set_register(state, store_register, value);
+
+                state_mock expected_state = state;
+                expected_state.cycle = cycle_cost;
+                expected_state.owned_memory.set_byte(zero_page_base_addr, value);
+                expected_state.registers.pc = default_pc_addr + 2;
+
+                execute(state);
+
+                check_state(expected_state);
+            }
         }
     }
 };
 
 TEST_CASE_METHOD(st_fixture, "stx", "[cpu][instruction]")
 {
-    test_zero_page(execute_stx<addr_mode::zero_page>, set_register_x);
-    test_zero_page_y(execute_stx<addr_mode::zero_page_y>, set_register_x);
-    test_absolute(execute_stx<addr_mode::absolute>, set_register_x);
+    test_zero_page(execute_stx<addr_mode::zero_page>, register_id::x);
+    test_zero_page_indexed(execute_stx<addr_mode::zero_page_y>, register_id::x, register_id::y);
+    test_absolute(execute_stx<addr_mode::absolute>, register_id::x);
 }
 
 TEST_CASE_METHOD(st_fixture, "sty", "[cpu][instruction]")
 {
-    test_zero_page(execute_sty<addr_mode::zero_page>, set_register_y);
-    test_zero_page_x(execute_sty<addr_mode::zero_page_x>, set_register_y);
-    test_absolute(execute_sty<addr_mode::absolute>, set_register_y);
+    test_zero_page(execute_sty<addr_mode::zero_page>, register_id::y);
+    test_zero_page_indexed(execute_sty<addr_mode::zero_page_x>, register_id::y, register_id::x);
+    test_absolute(execute_sty<addr_mode::absolute>, register_id::y);
 }
 
 } // namespace nese::cpu::instruction
