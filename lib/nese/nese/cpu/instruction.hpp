@@ -25,6 +25,11 @@ byte_t get_opcode_operand_byte_count(opcode_t opcode);
 
 bool execute(opcode_t opcode, state& state);
 
+// BCC (Branch if Carry Clear):
+// If the carry flag is clear, it adds the relative displacement to the program counter to branch to a new location.
+template<addr_mode AddrModeT>
+void execute_bcc(state& state);
+
 // BCS (Branch if Carry Set):
 // If the carry flag is set, it adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrModeT>
@@ -126,6 +131,7 @@ EXPLICIT_INSTANTIATION_ALU(lda);
 
 EXPLICIT_INSTANTIATION_ALU_NO_IMMEDIATE(sta);
 
+EXPLICIT_INSTANTIATION(bcc, addr_mode::relative);
 EXPLICIT_INSTANTIATION(bcs, addr_mode::relative);
 
 EXPLICIT_INSTANTIATION(clc, addr_mode::relative);

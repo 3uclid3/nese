@@ -3,14 +3,21 @@
 
 #include <nese/cpu/instruction.hpp>
 #include <nese/cpu/instruction/fixture.hpp>
+#include <nese/cpu/status_flag.hpp>
 #include <nese/utility/format.hpp>
 
 namespace nese::cpu::instruction {
 
 struct branch_fixture : fixture
 {
+    enum class branch_when
+    {
+        is_set = 1,
+        is_clear = 0
+    };
+
     template<typename ExecuteFunctorT>
-    void test_relative(const ExecuteFunctorT& execute)
+    void test_relative(const ExecuteFunctorT& execute, status_flag flag, branch_when branch)
     {
         SECTION("relative")
         {
@@ -29,31 +36,31 @@ struct branch_fixture : fixture
                     {0x0FFF, 0x01, true}  // Crosses from 0x0Fxx to 0x10xx page
                 }));
 
-            INFO(format("addr = 0x{:04X} offset = 0x{:02X} {} page_crossing", addr, offset, page_crossing ? "is" : "is not"));
+            INFO(nese::format("addr = 0x{:04X} offset = 0x{:02X} {} page_crossing", addr, offset, page_crossing ? "is" : "is not"));
 
             state.registers.pc = addr;
             state.owned_memory.set_byte(state.registers.pc, offset);
 
-            SECTION("branch taken when carry is set")
+            DYNAMIC_SECTION(nese::format("branch taken when {} is set", to_string_view(flag)))
             {
-                state.registers.set_flag(status_flag::carry);
+                state.registers.set_flag(flag);
 
                 state_mock expected_state = state;
-                expected_state.registers.pc = addr + offset + 1;
-                expected_state.cycle = cpu_cycle_t(page_crossing ? 4 : 3);
+                expected_state.registers.pc = branch == branch_when::is_set ? addr + offset + 1 : addr + 1;
+                expected_state.cycle = cpu_cycle_t(branch == branch_when::is_set ? (page_crossing ? 4 : 3) : 2);
 
                 execute(state);
 
                 check_state(expected_state);
             }
 
-            SECTION("branch not taken when carry is clear")
+            DYNAMIC_SECTION(nese::format("branch taken when {} is clear", to_string_view(flag)))
             {
-                state.registers.clear_flag(status_flag::carry);
+                state.registers.clear_flag(flag);
 
                 state_mock expected_state = state;
-                expected_state.registers.pc = addr + 1;
-                expected_state.cycle = cpu_cycle_t(2);
+                expected_state.registers.pc = branch == branch_when::is_clear ? addr + offset + 1 : addr + 1;
+                expected_state.cycle = cpu_cycle_t(branch == branch_when::is_clear ? (page_crossing ? 4 : 3) : 2);
 
                 execute(state);
 
@@ -63,9 +70,14 @@ struct branch_fixture : fixture
     }
 };
 
+TEST_CASE_METHOD(branch_fixture, "bcc", "[cpu][instruction]")
+{
+    test_relative(execute_bcc<addr_mode::relative>, status_flag::carry, branch_when::is_clear);
+}
+
 TEST_CASE_METHOD(branch_fixture, "bcs", "[cpu][instruction]")
 {
-    test_relative(execute_bcs<addr_mode::relative>);
+    test_relative(execute_bcs<addr_mode::relative>, status_flag::carry, branch_when::is_set);
 }
 
 } // namespace nese::cpu::instruction
