@@ -30,6 +30,11 @@ bool execute(opcode_t opcode, state& state);
 template<addr_mode AddrModeT>
 void execute_bcs(state& state);
 
+// CLC (Clear Carry Flag):
+// Clears the carry flag to 0.
+template<addr_mode AddrModeT>
+void execute_clc(state& state);
+
 // DEY (Decrement X Register):
 // Decreases the value in the X register by one, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
@@ -122,6 +127,8 @@ EXPLICIT_INSTANTIATION_ALU(lda);
 EXPLICIT_INSTANTIATION_ALU_NO_IMMEDIATE(sta);
 
 EXPLICIT_INSTANTIATION(bcs, addr_mode::relative);
+
+EXPLICIT_INSTANTIATION(clc, addr_mode::relative);
 
 EXPLICIT_INSTANTIATION(inx, addr_mode::implied);
 EXPLICIT_INSTANTIATION(iny, addr_mode::implied);
