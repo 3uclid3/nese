@@ -13,7 +13,7 @@ namespace nese::cpu {
 
 struct fixture
 {
-    void run_rom(std::string_view rom_name, word_t end_pc, cycle_t cycle = {})
+    void run_rom(std::string_view rom_name, word_t end_pc, cpu_cycle_t cycle = {})
     {
         std::shared_ptr<spdlog::logger> nintendulator_logger = spdlog::basic_logger_st("nintendulator", fmt::format("cpu_nintendulator_{}.log", rom_name), true);
         nintendulator_logger->set_level(spdlog::level::trace);
@@ -62,7 +62,7 @@ struct fixture
 
 TEST_CASE_METHOD(fixture, "nestest", "[cpu][instruction][!mayfail]")
 {
-    run_rom("nestest.nes", 0x0005, cycle_t{7});
+    run_rom("nestest.nes", 0x0005, cpu_cycle_t{7});
     
     CHECK(state.registers.s == 0xff);
     
