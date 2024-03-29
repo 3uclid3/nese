@@ -133,6 +133,8 @@ struct table
 
         ADD(nop, 0xea, addr_mode::implied);
 
+        ADD(sec, 0x38, addr_mode::implied);
+
         ADD(stx, 0x86, addr_mode::zero_page);
         ADD(stx, 0x96, addr_mode::zero_page_y);
         ADD(stx, 0x8e, addr_mode::absolute);
@@ -465,6 +467,14 @@ void execute_nop(state& state [[maybe_unused]])
     state.cycle += cpu_cycle_t(2);
 }
 
+template<addr_mode AddrMode>
+void execute_sec(state& state)
+{
+    state.registers.set_flag(status_flag::carry);
+
+    state.cycle += cpu_cycle_t(2);
+}
+
 template<addr_mode AddrModeT>
 void execute_st_impl(state& state, byte_t value)
 {
@@ -536,6 +546,8 @@ EXPLICIT_INSTANTIATE(ldy, addr_mode::zero_page);
 EXPLICIT_INSTANTIATE(ldy, addr_mode::zero_page_x);
 
 EXPLICIT_INSTANTIATE(nop, addr_mode::implied);
+
+EXPLICIT_INSTANTIATE(sec, addr_mode::implied);
 
 EXPLICIT_INSTANTIATE(stx, addr_mode::zero_page);
 EXPLICIT_INSTANTIATE(stx, addr_mode::zero_page_y);

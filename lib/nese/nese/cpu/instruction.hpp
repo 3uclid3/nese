@@ -75,6 +75,11 @@ void execute_ldy(state& state);
 template<addr_mode AddrModeT>
 void execute_nop(state& state);
 
+// SEC (Set Carry Flag):
+// Sets the carry flag to 1.
+template<addr_mode AddrMode>
+void execute_sec(state& state);
+
 // STA (Store Accumulator):
 // Stores the value in the accumulator into a specific location in memory.
 template<addr_mode AddrModeT>
@@ -130,6 +135,8 @@ EXPLICIT_INSTANTIATION(ldy, addr_mode::zero_page);
 EXPLICIT_INSTANTIATION(ldy, addr_mode::zero_page_x);
 
 EXPLICIT_INSTANTIATION(nop, addr_mode::implied);
+
+EXPLICIT_INSTANTIATION(sec, addr_mode::implied);
 
 EXPLICIT_INSTANTIATION(stx, addr_mode::zero_page);
 EXPLICIT_INSTANTIATION(stx, addr_mode::zero_page_y);
