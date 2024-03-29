@@ -29,6 +29,7 @@ struct ld_fixture : fixture
                 state.owned_memory.set_byte(addr, 0);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(2);
                 set_register(expected_state.registers, 0);
                 expected_state.registers.pc = addr + 1;
                 expected_state.registers.set_flag(status_flag::zero, true);
@@ -46,6 +47,7 @@ struct ld_fixture : fixture
                 state.owned_memory.set_byte(addr, value);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(2);
                 set_register(expected_state.registers, value);
 
                 expected_state.registers.pc = addr + 1;
@@ -64,6 +66,7 @@ struct ld_fixture : fixture
                 state.owned_memory.set_byte(addr, value);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(2);
                 set_register(expected_state.registers, value);
                 expected_state.registers.pc = addr + 1;
                 expected_state.registers.set_flag(status_flag::zero, false);
@@ -91,6 +94,7 @@ struct ld_fixture : fixture
                 state.owned_memory.set_byte(val_addr, 0);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(3);
                 set_register(expected_state.registers, 0);
                 expected_state.registers.pc = pc + 1;
                 expected_state.registers.set_flag(status_flag::zero, true);
@@ -108,6 +112,7 @@ struct ld_fixture : fixture
                 state.owned_memory.set_byte(val_addr, value);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(3);
                 set_register(expected_state.registers, value);
 
                 expected_state.registers.pc = pc + 1;
@@ -126,6 +131,7 @@ struct ld_fixture : fixture
                 state.owned_memory.set_byte(val_addr, value);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(3);
                 set_register(expected_state.registers, value);
                 expected_state.registers.pc = pc + 1;
                 expected_state.registers.set_flag(status_flag::zero, false);
@@ -156,6 +162,7 @@ struct ld_fixture : fixture
                 state.owned_memory.set_byte(val_addr_x, 0);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(4);
                 set_register(expected_state.registers, 0);
                 expected_state.registers.pc = pc + 1;
                 expected_state.registers.set_flag(status_flag::zero, true);
@@ -173,6 +180,7 @@ struct ld_fixture : fixture
                 state.owned_memory.set_byte(val_addr_x, value);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(4);
                 set_register(expected_state.registers, value);
 
                 expected_state.registers.pc = pc + 1;
@@ -191,6 +199,7 @@ struct ld_fixture : fixture
                 state.owned_memory.set_byte(val_addr_x, value);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(4);
                 set_register(expected_state.registers, value);
                 expected_state.registers.pc = pc + 1;
                 expected_state.registers.set_flag(status_flag::zero, false);
@@ -221,6 +230,7 @@ struct ld_fixture : fixture
                 state.owned_memory.set_byte(val_addr_y, 0);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(4);
                 set_register(expected_state.registers, 0);
                 expected_state.registers.pc = pc + 1;
                 expected_state.registers.set_flag(status_flag::zero, true);
@@ -238,6 +248,7 @@ struct ld_fixture : fixture
                 state.owned_memory.set_byte(val_addr_y, value);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(4);
                 set_register(expected_state.registers, value);
 
                 expected_state.registers.pc = pc + 1;
@@ -256,6 +267,7 @@ struct ld_fixture : fixture
                 state.owned_memory.set_byte(val_addr_y, value);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(4);
                 set_register(expected_state.registers, value);
                 expected_state.registers.pc = pc + 1;
                 expected_state.registers.set_flag(status_flag::zero, false);
@@ -285,6 +297,7 @@ struct ld_fixture : fixture
                 state.owned_memory.set_byte(val_addr, 0);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(4);
                 set_register(expected_state.registers, 0);
                 expected_state.registers.pc = pc + 2;
                 expected_state.registers.set_flag(status_flag::zero, true);
@@ -302,6 +315,7 @@ struct ld_fixture : fixture
                 state.owned_memory.set_byte(val_addr, value);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(4);
                 set_register(expected_state.registers, value);
 
                 expected_state.registers.pc = pc + 2;
@@ -320,6 +334,7 @@ struct ld_fixture : fixture
                 state.owned_memory.set_byte(val_addr, value);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(4);
                 set_register(expected_state.registers, value);
                 expected_state.registers.pc = pc + 2;
                 expected_state.registers.set_flag(status_flag::zero, false);
@@ -358,7 +373,7 @@ struct ld_fixture : fixture
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state(expected_state, false);
             }
 
             SECTION("load a negative")
@@ -376,7 +391,7 @@ struct ld_fixture : fixture
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state(expected_state, false);
             }
 
             SECTION("load a positive")
@@ -393,7 +408,7 @@ struct ld_fixture : fixture
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state(expected_state, false);
             }
         }
     }
@@ -424,7 +439,7 @@ struct ld_fixture : fixture
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state(expected_state, false);
             }
 
             SECTION("load a negative")
@@ -442,7 +457,7 @@ struct ld_fixture : fixture
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state(expected_state, false);
             }
 
             SECTION("load a positive")
@@ -459,7 +474,7 @@ struct ld_fixture : fixture
 
                 execute(state);
 
-                check_state(expected_state);
+                check_state(expected_state, false);
             }
         }
     }

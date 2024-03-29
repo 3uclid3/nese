@@ -18,6 +18,7 @@ struct in_fixture : fixture
                 set_register(state.registers, 0xFF);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(2);
                 set_register(expected_state.registers, 0x00);
                 expected_state.registers.set_flag(status_flag::zero, true);
                 expected_state.registers.set_flag(status_flag::negative, false);
@@ -32,6 +33,7 @@ struct in_fixture : fixture
                 set_register(state.registers, 0x7F);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(2);
                 set_register(expected_state.registers, 0x80);
                 expected_state.registers.set_flag(status_flag::zero, false);
                 expected_state.registers.set_flag(status_flag::negative, true);
@@ -50,6 +52,7 @@ struct in_fixture : fixture
                 set_register(state.registers, value);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(2);
                 set_register(expected_state.registers, value + 1);
                 expected_state.registers.set_flag(status_flag::zero, false);
                 expected_state.registers.set_flag(status_flag::negative, true);
@@ -69,6 +72,7 @@ struct in_fixture : fixture
                 set_register(state.registers, value);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(2);
                 set_register(expected_state.registers, value + 1);
                 expected_state.registers.set_flag(status_flag::zero, false);
                 expected_state.registers.set_flag(status_flag::negative, false);

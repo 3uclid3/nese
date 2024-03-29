@@ -19,6 +19,7 @@ struct jsr_fixture : fixture
             state.owned_memory.set_word(addr, addr_to);
 
             state_mock expected_state = state;
+            expected_state.cycle = cpu_cycle_t(6);
             expected_state.registers.pc = addr_to;
 
             // high-order bytes push first since the stack grow top->down and the machine is little-endian

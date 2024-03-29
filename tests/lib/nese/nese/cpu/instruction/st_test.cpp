@@ -31,6 +31,7 @@ struct st_fixture : fixture
             set_register(state.registers, val);
 
             state_mock expected_state = state;
+            expected_state.cycle = cpu_cycle_t(3);
             expected_state.owned_memory.set_byte(val_addr, val);
             expected_state.registers.pc = pc + 1;
 
@@ -60,6 +61,7 @@ struct st_fixture : fixture
                 set_register(state.registers, val);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(4);
                 expected_state.owned_memory.set_byte(val_addr_x, val);
                 expected_state.registers.pc = pc + 1;
 
@@ -90,6 +92,7 @@ struct st_fixture : fixture
                 set_register(state.registers, val);
 
                 state_mock expected_state = state;
+                expected_state.cycle = cpu_cycle_t(4);
                 expected_state.owned_memory.set_byte(val_addr_y, val);
                 expected_state.registers.pc = pc + 1;
 
@@ -117,6 +120,7 @@ struct st_fixture : fixture
             set_register(state.registers, val);
 
             state_mock expected_state = state;
+            expected_state.cycle = cpu_cycle_t(4);
             expected_state.owned_memory.set_byte(val_addr, val);
             expected_state.registers.pc = pc + 2;
 

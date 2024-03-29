@@ -29,7 +29,7 @@ struct fixture
         state.registers.y = 0xC;
     }
 
-    void check_state(const state& expected_state, bool should_check_cycle = false) const
+    void check_state(const state& expected_state, bool should_check_cycle = true) const
     {
         check_registers(expected_state);
         check_memory(expected_state);

@@ -395,12 +395,14 @@ template<addr_mode AddrModeT>
 void execute_inx(state& state)
 {
     state.registers.set_alu_flag(++state.registers.x);
+    state.cycle += cpu_cycle_t(2);
 }
 
 template<addr_mode AddrModeT>
 void execute_iny(state& state)
 {
     state.registers.set_alu_flag(++state.registers.y);
+    state.cycle += cpu_cycle_t(2);
 }
 
 template<addr_mode AddrModeT>
@@ -424,6 +426,7 @@ void execute_jsr(state& state)
     push_word(state, state.registers.pc + 1);
 
     state.registers.pc = decode_operand_addr<AddrModeT>(state);
+    state.cycle += cpu_cycle_t(6);
 }
 
 template<addr_mode AddrModeT>
@@ -459,6 +462,7 @@ void execute_ldy(state& state)
 template<addr_mode AddrModeT>
 void execute_nop(state& state [[maybe_unused]])
 {
+    state.cycle += cpu_cycle_t(2);
 }
 
 template<addr_mode AddrModeT>
@@ -473,18 +477,24 @@ template<addr_mode AddrModeT>
 void execute_sta(state& state)
 {
     execute_st_impl<AddrModeT>(state, state.registers.a);
+
+    state.cycle += get_addr_mode_cycle_cost<AddrModeT>(true);
 }
 
 template<addr_mode AddrModeT>
 void execute_stx(state& state)
 {
     execute_st_impl<AddrModeT>(state, state.registers.x);
+
+    state.cycle += get_addr_mode_cycle_cost<AddrModeT>();
 }
 
 template<addr_mode AddrModeT>
 void execute_sty(state& state)
 {
     execute_st_impl<AddrModeT>(state, state.registers.y);
+
+    state.cycle += get_addr_mode_cycle_cost<AddrModeT>();
 }
 
 #define EXPLICIT_INSTANTIATE(mnemonic, addr_mode) \

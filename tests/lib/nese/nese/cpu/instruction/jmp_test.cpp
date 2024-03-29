@@ -24,7 +24,7 @@ struct jmp_fixture : fixture
 
             execute(state);
 
-            check_state(expected_state, true);
+            check_state(expected_state);
         }
     }
 };
