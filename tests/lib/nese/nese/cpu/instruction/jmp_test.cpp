@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 
 #include <nese/cpu/instruction.hpp>
 #include <nese/cpu/instruction/catch_generators.hpp>
@@ -15,7 +16,7 @@ struct jmp_fixture : fixture
         {
             constexpr cycle_t cycle_cost = cpu_cycle_t(3);
 
-            const auto [addr, addr_to] = GENERATE_ADDR_FOR_ABSOLUTE();
+            const auto [addr, addr_to] = GENERATE(from_range(absolute_scenarios));
 
             state.registers.pc = addr;
             state.owned_memory.set_word(addr, addr_to);
