@@ -80,4 +80,9 @@ TEST_CASE_METHOD(branch_fixture, "bcs", "[cpu][instruction]")
     test_relative(execute_bcs<addr_mode::relative>, status_flag::carry, branch_when::is_set);
 }
 
+TEST_CASE_METHOD(branch_fixture, "beq", "[cpu][instruction]")
+{
+    test_relative(execute_beq<addr_mode::relative>, status_flag::zero, branch_when::is_set);
+}
+
 } // namespace nese::cpu::instruction

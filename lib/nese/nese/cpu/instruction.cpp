@@ -117,6 +117,7 @@ struct table
 
         ADD(bcc, 0x90, addr_mode::relative);
         ADD(bcs, 0xb0, addr_mode::relative);
+        ADD(beq, 0xf0, addr_mode::relative);
 
         ADD(clc, 0x18, addr_mode::implied);
 
@@ -435,6 +436,12 @@ void execute_bcs(state& state)
 }
 
 template<addr_mode AddrModeT>
+void execute_beq(state& state)
+{
+    execute_branch(state, state.registers.is_flag_set(status_flag::zero));
+}
+
+template<addr_mode AddrModeT>
 void execute_clc(state& state)
 {
     state.registers.clear_flag(status_flag::carry);
@@ -578,6 +585,7 @@ EXPLICIT_INSTANTIATE_ALU_NO_IMMEDIATE(sta);
 
 EXPLICIT_INSTANTIATE(bcc, addr_mode::relative);
 EXPLICIT_INSTANTIATE(bcs, addr_mode::relative);
+EXPLICIT_INSTANTIATE(beq, addr_mode::relative);
 
 EXPLICIT_INSTANTIATE(clc, addr_mode::implied);
 

@@ -35,6 +35,11 @@ void execute_bcc(state& state);
 template<addr_mode AddrModeT>
 void execute_bcs(state& state);
 
+// BEQ (Branch if Equal):
+// If the zero flag is set, adds the relative displacement to the program counter to branch to a new location.
+template<addr_mode AddrModeT>
+void execute_beq(state& state);
+
 // CLC (Clear Carry Flag):
 // Clears the carry flag to 0.
 template<addr_mode AddrModeT>
@@ -133,6 +138,7 @@ EXPLICIT_INSTANTIATION_ALU_NO_IMMEDIATE(sta);
 
 EXPLICIT_INSTANTIATION(bcc, addr_mode::relative);
 EXPLICIT_INSTANTIATION(bcs, addr_mode::relative);
+EXPLICIT_INSTANTIATION(beq, addr_mode::relative);
 
 EXPLICIT_INSTANTIATION(clc, addr_mode::relative);
 
