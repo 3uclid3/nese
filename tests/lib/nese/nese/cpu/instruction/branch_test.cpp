@@ -21,7 +21,7 @@ struct branch_fixture : fixture
                     {0x0080, 0x7E, false}, // Near the middle of the first page, large offset but no crossing
 
                     // These entries need correction based on the understanding of page crossing
-                    {0x00F0, 0x0F, true}, // Corrected: Crosses from 0x00xx to 0x01xx page
+                    {0x00F0, 0x0F, true}, // Crosses from 0x00xx to 0x01xx page
 
                     // Page crossing examples
                     {0x00FE, 0x01, true}, // Crosses from 0x00xx to 0x01xx page
