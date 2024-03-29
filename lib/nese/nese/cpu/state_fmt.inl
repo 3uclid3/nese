@@ -1,4 +1,5 @@
 #include <nese/cpu/instruction.hpp>
+#include <nese/cycle.hpp>
 #include <nese/memory/mapper.hpp>
 #include <nese/utility/assert.hpp>
 #include <nese/utility/format.hpp>
@@ -211,9 +212,9 @@ void append_ppu(auto& out, const state& state)
 
 void append_cycle(auto& out, const state& state)
 {
-    const cycle_t cycle_count_in_scanline = state.cycle % ppu_scanline_cycle;
+    const cpu_cycle_t cpu_cycle_count_in_scanline = to_cpu_cycle(state.cycle % ppu_scanline_cycle);
 
-    out = fmt::format_to(out, "CYC:{}", cycle_count_in_scanline.count());
+    out = fmt::format_to(out, "CYC:{}", cpu_cycle_count_in_scanline.count());
 }
 
 }} // namespace nese::cpu::details
