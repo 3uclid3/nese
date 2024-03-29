@@ -19,6 +19,7 @@ struct jmp_fixture : fixture
             state.owned_memory.set_word(addr, addr_to);
 
             state_mock expected_state = state;
+            state.cycle = cycle_t(3);
             expected_state.registers.pc = addr_to;
 
             execute(state);

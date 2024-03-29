@@ -383,6 +383,7 @@ void execute_jmp(state& state)
     }
 
     state.registers.pc = new_addr;
+    state.cycle += cycle_t(3);
 }
 
 template<addr_mode AddrModeT>
