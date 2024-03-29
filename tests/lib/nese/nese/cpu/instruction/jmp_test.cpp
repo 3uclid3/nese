@@ -2,7 +2,6 @@
 #include <catch2/generators/catch_generators_range.hpp>
 
 #include <nese/cpu/instruction.hpp>
-#include <nese/cpu/instruction/catch_generators.hpp>
 #include <nese/cpu/instruction/fixture.hpp>
 
 namespace nese::cpu::instruction {

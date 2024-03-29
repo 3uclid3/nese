@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 
 #include <nese/cpu/instruction.hpp>
-#include <nese/cpu/instruction/catch_generators.hpp>
 #include <nese/cpu/instruction/fixture.hpp>
 
 namespace nese::cpu::instruction {
@@ -13,7 +13,7 @@ struct bit_fixture : fixture
     {
         SECTION("zero_page")
         {
-            const auto [pc, val_addr] = GENERATE_ADDR_FOR_ZERO_PAGE();
+            const auto [pc, val_addr] = GENERATE(from_range(zero_page_scenarios));
 
             state.registers.pc = pc;
             state.owned_memory.set_byte(pc, val_addr);
