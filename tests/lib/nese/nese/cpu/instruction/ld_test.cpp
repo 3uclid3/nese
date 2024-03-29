@@ -185,7 +185,7 @@ struct ld_fixture : fixture
     template<typename ExecuteFunctorT>
     void test_zero_page_indexed(const ExecuteFunctorT& execute, register_id load_register, register_id index_register)
     {
-        SECTION("zero_page_x")
+        DYNAMIC_SECTION(format("zero_page_{}", index_register))
         {
             constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(4);
 
@@ -195,7 +195,6 @@ struct ld_fixture : fixture
                 const byte_t indexed_addr = base_addr + idx & 0xff;
 
                 state.registers.pc = pc_addr;
-                state.registers.x = idx;
                 state.owned_memory.set_byte(pc_addr, base_addr);
                 state.owned_memory.set_byte(indexed_addr, 1);
                 set_register(state, index_register, idx);
