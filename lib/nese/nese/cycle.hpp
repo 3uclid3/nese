@@ -18,6 +18,7 @@ using ppu_cycle_t = std::chrono::duration<s64_t, std::ratio<1, 1>>;
 // NES 6502 CPU 21.477272 / 12 MHz
 // NES PPU 21.477272 / 4 MHz
 static inline constexpr cycle_t clock_hz{21477272ll / 4};
+static inline constexpr ppu_cycle_t ppu_scanline_cycle(341);  
 
 static constexpr cycle_t ms_to_cycle(s64_t ms)
 {
