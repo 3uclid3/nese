@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 
 #include <nese/cpu/instruction.hpp>
 #include <nese/cpu/instruction/catch_generators.hpp>
@@ -15,466 +16,428 @@ struct ld_fixture : fixture
         state.registers.y = 0xC;
     }
 
-    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_immediate(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    template<typename ExecuteFunctorT>
+    void test_immediate(const ExecuteFunctorT& execute, register_id load_register)
     {
         SECTION("immediate")
         {
-            const addr_t addr = GENERATE_ADDR();
+            constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(2);
 
-            state.registers.pc = addr;
-
-            SECTION("load zero")
+            SECTION("addressing")
             {
-                state.owned_memory.set_byte(addr, 0);
+                const addr_t addr = GENERATE(as<addr_t>(), 0x0000, 0x7FFE, 0xFFFE);
+
+                state.registers.pc = addr;
+                state.owned_memory.set_byte(addr, 1);
 
                 state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(2);
-                set_register(expected_state.registers, 0);
+                expected_state.cycle = cycle_cost;
                 expected_state.registers.pc = addr + 1;
-                expected_state.registers.set_flag(status_flag::zero, true);
-                expected_state.registers.set_flag(status_flag::negative, false);
+                set_register(expected_state, load_register, 1);
 
                 execute(state);
 
                 check_state(expected_state);
             }
 
-            SECTION("load a negative")
+            SECTION("flags")
             {
-                const byte_t value = GENERATE_NEGATIVE_BYTE();
+                state.registers.pc = default_pc_addr;
 
-                state.owned_memory.set_byte(addr, value);
+                SECTION("load a zero")
+                {
+                    state.owned_memory.set_byte(default_pc_addr, 0);
 
-                state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(2);
-                set_register(expected_state.registers, value);
+                    state_mock expected_state = state;
+                    expected_state.cycle = cycle_cost;
+                    expected_state.registers.pc = default_pc_addr + 1;
+                    expected_state.registers.set_flag(status_flag::zero, true);
+                    expected_state.registers.set_flag(status_flag::negative, false);
+                    set_register(expected_state, load_register, 0);
 
-                expected_state.registers.pc = addr + 1;
-                expected_state.registers.set_flag(status_flag::zero, false);
-                expected_state.registers.set_flag(status_flag::negative, true);
+                    execute(state);
 
-                execute(state);
+                    check_state(expected_state);
+                }
 
-                check_state(expected_state);
-            }
+                SECTION("load a negative")
+                {
+                    const byte_t value = GENERATE(from_range(negative_byte_values));
+                    state.owned_memory.set_byte(default_pc_addr, value);
 
-            SECTION("load a positive")
-            {
-                const byte_t value = GENERATE_POSITIVE_BYTE();
+                    state_mock expected_state = state;
+                    expected_state.cycle = cycle_cost;
+                    expected_state.registers.pc = default_pc_addr + 1;
+                    expected_state.registers.set_flag(status_flag::zero, false);
+                    expected_state.registers.set_flag(status_flag::negative, true);
+                    set_register(expected_state, load_register, value);
 
-                state.owned_memory.set_byte(addr, value);
+                    execute(state);
 
-                state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(2);
-                set_register(expected_state.registers, value);
-                expected_state.registers.pc = addr + 1;
-                expected_state.registers.set_flag(status_flag::zero, false);
-                expected_state.registers.set_flag(status_flag::negative, false);
+                    check_state(expected_state);
+                }
 
-                execute(state);
+                SECTION("load a positive")
+                {
+                    const byte_t value = GENERATE(from_range(positive_byte_values));
+                    state.owned_memory.set_byte(default_pc_addr, value);
 
-                check_state(expected_state);
+                    state_mock expected_state = state;
+                    expected_state.cycle = cycle_cost;
+                    expected_state.registers.pc = default_pc_addr + 1;
+                    expected_state.registers.set_flag(status_flag::zero, false);
+                    expected_state.registers.set_flag(status_flag::negative, false);
+                    set_register(expected_state, load_register, value);
+
+                    execute(state);
+
+                    check_state(expected_state);
+                }
             }
         }
     }
 
-    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_zero_page(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    template<typename ExecuteFunctorT>
+    void test_zero_page(const ExecuteFunctorT& execute, register_id load_register)
     {
         SECTION("zero_page")
         {
-            const auto [pc, val_addr] = GENERATE_ADDR_FOR_ZERO_PAGE();
+            constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(3);
 
-            state.registers.pc = pc;
-            state.owned_memory.set_byte(pc, val_addr);
-
-            SECTION("load zero")
+            SECTION("addressing")
             {
-                state.owned_memory.set_byte(val_addr, 0);
+                const auto [pc_addr, base_addr] = GENERATE(from_range(zero_page_scenarios));
+
+                state.registers.pc = pc_addr;
+                state.owned_memory.set_byte(pc_addr, base_addr);
+                state.owned_memory.set_byte(base_addr, 1);
 
                 state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(3);
-                set_register(expected_state.registers, 0);
-                expected_state.registers.pc = pc + 1;
-                expected_state.registers.set_flag(status_flag::zero, true);
-                expected_state.registers.set_flag(status_flag::negative, false);
+                expected_state.cycle = cycle_cost;
+                expected_state.registers.pc = pc_addr + 1;
+                set_register(expected_state, load_register, 1);
 
                 execute(state);
 
                 check_state(expected_state);
             }
 
-            SECTION("load a negative")
+            SECTION("flags")
             {
-                const byte_t value = GENERATE_NEGATIVE_BYTE();
+                state.registers.pc = default_pc_addr;
+                state.owned_memory.set_byte(default_pc_addr, zero_page_base_addr);
 
-                state.owned_memory.set_byte(val_addr, value);
+                SECTION("load a zero")
+                {
+                    state.owned_memory.set_byte(zero_page_base_addr, 0);
 
-                state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(3);
-                set_register(expected_state.registers, value);
+                    state_mock expected_state = state;
+                    expected_state.cycle = cycle_cost;
+                    expected_state.registers.pc = default_pc_addr + 1;
+                    expected_state.registers.set_flag(status_flag::zero, true);
+                    expected_state.registers.set_flag(status_flag::negative, false);
+                    set_register(expected_state, load_register, 0);
 
-                expected_state.registers.pc = pc + 1;
-                expected_state.registers.set_flag(status_flag::zero, false);
-                expected_state.registers.set_flag(status_flag::negative, true);
+                    execute(state);
 
-                execute(state);
+                    check_state(expected_state);
+                }
 
-                check_state(expected_state);
-            }
+                SECTION("load a negative")
+                {
+                    const byte_t value = GENERATE(from_range(negative_byte_values));
 
-            SECTION("load a positive")
-            {
-                const byte_t value = GENERATE_POSITIVE_BYTE();
+                    state.owned_memory.set_byte(zero_page_base_addr, value);
 
-                state.owned_memory.set_byte(val_addr, value);
+                    state_mock expected_state = state;
+                    expected_state.cycle = cycle_cost;
+                    expected_state.registers.pc = default_pc_addr + 1;
+                    expected_state.registers.set_flag(status_flag::zero, false);
+                    expected_state.registers.set_flag(status_flag::negative, true);
+                    set_register(expected_state, load_register, value);
 
-                state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(3);
-                set_register(expected_state.registers, value);
-                expected_state.registers.pc = pc + 1;
-                expected_state.registers.set_flag(status_flag::zero, false);
-                expected_state.registers.set_flag(status_flag::negative, false);
+                    execute(state);
 
-                execute(state);
+                    check_state(expected_state);
+                }
 
-                check_state(expected_state);
+                SECTION("load a positive")
+                {
+                    const byte_t value = GENERATE(from_range(positive_byte_values));
+
+                    state.owned_memory.set_byte(zero_page_base_addr, value);
+
+                    state_mock expected_state = state;
+                    expected_state.cycle = cycle_cost;
+                    expected_state.registers.pc = default_pc_addr + 1;
+                    expected_state.registers.set_flag(status_flag::zero, false);
+                    expected_state.registers.set_flag(status_flag::negative, false);
+                    set_register(expected_state, load_register, value);
+
+                    execute(state);
+
+                    check_state(expected_state);
+                }
             }
         }
     }
 
-    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_zero_page_x(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    template<typename ExecuteFunctorT>
+    void test_zero_page_indexed(const ExecuteFunctorT& execute, register_id load_register, register_id index_register)
     {
         SECTION("zero_page_x")
         {
-            const auto [pc, val_addr, x] = GENERATE_ADDR_AND_OFFSET_FOR_ZERO_PAGE();
+            constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(4);
 
-            const byte_t val_addr_x = val_addr + x & 0xff;
-
-            state.registers.pc = pc;
-            state.registers.x = x;
-            state.owned_memory.set_byte(pc, val_addr);
-
-            SECTION("load zero")
+            SECTION("addressing")
             {
-                state.owned_memory.set_byte(val_addr_x, 0);
+                const auto [pc_addr, base_addr, idx] = GENERATE(from_range(zero_page_indexed_scenarios));
+                const byte_t indexed_addr = base_addr + idx & 0xff;
+
+                state.registers.pc = pc_addr;
+                state.registers.x = idx;
+                state.owned_memory.set_byte(pc_addr, base_addr);
+                state.owned_memory.set_byte(indexed_addr, 1);
+                set_register(state, index_register, idx);
 
                 state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(4);
-                set_register(expected_state.registers, 0);
-                expected_state.registers.pc = pc + 1;
-                expected_state.registers.set_flag(status_flag::zero, true);
-                expected_state.registers.set_flag(status_flag::negative, false);
+                expected_state.cycle = cycle_cost;
+                expected_state.registers.pc = pc_addr + 1;
+                set_register(expected_state, load_register, 1);
 
                 execute(state);
 
                 check_state(expected_state);
             }
 
-            SECTION("load a negative")
+            SECTION("flags")
             {
-                const byte_t value = GENERATE_NEGATIVE_BYTE();
+                constexpr byte_t indexed_addr = zero_page_base_addr + indexed_offset;
 
-                state.owned_memory.set_byte(val_addr_x, value);
+                state.registers.pc = default_pc_addr;
+                state.owned_memory.set_byte(default_pc_addr, zero_page_base_addr);
+                set_register(state, index_register, indexed_offset);
 
-                state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(4);
-                set_register(expected_state.registers, value);
+                SECTION("load a zero")
+                {
+                    state.owned_memory.set_byte(indexed_addr, 0);
 
-                expected_state.registers.pc = pc + 1;
-                expected_state.registers.set_flag(status_flag::zero, false);
-                expected_state.registers.set_flag(status_flag::negative, true);
+                    state_mock expected_state = state;
+                    expected_state.cycle = cycle_cost;
+                    expected_state.registers.pc = default_pc_addr + 1;
+                    expected_state.registers.set_flag(status_flag::zero, true);
+                    expected_state.registers.set_flag(status_flag::negative, false);
+                    set_register(expected_state, load_register, 0);
 
-                execute(state);
+                    execute(state);
 
-                check_state(expected_state);
-            }
+                    check_state(expected_state);
+                }
 
-            SECTION("load a positive")
-            {
-                const byte_t value = GENERATE_POSITIVE_BYTE();
+                SECTION("load a negative")
+                {
+                    const byte_t value = GENERATE(from_range(negative_byte_values));
 
-                state.owned_memory.set_byte(val_addr_x, value);
+                    state.owned_memory.set_byte(indexed_addr, value);
 
-                state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(4);
-                set_register(expected_state.registers, value);
-                expected_state.registers.pc = pc + 1;
-                expected_state.registers.set_flag(status_flag::zero, false);
-                expected_state.registers.set_flag(status_flag::negative, false);
+                    state_mock expected_state = state;
+                    expected_state.cycle = cycle_cost;
+                    expected_state.registers.pc = default_pc_addr + 1;
+                    expected_state.registers.set_flag(status_flag::zero, false);
+                    expected_state.registers.set_flag(status_flag::negative, true);
+                    set_register(expected_state, load_register, value);
 
-                execute(state);
+                    execute(state);
 
-                check_state(expected_state);
-            }
-        }
-    }
+                    check_state(expected_state);
+                }
 
-    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_zero_page_y(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
-    {
-        SECTION("zero_page_y")
-        {
-            const auto [pc, val_addr, y] = GENERATE_ADDR_AND_OFFSET_FOR_ZERO_PAGE();
+                SECTION("load a positive")
+                {
+                    const byte_t value = GENERATE(from_range(positive_byte_values));
 
-            const byte_t val_addr_y = val_addr + y & 0xff;
+                    state.owned_memory.set_byte(indexed_addr, value);
 
-            state.registers.pc = pc;
-            state.registers.y = y;
-            state.owned_memory.set_byte(pc, val_addr);
+                    state_mock expected_state = state;
+                    expected_state.cycle = cpu_cycle_t(4);
+                    expected_state.registers.pc = default_pc_addr + 1;
+                    expected_state.registers.set_flag(status_flag::zero, false);
+                    expected_state.registers.set_flag(status_flag::negative, false);
+                    set_register(expected_state, load_register, value);
 
-            SECTION("load zero")
-            {
-                state.owned_memory.set_byte(val_addr_y, 0);
+                    execute(state);
 
-                state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(4);
-                set_register(expected_state.registers, 0);
-                expected_state.registers.pc = pc + 1;
-                expected_state.registers.set_flag(status_flag::zero, true);
-                expected_state.registers.set_flag(status_flag::negative, false);
-
-                execute(state);
-
-                check_state(expected_state);
-            }
-
-            SECTION("load a negative")
-            {
-                const byte_t value = GENERATE_NEGATIVE_BYTE();
-
-                state.owned_memory.set_byte(val_addr_y, value);
-
-                state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(4);
-                set_register(expected_state.registers, value);
-
-                expected_state.registers.pc = pc + 1;
-                expected_state.registers.set_flag(status_flag::zero, false);
-                expected_state.registers.set_flag(status_flag::negative, true);
-
-                execute(state);
-
-                check_state(expected_state);
-            }
-
-            SECTION("load a positive")
-            {
-                const byte_t value = GENERATE_POSITIVE_BYTE();
-
-                state.owned_memory.set_byte(val_addr_y, value);
-
-                state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(4);
-                set_register(expected_state.registers, value);
-                expected_state.registers.pc = pc + 1;
-                expected_state.registers.set_flag(status_flag::zero, false);
-                expected_state.registers.set_flag(status_flag::negative, false);
-
-                execute(state);
-
-                check_state(expected_state);
+                    check_state(expected_state);
+                }
             }
         }
     }
 
-    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_absolute(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    template<typename ExecuteFunctorT>
+    void test_absolute(const ExecuteFunctorT& execute, register_id load_register)
     {
         SECTION("absolute")
         {
-            const auto [pc, val_addr] = GENERATE_ADDR_FOR_ABSOLUTE();
+            constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(4);
 
-            INFO(fmt::format("pc = 0x{:04X} val_addr = 0x{:04X}", pc, val_addr));
-
-            state.registers.pc = pc;
-            state.owned_memory.set_word(pc, val_addr);
-
-            SECTION("load zero")
+            SECTION("addressing")
             {
-                state.owned_memory.set_byte(val_addr, 0);
+                const auto [pc_addr, base_addr] = GENERATE(from_range(absolute_scenarios));
+
+                state.registers.pc = pc_addr;
+                state.owned_memory.set_word(pc_addr, base_addr);
+                state.owned_memory.set_byte(base_addr, 1);
 
                 state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(4);
-                set_register(expected_state.registers, 0);
-                expected_state.registers.pc = pc + 2;
-                expected_state.registers.set_flag(status_flag::zero, true);
-                expected_state.registers.set_flag(status_flag::negative, false);
+                expected_state.cycle = cycle_cost;
+                expected_state.registers.pc = pc_addr + 2;
+                set_register(expected_state, load_register, 1);
 
                 execute(state);
 
                 check_state(expected_state);
             }
 
-            SECTION("load a negative")
+            SECTION("flags")
             {
-                const byte_t value = GENERATE_NEGATIVE_BYTE();
+                state.registers.pc = default_pc_addr;
+                state.owned_memory.set_word(default_pc_addr, absolute_base_addr);
 
-                state.owned_memory.set_byte(val_addr, value);
+                SECTION("load zero")
+                {
+                    state.owned_memory.set_byte(absolute_base_addr, 0);
 
-                state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(4);
-                set_register(expected_state.registers, value);
+                    state_mock expected_state = state;
+                    expected_state.cycle = cycle_cost;
+                    expected_state.registers.pc = default_pc_addr + 2;
+                    expected_state.registers.set_flag(status_flag::zero, true);
+                    expected_state.registers.set_flag(status_flag::negative, false);
+                    set_register(expected_state, load_register, 0);
 
-                expected_state.registers.pc = pc + 2;
-                expected_state.registers.set_flag(status_flag::zero, false);
-                expected_state.registers.set_flag(status_flag::negative, true);
+                    execute(state);
 
-                execute(state);
+                    check_state(expected_state);
+                }
 
-                check_state(expected_state);
-            }
+                SECTION("load a negative")
+                {
+                    const byte_t value = GENERATE(from_range(negative_byte_values));
+                    state.owned_memory.set_byte(absolute_base_addr, value);
 
-            SECTION("load a positive")
-            {
-                const byte_t value = GENERATE_POSITIVE_BYTE();
+                    state_mock expected_state = state;
+                    expected_state.cycle = cycle_cost;
+                    expected_state.registers.pc = default_pc_addr + 2;
+                    expected_state.registers.set_flag(status_flag::zero, false);
+                    expected_state.registers.set_flag(status_flag::negative, true);
+                    set_register(expected_state, load_register, value);
 
-                state.owned_memory.set_byte(val_addr, value);
+                    execute(state);
 
-                state_mock expected_state = state;
-                expected_state.cycle = cpu_cycle_t(4);
-                set_register(expected_state.registers, value);
-                expected_state.registers.pc = pc + 2;
-                expected_state.registers.set_flag(status_flag::zero, false);
-                expected_state.registers.set_flag(status_flag::negative, false);
+                    check_state(expected_state);
+                }
 
-                execute(state);
+                SECTION("load a positive")
+                {
+                    const byte_t value = GENERATE(from_range(positive_byte_values));
+                    state.owned_memory.set_byte(absolute_base_addr, value);
 
-                check_state(expected_state);
+                    state_mock expected_state = state;
+                    expected_state.cycle = cycle_cost;
+                    expected_state.registers.pc = default_pc_addr + 2;
+                    expected_state.registers.set_flag(status_flag::zero, false);
+                    expected_state.registers.set_flag(status_flag::negative, false);
+                    set_register(expected_state, load_register, value);
+
+                    execute(state);
+
+                    check_state(expected_state);
+                }
             }
         }
     }
 
-    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_absolute_x(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
+    template<typename ExecuteFunctorT>
+    void test_absolute_indexed(const ExecuteFunctorT& execute, register_id load_register, register_id index_register)
     {
-        SECTION("absolute_x")
+        DYNAMIC_SECTION(format("absolute_{}", index_register))
         {
-            const auto [pc, val_addr, x] = GENERATE_ADDR_AND_OFFSET_FOR_ABSOLUTE();
-            const addr_t val_addr_x = val_addr + x;
-
-            INFO(fmt::format("pc = 0x{:04X}; value addr = 0x{:02X}); x = 0x{:02X}", pc, val_addr, x));
-
-            state.registers.pc = pc;
-            state.registers.x = x;
-            state.owned_memory.set_word(pc, val_addr);
-
-            SECTION("load zero")
+            SECTION("addressing")
             {
-                state.owned_memory.set_byte(val_addr_x, 0);
+                const auto [pc_addr, base_addr, idx] = GENERATE(from_range(absolute_indexed_scenarios));
+                const addr_t indexed_addr = base_addr + idx;
+
+                state.registers.pc = pc_addr;
+                state.owned_memory.set_word(pc_addr, base_addr);
+                state.owned_memory.set_byte(indexed_addr, 1);
+                set_register(state, index_register, idx);
 
                 state_mock expected_state = state;
-                set_register(expected_state.registers, 0);
-                expected_state.registers.pc = pc + 2;
-                expected_state.registers.set_flag(status_flag::zero, true);
-                expected_state.registers.set_flag(status_flag::negative, false);
+                // expected_state.cycle = cycle_cost;
+                expected_state.registers.pc = pc_addr + 2;
+                set_register(expected_state, load_register, 1);
 
                 execute(state);
 
                 check_state(expected_state, false);
             }
 
-            SECTION("load a negative")
+            SECTION("flags")
             {
-                const byte_t value = GENERATE_NEGATIVE_BYTE();
+                constexpr addr_t indexed_addr = absolute_base_addr + indexed_offset;
 
-                state.owned_memory.set_byte(val_addr_x, value);
+                state.registers.pc = default_pc_addr;
+                state.owned_memory.set_word(default_pc_addr, absolute_base_addr);
+                set_register(state, index_register, indexed_offset);
 
-                state_mock expected_state = state;
-                set_register(expected_state.registers, value);
+                SECTION("load zero")
+                {
+                    state.owned_memory.set_byte(indexed_addr, 0);
 
-                expected_state.registers.pc = pc + 2;
-                expected_state.registers.set_flag(status_flag::zero, false);
-                expected_state.registers.set_flag(status_flag::negative, true);
+                    state_mock expected_state = state;
+                    // expected_state.cycle = cycle_cost;
+                    expected_state.registers.pc = default_pc_addr + 2;
+                    expected_state.registers.set_flag(status_flag::zero, true);
+                    expected_state.registers.set_flag(status_flag::negative, false);
+                    set_register(expected_state, load_register, 0);
 
-                execute(state);
+                    execute(state);
 
-                check_state(expected_state, false);
-            }
+                    check_state(expected_state, false);
+                }
 
-            SECTION("load a positive")
-            {
-                const byte_t value = GENERATE_POSITIVE_BYTE();
+                SECTION("load a negative")
+                {
+                    const byte_t value = GENERATE(from_range(negative_byte_values));
+                    state.owned_memory.set_byte(indexed_addr, value);
 
-                state.owned_memory.set_byte(val_addr_x, value);
+                    state_mock expected_state = state;
+                    // expected_state.cycle = cycle_cost;
+                    expected_state.registers.pc = default_pc_addr + 2;
+                    expected_state.registers.set_flag(status_flag::zero, false);
+                    expected_state.registers.set_flag(status_flag::negative, true);
+                    set_register(expected_state, load_register, value);
 
-                state_mock expected_state = state;
-                set_register(expected_state.registers, value);
-                expected_state.registers.pc = pc + 2;
-                expected_state.registers.set_flag(status_flag::zero, false);
-                expected_state.registers.set_flag(status_flag::negative, false);
+                    execute(state);
 
-                execute(state);
+                    check_state(expected_state, false);
+                }
 
-                check_state(expected_state, false);
-            }
-        }
-    }
+                SECTION("load a positive")
+                {
+                    const byte_t value = GENERATE(from_range(positive_byte_values));
+                    state.owned_memory.set_byte(indexed_addr, value);
 
-    template<typename ExecuteFunctorT, typename SetRegisterFunctorT>
-    void test_absolute_y(const ExecuteFunctorT& execute, const SetRegisterFunctorT& set_register)
-    {
-        SECTION("absolute_y")
-        {
-            const auto [pc, val_addr, y] = GENERATE_ADDR_AND_OFFSET_FOR_ABSOLUTE();
-            const addr_t val_addr_y = val_addr + y;
+                    state_mock expected_state = state;
+                    // expected_state.cycle = cycle_cost;
+                    expected_state.registers.pc = default_pc_addr + 2;
+                    expected_state.registers.set_flag(status_flag::zero, false);
+                    expected_state.registers.set_flag(status_flag::negative, false);
+                    set_register(expected_state, load_register, value);
 
-            INFO(fmt::format("pc = 0x{:04X}; value addr = 0x{:02X}); y = 0x{:02X}", pc, val_addr, y));
+                    execute(state);
 
-            state.registers.pc = pc;
-            state.registers.y = y;
-            state.owned_memory.set_word(pc, val_addr);
-
-            SECTION("load zero")
-            {
-                state.owned_memory.set_byte(val_addr_y, 0);
-
-                state_mock expected_state = state;
-                set_register(expected_state.registers, 0);
-                expected_state.registers.pc = pc + 2;
-                expected_state.registers.set_flag(status_flag::zero, true);
-                expected_state.registers.set_flag(status_flag::negative, false);
-
-                execute(state);
-
-                check_state(expected_state, false);
-            }
-
-            SECTION("load a negative")
-            {
-                const byte_t value = GENERATE_NEGATIVE_BYTE();
-
-                state.owned_memory.set_byte(val_addr_y, value);
-
-                state_mock expected_state = state;
-                set_register(expected_state.registers, value);
-
-                expected_state.registers.pc = pc + 2;
-                expected_state.registers.set_flag(status_flag::zero, false);
-                expected_state.registers.set_flag(status_flag::negative, true);
-
-                execute(state);
-
-                check_state(expected_state, false);
-            }
-
-            SECTION("load a positive")
-            {
-                const byte_t value = GENERATE_POSITIVE_BYTE();
-
-                state.owned_memory.set_byte(val_addr_y, value);
-
-                state_mock expected_state = state;
-                set_register(expected_state.registers, value);
-                expected_state.registers.pc = pc + 2;
-                expected_state.registers.set_flag(status_flag::zero, false);
-                expected_state.registers.set_flag(status_flag::negative, false);
-
-                execute(state);
-
-                check_state(expected_state, false);
+                    check_state(expected_state, false);
+                }
             }
         }
     }
@@ -482,29 +445,30 @@ struct ld_fixture : fixture
 
 TEST_CASE_METHOD(ld_fixture, "lda", "[cpu][instruction]")
 {
-    test_immediate(execute_lda<addr_mode::immediate>, set_register_a);
-    test_zero_page(execute_lda<addr_mode::zero_page>, set_register_a);
-    test_zero_page_x(execute_lda<addr_mode::zero_page_x>, set_register_a);
-    test_absolute(execute_lda<addr_mode::absolute>, set_register_a);
-    test_absolute_x(execute_lda<addr_mode::absolute_x>, set_register_a);
-    test_absolute_y(execute_lda<addr_mode::absolute_y>, set_register_a);
+    test_immediate(execute_lda<addr_mode::immediate>, register_id::a);
+    test_zero_page(execute_lda<addr_mode::zero_page>, register_id::a);
+    test_zero_page_indexed(execute_lda<addr_mode::zero_page_x>, register_id::a, register_id::x);
+    test_absolute(execute_lda<addr_mode::absolute>, register_id::a);
+    test_absolute_indexed(execute_lda<addr_mode::absolute_x>, register_id::a, register_id::x);
+    test_absolute_indexed(execute_lda<addr_mode::absolute_y>, register_id::a, register_id::y);
 }
 
 TEST_CASE_METHOD(ld_fixture, "ldx", "[cpu][instruction]")
 {
-    test_immediate(execute_ldx<addr_mode::immediate>, set_register_x);
-    test_zero_page(execute_ldx<addr_mode::zero_page>, set_register_x);
-    test_zero_page_y(execute_ldx<addr_mode::zero_page_y>, set_register_x);
-    test_absolute(execute_ldx<addr_mode::absolute>, set_register_x);
-    test_absolute_y(execute_ldx<addr_mode::absolute_y>, set_register_x);
+    test_immediate(execute_ldx<addr_mode::immediate>, register_id::x);
+    test_zero_page(execute_ldx<addr_mode::zero_page>, register_id::x);
+    test_zero_page_indexed(execute_ldx<addr_mode::zero_page_y>, register_id::x, register_id::y);
+    test_absolute(execute_ldx<addr_mode::absolute>, register_id::x);
+    test_absolute_indexed(execute_ldx<addr_mode::absolute_y>, register_id::x, register_id::y);
 }
 
 TEST_CASE_METHOD(ld_fixture, "ldy", "[cpu][instruction]")
 {
-    test_immediate(execute_ldy<addr_mode::immediate>, set_register_y);
-    test_zero_page(execute_ldy<addr_mode::zero_page>, set_register_y);
-    test_zero_page_x(execute_ldy<addr_mode::zero_page_x>, set_register_y);
-    test_absolute(execute_ldy<addr_mode::absolute>, set_register_y);
-    test_absolute_x(execute_ldy<addr_mode::absolute_x>, set_register_y);
+    test_immediate(execute_ldy<addr_mode::immediate>, register_id::y);
+    test_zero_page(execute_ldy<addr_mode::zero_page>, register_id::y);
+    test_zero_page_indexed(execute_ldy<addr_mode::zero_page_x>, register_id::y, register_id::x);
+    test_absolute(execute_ldy<addr_mode::absolute>, register_id::y);
+    test_absolute_indexed(execute_ldy<addr_mode::absolute_x>, register_id::y, register_id::x);
 }
+
 } // namespace nese::cpu::instruction

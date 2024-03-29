@@ -5,13 +5,6 @@
 #include <nese/basic_types.hpp>
 
 // clang-format off
-#define GENERATE_ADDR() \
-           static_cast<nese::addr_t>( \
-            GENERATE(0x0000, 0xFFFF, \
-                     0x00FE, 0x01FE, \
-                     0x7FFE, 0xFFFE, \
-                     0x00FF, 0x0100))
-
 #define GENERATE_NEGATIVE_BYTE() \
            static_cast<nese::byte_t>( \
             GENERATE(0x80, \
