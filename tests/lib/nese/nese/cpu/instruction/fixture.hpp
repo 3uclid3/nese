@@ -50,14 +50,14 @@ struct fixture
 
             if (state.registers.p != expected_state.registers.p)
             {
-                CHECK(state.registers.has_flag(status_flag::carry) == expected_state.registers.has_flag(status_flag::carry));
-                CHECK(state.registers.has_flag(status_flag::zero) == expected_state.registers.has_flag(status_flag::zero));
-                CHECK(state.registers.has_flag(status_flag::interrupt) == expected_state.registers.has_flag(status_flag::interrupt));
-                CHECK(state.registers.has_flag(status_flag::decimal) == expected_state.registers.has_flag(status_flag::decimal));
-                CHECK(state.registers.has_flag(status_flag::break_cmd) == expected_state.registers.has_flag(status_flag::break_cmd));
-                CHECK(state.registers.has_flag(status_flag::unused) == expected_state.registers.has_flag(status_flag::unused));
-                CHECK(state.registers.has_flag(status_flag::overflow) == expected_state.registers.has_flag(status_flag::overflow));
-                CHECK(state.registers.has_flag(status_flag::negative) == expected_state.registers.has_flag(status_flag::negative));
+                CHECK(state.registers.is_flag_set(status_flag::carry) == expected_state.registers.is_flag_set(status_flag::carry));
+                CHECK(state.registers.is_flag_set(status_flag::zero) == expected_state.registers.is_flag_set(status_flag::zero));
+                CHECK(state.registers.is_flag_set(status_flag::interrupt) == expected_state.registers.is_flag_set(status_flag::interrupt));
+                CHECK(state.registers.is_flag_set(status_flag::decimal) == expected_state.registers.is_flag_set(status_flag::decimal));
+                CHECK(state.registers.is_flag_set(status_flag::break_cmd) == expected_state.registers.is_flag_set(status_flag::break_cmd));
+                CHECK(state.registers.is_flag_set(status_flag::unused) == expected_state.registers.is_flag_set(status_flag::unused));
+                CHECK(state.registers.is_flag_set(status_flag::overflow) == expected_state.registers.is_flag_set(status_flag::overflow));
+                CHECK(state.registers.is_flag_set(status_flag::negative) == expected_state.registers.is_flag_set(status_flag::negative));
             }
         }
     }

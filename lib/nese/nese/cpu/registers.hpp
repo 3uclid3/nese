@@ -20,8 +20,6 @@ struct registers
     static constexpr u8_t default_s{0xfd};
     static constexpr u8_t default_p{0x24};
 
-    [[nodiscard]] constexpr bool has_flag(status_flag flag) const;
-
     [[nodiscard]] constexpr bool is_flag_set(status_flag flag) const;
     [[nodiscard]] constexpr bool is_flag_clear(status_flag flag) const;
 
@@ -38,11 +36,6 @@ struct registers
     u8_t s{default_s};
     u8_t p{default_p};
 };
-
-constexpr bool registers::has_flag(status_flag flag) const
-{
-    return is_flag_set(flag);
-}
 
 constexpr bool registers::is_flag_set(status_flag flag) const
 {
