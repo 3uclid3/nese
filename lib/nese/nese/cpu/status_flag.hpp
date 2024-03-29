@@ -60,4 +60,37 @@ using status_flags = u8_t;
     return static_cast<status_flag>(static_cast<u8_t>(~static_cast<unsigned int>(w)));
 }
 
+[[nodiscard]] constexpr std::string_view to_string_view(status_flag flag)
+{
+    switch (flag)
+    {
+    case status_flag::carry:
+        return "carry";
+
+    case status_flag::zero:
+        return "zero";
+
+    case status_flag::interrupt:
+        return "interrupt";
+
+    case status_flag::decimal:
+        return "decimal";
+
+    case status_flag::break_cmd:
+        return "break_cmd";
+
+    case status_flag::unused:
+        return "unused";
+
+    case status_flag::overflow:
+        return "overflow";
+
+    case status_flag::negative:
+        return "negative";
+    }
+
+    NESE_ASSUME(false);
+}
+
+
 } // namespace nese
