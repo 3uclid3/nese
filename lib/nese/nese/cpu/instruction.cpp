@@ -43,8 +43,10 @@ enum rmw_opcode_base : u8_t
 
 constexpr bool is_page_crossing(addr_t addr, addr_t new_addr)
 {
-    constexpr addr_t mask = 0xff00;
-    return ((addr & mask) != (new_addr & mask));
+    const addr_t page_start = addr & 0xFF00;
+    const addr_t new_page_start = new_addr & 0xFF00;
+
+    return page_start != new_page_start;
 }
 
 template<addr_mode AddrModeT>
@@ -112,6 +114,8 @@ struct table
         ADD_ALU(lda);
 
         ADD_ALU_NO_IMMEDIATE(sta);
+
+        ADD(bcs, 0xb0, addr_mode::relative);
 
         ADD(inx, 0xe8, addr_mode::implied);
         ADD(iny, 0xc8, addr_mode::implied);
@@ -393,6 +397,34 @@ bool execute(opcode_t opcode, state& state)
     return true;
 }
 
+void execute_branch(state& state, bool condition)
+{
+    const addr_t initial_pc = state.registers.pc;
+    const byte_t byte = decode_byte(state);
+
+    if (condition)
+    {
+        const addr_t new_pc = state.registers.pc + byte;
+
+        // if branch succeeds ++
+        // if crossing to a new page ++
+        // @DOCBUG
+        // http://obelisk.me.uk/6502/reference.html#BEQ says +2
+        // http://nesdev.com/6502_cpu.txt says +1 and so does nintendulator
+        state.cycle += is_page_crossing(initial_pc, new_pc) ? cpu_cycle_t(2) : cpu_cycle_t(1);
+
+        state.registers.pc = new_pc;
+    }
+
+    state.cycle += cpu_cycle_t(2);
+}
+
+template<addr_mode AddrModeT>
+void execute_bcs(state& state)
+{
+    execute_branch(state, state.registers.has_flag(status_flag::carry));
+}
+
 template<addr_mode AddrModeT>
 void execute_inx(state& state)
 {
@@ -526,6 +558,8 @@ void execute_sty(state& state)
 EXPLICIT_INSTANTIATE_ALU(lda);
 
 EXPLICIT_INSTANTIATE_ALU_NO_IMMEDIATE(sta);
+
+EXPLICIT_INSTANTIATE(bcs, addr_mode::relative);
 
 EXPLICIT_INSTANTIATE(inx, addr_mode::implied);
 EXPLICIT_INSTANTIATE(iny, addr_mode::implied);

@@ -25,6 +25,11 @@ byte_t get_opcode_operand_byte_count(opcode_t opcode);
 
 bool execute(opcode_t opcode, state& state);
 
+// BCS (Branch if Carry Set):
+// If the carry flag is set, it adds the relative displacement to the program counter to branch to a new location.
+template<addr_mode AddrModeT>
+void execute_bcs(state& state);
+
 // DEY (Decrement X Register):
 // Decreases the value in the X register by one, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
@@ -115,6 +120,8 @@ void execute_sty(state& state);
 EXPLICIT_INSTANTIATION_ALU(lda);
 
 EXPLICIT_INSTANTIATION_ALU_NO_IMMEDIATE(sta);
+
+EXPLICIT_INSTANTIATION(bcs, addr_mode::relative);
 
 EXPLICIT_INSTANTIATION(inx, addr_mode::implied);
 EXPLICIT_INSTANTIATION(iny, addr_mode::implied);
