@@ -120,6 +120,9 @@ struct table
         ADD(beq, 0xf0, addr_mode::relative);
         ADD(bne, 0xd0, addr_mode::relative);
 
+        ADD(bit, 0x24, addr_mode::zero_page);
+        ADD(bit, 0x2c, addr_mode::absolute);
+
         ADD(clc, 0x18, addr_mode::implied);
 
         ADD(inx, 0xe8, addr_mode::implied);
@@ -443,6 +446,18 @@ void execute_beq(state& state)
 }
 
 template<addr_mode AddrModeT>
+void execute_bit(state& state)
+{
+    const operand_t operand = decode_operand<AddrModeT>(state);
+    const byte_t byte = read_operand<AddrModeT>(state, operand);
+    const byte_t new_byte = byte & state.registers.a;
+
+    state.registers.set_flag(status_flag::zero, new_byte == 0);
+    state.registers.set_flag(status_flag::overflow, byte & 0x40);
+    state.registers.set_flag(status_flag::negative, byte & 0x80);
+}
+
+template<addr_mode AddrModeT>
 void execute_bne(state& state)
 {
     execute_branch(state, state.registers.is_flag_clear(status_flag::zero));
@@ -594,6 +609,9 @@ EXPLICIT_INSTANTIATE(bcc, addr_mode::relative);
 EXPLICIT_INSTANTIATE(bcs, addr_mode::relative);
 EXPLICIT_INSTANTIATE(beq, addr_mode::relative);
 EXPLICIT_INSTANTIATE(bne, addr_mode::relative);
+
+EXPLICIT_INSTANTIATE(bit, addr_mode::zero_page);
+EXPLICIT_INSTANTIATE(bit, addr_mode::absolute);
 
 EXPLICIT_INSTANTIATE(clc, addr_mode::implied);
 

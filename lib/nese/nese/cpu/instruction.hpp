@@ -40,6 +40,11 @@ void execute_bcs(state& state);
 template<addr_mode AddrModeT>
 void execute_beq(state& state);
 
+// BIT (Bit Test):
+// Tests bits in memory with the accumulator, affecting the zero, negative, and overflow flags.
+template<addr_mode AddrModeT>
+void execute_bit(state& state);
+
 // BNE (Branch if Not Equal):
 // If the zero flag is clear, adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrModeT>
@@ -144,7 +149,11 @@ EXPLICIT_INSTANTIATION_ALU_NO_IMMEDIATE(sta);
 EXPLICIT_INSTANTIATION(bcc, addr_mode::relative);
 EXPLICIT_INSTANTIATION(bcs, addr_mode::relative);
 EXPLICIT_INSTANTIATION(beq, addr_mode::relative);
+EXPLICIT_INSTANTIATION(bit, addr_mode::relative);
 EXPLICIT_INSTANTIATION(bne, addr_mode::relative);
+
+EXPLICIT_INSTANTIATION(bit, addr_mode::zero_page);
+EXPLICIT_INSTANTIATION(bit, addr_mode::absolute);
 
 EXPLICIT_INSTANTIATION(clc, addr_mode::relative);
 

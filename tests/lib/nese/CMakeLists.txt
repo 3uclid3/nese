@@ -12,16 +12,17 @@ set(INCLUDES
 )
 
 set(SOURCES
+    "${DIR}/cpu/instruction_rom_test.cpp"
+    "${DIR}/cpu/instruction/st_test.cpp"
+    "${DIR}/cpu/instruction/sec_test.cpp"
+    "${DIR}/cpu/instruction/nop_test.cpp"
+    "${DIR}/cpu/instruction/ld_test.cpp"
+    "${DIR}/cpu/instruction/jsr_test.cpp"
+    "${DIR}/cpu/instruction/jmp_test.cpp"
+    "${DIR}/cpu/instruction/in_test.cpp"
     "${DIR}/cpu/instruction/clc_test.cpp"
     "${DIR}/cpu/instruction/branch_test.cpp"
-    "${DIR}/cpu/instruction/in_test.cpp"
-    "${DIR}/cpu/instruction/jmp_test.cpp"
-    "${DIR}/cpu/instruction/jsr_test.cpp"
-    "${DIR}/cpu/instruction/ld_test.cpp"
-    "${DIR}/cpu/instruction/nop_test.cpp"
-    "${DIR}/cpu/instruction/sec_test.cpp"
-    "${DIR}/cpu/instruction/st_test.cpp"
-    "${DIR}/cpu/instruction_rom_test.cpp"
+    "${DIR}/cpu/instruction/bit_test.cpp"
     "${DIR}/utility/format_test.cpp"
 )
 
