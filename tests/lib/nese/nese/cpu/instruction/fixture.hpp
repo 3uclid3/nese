@@ -29,10 +29,13 @@ struct fixture
         state.registers.y = 0xC;
     }
 
-    void check_state(const state& expected_state) const
+    void check_state(const state& expected_state, bool should_check_cycle = false) const
     {
         check_registers(expected_state);
         check_memory(expected_state);
+
+        if (should_check_cycle)
+            check_cycle(expected_state);
     }
 
     void check_registers(const state& expected_state) const
@@ -82,6 +85,11 @@ struct fixture
         }
     }
 
+    void check_cycle(const state& expected_state) const
+    {
+        CHECK(state.cycle == expected_state.cycle);
+    }
+
     static void set_register_a(registers& r, byte_t a)
     {
         r.a = a;
@@ -97,7 +105,7 @@ struct fixture
         r.y = y;
     }
 
-    inline static state_mock state{default_state_mock};
+    state_mock state{default_state_mock};
 };
 
 } // namespace nese::cpu::instruction

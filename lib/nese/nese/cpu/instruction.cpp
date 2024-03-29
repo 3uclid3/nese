@@ -47,6 +47,37 @@ constexpr bool is_page_crossing(addr_t addr, addr_t new_addr)
     return ((addr & mask) != (new_addr & mask));
 }
 
+template<addr_mode AddrModeT>
+constexpr cpu_cycle_t get_addr_mode_cycle_cost(bool page_crossing = false)
+{
+    switch (AddrModeT)
+    {
+    case addr_mode::accumulator:
+    case addr_mode::immediate:
+        return cpu_cycle_t(2);
+
+    case addr_mode::zero_page:
+        return cpu_cycle_t(3);
+
+    case addr_mode::zero_page_x:
+    case addr_mode::zero_page_y:
+    case addr_mode::absolute:
+        return cpu_cycle_t(4);
+
+    case addr_mode::absolute_x:
+    case addr_mode::absolute_y:
+        return cpu_cycle_t(page_crossing ? 5 : 4);
+
+    case addr_mode::indexed_indirect:
+        return cpu_cycle_t(6);
+
+    case addr_mode::indirect_indexed:
+        return cpu_cycle_t(page_crossing ? 6 : 5);
+    }
+
+    NESE_ASSUME(false);
+}
+
 using callback = void (*)(state&);
 
 struct table
@@ -383,7 +414,7 @@ void execute_jmp(state& state)
     }
 
     state.registers.pc = new_addr;
-    state.cycle += cycle_t(3);
+    state.cycle += cpu_cycle_t(3);
 }
 
 template<addr_mode AddrModeT>
@@ -398,11 +429,13 @@ void execute_jsr(state& state)
 template<addr_mode AddrModeT>
 void execute_ld_impl(state& state, byte_t& register_value)
 {
-    const operand_t operand = decode_operand<AddrModeT>(state);
+    bool page_crossing{false};
+    const operand_t operand = decode_operand<AddrModeT>(state, page_crossing);
 
     register_value = read_operand<AddrModeT>(state, operand);
 
     state.registers.set_alu_flag(register_value);
+    state.cycle += get_addr_mode_cycle_cost<AddrModeT>(page_crossing);
 }
 
 template<addr_mode AddrModeT>
