@@ -8,13 +8,6 @@ namespace nese::cpu::instruction {
 
 struct ld_fixture : fixture
 {
-    ld_fixture()
-    {
-        state.registers.a = 0xA;
-        state.registers.x = 0xB;
-        state.registers.y = 0xC;
-    }
-
     template<typename ExecuteFunctorT>
     void test_immediate(const ExecuteFunctorT& execute, register_id load_register)
     {
