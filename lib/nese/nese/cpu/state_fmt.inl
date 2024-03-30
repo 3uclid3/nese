@@ -212,9 +212,7 @@ void append_ppu(auto& out, const state& state)
 
 void append_cycle(auto& out, const state& state)
 {
-    const cpu_cycle_t cpu_cycle_count_in_scanline = to_cpu_cycle(state.cycle % ppu_scanline_cycle);
-
-    out = fmt::format_to(out, "CYC:{}", cpu_cycle_count_in_scanline.count());
+    out = fmt::format_to(out, "CYC:{}", std::chrono::duration_cast<cpu_cycle_t>(state.cycle).count());
 }
 
 }} // namespace nese::cpu::details
