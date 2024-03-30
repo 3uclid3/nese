@@ -119,6 +119,7 @@ struct table
         ADD(bcs, 0xb0, addr_mode::relative);
         ADD(beq, 0xf0, addr_mode::relative);
         ADD(bne, 0xd0, addr_mode::relative);
+        ADD(bvc, 0x50, addr_mode::relative);
         ADD(bvs, 0x70, addr_mode::relative);
 
         ADD(bit, 0x24, addr_mode::zero_page);
@@ -470,6 +471,12 @@ void execute_bne(state& state)
 }
 
 template<addr_mode AddrModeT>
+void execute_bvc(state& state)
+{
+    execute_branch(state, state.registers.is_flag_clear(status_flag::overflow));
+}
+
+template<addr_mode AddrModeT>
 void execute_bvs(state& state)
 {
     execute_branch(state, state.registers.is_flag_set(status_flag::overflow));
@@ -621,6 +628,7 @@ EXPLICIT_INSTANTIATE(bcc, addr_mode::relative);
 EXPLICIT_INSTANTIATE(bcs, addr_mode::relative);
 EXPLICIT_INSTANTIATE(beq, addr_mode::relative);
 EXPLICIT_INSTANTIATE(bne, addr_mode::relative);
+EXPLICIT_INSTANTIATE(bvc, addr_mode::relative);
 EXPLICIT_INSTANTIATE(bvs, addr_mode::relative);
 
 EXPLICIT_INSTANTIATE(bit, addr_mode::zero_page);
