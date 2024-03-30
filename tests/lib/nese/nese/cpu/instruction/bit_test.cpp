@@ -13,26 +13,177 @@ struct bit_fixture : fixture
     {
         SECTION("zero_page")
         {
-            const auto [pc, val_addr] = GENERATE(from_range(zero_page_scenarios));
+            // Clear all flags
+            state.registers.p = 0;
 
-            state.registers.pc = pc;
-            state.owned_memory.set_byte(pc, val_addr);
+            SECTION("addressing")
+            {
+                const auto [pc, val_addr] = GENERATE(from_range(zero_page_scenarios));
 
-            const byte_t bit = GENERATE(0x00, 0xff, 0x80, 0x40, 0x01);
+                INFO(format("pc 0x{:04X} val_addr 0x{:02X}", pc, val_addr));
 
-            state.owned_memory.set_byte(val_addr, bit);
+                state.registers.pc = pc;
+                state.owned_memory.set_byte(pc, val_addr);
 
-            state.registers.a = 0xFF;
+                constexpr byte_t bit = 0x01;
 
-            expected_state = state;
-            expected_state.registers.pc = pc + 1;
-            expected_state.registers.set_flag(status_flag::zero, (bit & 0xff) == 0);
-            expected_state.registers.set_flag(status_flag::overflow, (bit & 0x40) != 0);
-            expected_state.registers.set_flag(status_flag::negative, (bit & 0x80) != 0);
+                state.owned_memory.set_byte(val_addr, bit);
 
-            execute(state);
+                state.registers.a = 0xFF;
 
-            check_state();
+                expected_state = state;
+                expected_state.registers.pc = pc + 1;
+
+                execute(state);
+
+                check_state();
+            }
+
+            SECTION("value")
+            {
+                state.registers.pc = default_pc_addr;
+                state.owned_memory.set_byte(default_pc_addr, zero_page_base_addr);
+
+                SECTION("zero")
+                {
+                    SECTION("set")
+                    {
+                        const auto [bit, a] = GENERATE(table<byte_t, byte_t>(
+                            {{0x00, 0xFF},
+                             {0x0F, 0xF0},
+                             {0x3F, 0x40},
+                             {0x1F, 0x20}}));
+
+                        INFO(format("bit 0x{:02X} a 0x{:02X}", bit, a));
+
+                        state.owned_memory.set_byte(zero_page_base_addr, bit);
+                        state.registers.a = a;
+
+                        expected_state = state;
+                        expected_state.registers.pc = default_pc_addr + 1;
+                        expected_state.registers.set_flag(status_flag::zero);
+
+                        execute(state);
+
+                        check_state();
+                    }
+
+                    SECTION("not set")
+                    {
+                        const auto [bit, a] = GENERATE(table<byte_t, byte_t>(
+                            {{0x3F, 0xBF},
+                             {0x1F, 0x9F}}));
+
+                        INFO(format("bit 0x{:02X} a 0x{:02X}", bit, a));
+
+                        state.owned_memory.set_byte(zero_page_base_addr, bit);
+                        state.registers.a = a;
+
+                        expected_state = state;
+                        expected_state.registers.pc = default_pc_addr + 1;
+                        expected_state.registers.clear_flag(status_flag::zero);
+
+                        execute(state);
+
+                        check_state();
+                    }
+                }
+
+                SECTION("overflow")
+                {
+                    SECTION("set")
+                    {
+                        const auto [bit, a] = GENERATE(table<byte_t, byte_t>(
+                            {{0x40, 0xFF},
+                             {0x41, 0xFF},
+                             {0x40, 0x7F},
+                             {0x42, 0xBF}}));
+
+                        INFO(format("bit 0x{:02X} a 0x{:02X}", bit, a));
+
+                        state.owned_memory.set_byte(zero_page_base_addr, bit);
+                        state.registers.a = a;
+
+                        expected_state = state;
+                        expected_state.registers.pc = default_pc_addr + 1;
+                        expected_state.registers.set_flag(status_flag::overflow);
+
+                        execute(state);
+
+                        check_state();
+                    }
+
+                    SECTION("not set")
+                    {
+                        const auto [bit, a] = GENERATE(table<byte_t, byte_t>(
+                            {{0x01, 0x01},
+                             {0x02, 0x03},
+                             {0x08, 0x0C},
+                             {0x10, 0x10}}));
+
+                        INFO(format("bit 0x{:02X} a 0x{:02X}", bit, a));
+
+                        state.owned_memory.set_byte(zero_page_base_addr, bit);
+                        state.registers.a = a;
+
+                        expected_state = state;
+                        expected_state.registers.pc = default_pc_addr + 1;
+                        expected_state.registers.clear_flag(status_flag::overflow);
+
+                        execute(state);
+
+                        check_state();
+                    }
+                }
+
+                SECTION("negative")
+                {
+                    SECTION("set")
+                    {
+                        const auto [bit, a] = GENERATE(table<byte_t, byte_t>(
+                            {
+                                {0x80, 0xFF},
+                                {0x81, 0xFF},
+                                {0x80, 0x80},
+                                {0x82, 0xBF} 
+                            }));
+
+                        INFO(format("bit 0x{:02X} a 0x{:02X}", bit, a));
+
+                        state.owned_memory.set_byte(zero_page_base_addr, bit);
+                        state.registers.a = a;
+
+                        expected_state = state;
+                        expected_state.registers.pc = default_pc_addr + 1;
+                        expected_state.registers.set_flag(status_flag::negative);
+
+                        execute(state);
+
+                        check_state();
+                    }
+
+                    SECTION("not set")
+                    {
+                        const auto [bit, a] = GENERATE(table<byte_t, byte_t>(
+                            {{0x3F, 0xFF},
+                             {0x20, 0xEF},
+                             {0x1F, 0xF7}}));
+
+                        INFO(format("bit 0x{:02X} a 0x{:02X}", bit, a));
+
+                        state.owned_memory.set_byte(zero_page_base_addr, bit);
+                        state.registers.a = a;
+
+                        expected_state = state;
+                        expected_state.registers.pc = default_pc_addr + 1;
+                        expected_state.registers.clear_flag(status_flag::negative);
+
+                        execute(state);
+
+                        check_state();
+                    }
+                }
+            }
         }
     }
 };
