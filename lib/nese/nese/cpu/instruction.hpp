@@ -50,6 +50,11 @@ void execute_bit(state& state);
 template<addr_mode AddrModeT>
 void execute_bne(state& state);
 
+// BVS (Branch if Overflow Set):
+// If the overflow flag is set, it adds the relative displacement to the program counter to branch to a new location.
+template<addr_mode AddrModeT>
+void execute_bvs(state& state);
+
 // CLC (Clear Carry Flag):
 // Clears the carry flag to 0.
 template<addr_mode AddrModeT>
@@ -149,8 +154,8 @@ EXPLICIT_INSTANTIATION_ALU_NO_IMMEDIATE(sta);
 EXPLICIT_INSTANTIATION(bcc, addr_mode::relative);
 EXPLICIT_INSTANTIATION(bcs, addr_mode::relative);
 EXPLICIT_INSTANTIATION(beq, addr_mode::relative);
-EXPLICIT_INSTANTIATION(bit, addr_mode::relative);
 EXPLICIT_INSTANTIATION(bne, addr_mode::relative);
+EXPLICIT_INSTANTIATION(bvs, addr_mode::relative);
 
 EXPLICIT_INSTANTIATION(bit, addr_mode::zero_page);
 EXPLICIT_INSTANTIATION(bit, addr_mode::absolute);

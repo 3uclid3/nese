@@ -90,4 +90,9 @@ TEST_CASE_METHOD(branch_fixture, "bne", "[cpu][instruction]")
     test_relative(execute_bne<addr_mode::relative>, status_flag::zero, branch_when::is_clear);
 }
 
+TEST_CASE_METHOD(branch_fixture, "bvs", "[cpu][instruction]")
+{
+    test_relative(execute_bvs<addr_mode::relative>, status_flag::overflow, branch_when::is_set);
+}
+
 } // namespace nese::cpu::instruction

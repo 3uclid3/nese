@@ -119,6 +119,7 @@ struct table
         ADD(bcs, 0xb0, addr_mode::relative);
         ADD(beq, 0xf0, addr_mode::relative);
         ADD(bne, 0xd0, addr_mode::relative);
+        ADD(bvs, 0x70, addr_mode::relative);
 
         ADD(bit, 0x24, addr_mode::zero_page);
         ADD(bit, 0x2c, addr_mode::absolute);
@@ -408,20 +409,22 @@ bool execute(opcode_t opcode, state& state)
 void execute_branch(state& state, bool condition)
 {
     const addr_t initial_pc = state.registers.pc;
-    const byte_t byte = decode_byte(state);
+    const s8_t byte = decode_byte(state);
+    const addr_t target_pc = state.registers.pc + byte;
 
     if (condition)
     {
-        const addr_t new_pc = state.registers.pc + byte;
-
         // if branch succeeds ++
-        // if crossing to a new page ++
-        // @DOCBUG
-        // http://obelisk.me.uk/6502/reference.html#BEQ says +2
-        // http://nesdev.com/6502_cpu.txt says +1 and so does nintendulator
-        state.cycle += is_page_crossing(initial_pc, new_pc) ? cpu_cycle_t(2) : cpu_cycle_t(1);
+        state.cycle += cpu_cycle_t(1);
+        state.registers.pc += byte;
 
-        state.registers.pc = new_pc;
+        // if crossing to a new page ++
+        if (is_page_crossing(initial_pc, target_pc))
+        {
+            state.cycle += cpu_cycle_t(1);
+        }
+
+        state.registers.pc = target_pc;
     }
 
     state.cycle += cpu_cycle_t(2);
@@ -464,6 +467,12 @@ template<addr_mode AddrModeT>
 void execute_bne(state& state)
 {
     execute_branch(state, state.registers.is_flag_clear(status_flag::zero));
+}
+
+template<addr_mode AddrModeT>
+void execute_bvs(state& state)
+{
+    execute_branch(state, state.registers.is_flag_set(status_flag::overflow));
 }
 
 template<addr_mode AddrModeT>
@@ -612,6 +621,7 @@ EXPLICIT_INSTANTIATE(bcc, addr_mode::relative);
 EXPLICIT_INSTANTIATE(bcs, addr_mode::relative);
 EXPLICIT_INSTANTIATE(beq, addr_mode::relative);
 EXPLICIT_INSTANTIATE(bne, addr_mode::relative);
+EXPLICIT_INSTANTIATE(bvs, addr_mode::relative);
 
 EXPLICIT_INSTANTIATE(bit, addr_mode::zero_page);
 EXPLICIT_INSTANTIATE(bit, addr_mode::absolute);
