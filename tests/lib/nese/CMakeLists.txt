@@ -6,14 +6,21 @@ configure_file("test_config.hpp.in" "${DIR}/test_config.hpp")
 
 set(INCLUDES
     "${DIR}/cpu/instruction/fixture.hpp"
+    "${DIR}/cpu/instruction/branch_fixture.hpp"
     "${DIR}/cpu/instruction/se_fixture.hpp"
     "${DIR}/cpu/state_mock.hpp"
     "${DIR}/test_config.hpp"
 )
 
 set(SOURCES
+    "${DIR}/cpu/instruction/bcc_test.cpp"
+    "${DIR}/cpu/instruction/bcs_test.cpp"
+    "${DIR}/cpu/instruction/beq_test.cpp"
     "${DIR}/cpu/instruction/bit_test.cpp"
-    "${DIR}/cpu/instruction/branch_test.cpp"
+    "${DIR}/cpu/instruction/bne_test.cpp"
+    "${DIR}/cpu/instruction/bpl_test.cpp"
+    "${DIR}/cpu/instruction/bvc_test.cpp"
+    "${DIR}/cpu/instruction/bvs_test.cpp"
     "${DIR}/cpu/instruction/clc_test.cpp"
     "${DIR}/cpu/instruction/in_test.cpp"
     "${DIR}/cpu/instruction/jmp_test.cpp"

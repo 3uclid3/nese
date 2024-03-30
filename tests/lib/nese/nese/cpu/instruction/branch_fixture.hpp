@@ -1,7 +1,7 @@
+#pragma once
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-#include <nese/cpu/instruction.hpp>
 #include <nese/cpu/instruction/fixture.hpp>
 #include <nese/cpu/status_flag.hpp>
 #include <nese/utility/format.hpp>
@@ -70,39 +70,5 @@ struct branch_fixture : fixture
     }
 };
 
-TEST_CASE_METHOD(branch_fixture, "bcc", "[cpu][instruction]")
-{
-    test_relative(execute_bcc<addr_mode::relative>, status_flag::carry, branch_when::is_clear);
-}
-
-TEST_CASE_METHOD(branch_fixture, "bcs", "[cpu][instruction]")
-{
-    test_relative(execute_bcs<addr_mode::relative>, status_flag::carry, branch_when::is_set);
-}
-
-TEST_CASE_METHOD(branch_fixture, "beq", "[cpu][instruction]")
-{
-    test_relative(execute_beq<addr_mode::relative>, status_flag::zero, branch_when::is_set);
-}
-
-TEST_CASE_METHOD(branch_fixture, "bne", "[cpu][instruction]")
-{
-    test_relative(execute_bne<addr_mode::relative>, status_flag::zero, branch_when::is_clear);
-}
-
-TEST_CASE_METHOD(branch_fixture, "bpl", "[cpu][instruction]")
-{
-    test_relative(execute_bpl<addr_mode::relative>, status_flag::negative, branch_when::is_clear);
-}
-
-TEST_CASE_METHOD(branch_fixture, "bvc", "[cpu][instruction]")
-{
-    test_relative(execute_bvc<addr_mode::relative>, status_flag::overflow, branch_when::is_clear);
-}
-
-TEST_CASE_METHOD(branch_fixture, "bvs", "[cpu][instruction]")
-{
-    test_relative(execute_bvs<addr_mode::relative>, status_flag::overflow, branch_when::is_set);
-}
 
 } // namespace nese::cpu::instruction
