@@ -125,9 +125,24 @@ void execute_ldy(state& state);
 template<addr_mode AddrModeT>
 void execute_nop(state& state);
 
+// PLP (Pull Processor Status):
+// Pulls the processor status flags from the stack.
+template<addr_mode AddrModeT>
+void execute_plp(state& state);
+
+// RTI (Return from Interrupt):
+// Restores the CPU's state from the stack, including the program counter and processor flags, to conclude an interrupt service routine.
+template<addr_mode AddrModeT>
+void execute_rti(state& state);
+
+// RTS (Return from Subroutine):
+// Pulls the program counter (plus one) from the stack, returning from a subroutine.
+template<addr_mode AddrModeT>
+void execute_rts(state& state);
+
 // SEC (Set Carry Flag):
 // Sets the carry flag to 1.
-template<addr_mode AddrMode>
+template<addr_mode AddrModeT>
 void execute_sec(state& state);
 
 // STA (Store Accumulator):
@@ -199,6 +214,11 @@ EXPLICIT_INSTANTIATION(ldy, addr_mode::zero_page);
 EXPLICIT_INSTANTIATION(ldy, addr_mode::zero_page_x);
 
 EXPLICIT_INSTANTIATION(nop, addr_mode::implied);
+
+EXPLICIT_INSTANTIATION(plp, addr_mode::implied);
+
+EXPLICIT_INSTANTIATION(rti, addr_mode::implied);
+EXPLICIT_INSTANTIATION(rts, addr_mode::implied);
 
 EXPLICIT_INSTANTIATION(sec, addr_mode::implied);
 

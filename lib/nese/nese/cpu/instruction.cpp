@@ -149,6 +149,11 @@ struct table
 
         ADD(nop, 0xea, addr_mode::implied);
 
+        ADD(plp, 0x28, addr_mode::implied);
+
+        ADD(rti, 0x40, addr_mode::implied);
+        ADD(rts, 0x60, addr_mode::implied);
+
         ADD(sec, 0x38, addr_mode::implied);
 
         ADD(stx, 0x86, addr_mode::zero_page);
@@ -578,6 +583,35 @@ void execute_nop(state& state)
     state.cycle += cpu_cycle_t(2);
 }
 
+template<addr_mode AddrModeT>
+void execute_plp(state& state)
+{
+    // http://wiki.nesdev.com/w/index.php/status_flag_behavior
+    // Bit 5 and 4 are ignored when pulled from stack - which means they are preserved
+    // @TODO - Nintendulator actually always sets bit 5, not sure which one is correct
+    state.registers.p = (pop_byte(state) & 0xef) | (state.registers.p & 0x10) | 0x20;
+
+    state.cycle += cpu_cycle_t(4);
+}
+
+template<addr_mode AddrModeT>
+void execute_rti(state& state)
+{
+    execute_plp<AddrModeT>(state);
+
+    state.registers.pc = pop_word(state);
+
+    state.cycle += cpu_cycle_t(2);
+}
+
+template<addr_mode AddrModeT>
+void execute_rts(state& state)
+{
+    state.registers.pc = pop_word(state) + 1;
+
+    state.cycle += cpu_cycle_t(6);
+}
+
 template<addr_mode AddrMode>
 void execute_sec(state& state)
 {
@@ -671,6 +705,11 @@ EXPLICIT_INSTANTIATE(ldy, addr_mode::zero_page);
 EXPLICIT_INSTANTIATE(ldy, addr_mode::zero_page_x);
 
 EXPLICIT_INSTANTIATE(nop, addr_mode::implied);
+
+EXPLICIT_INSTANTIATE(plp, addr_mode::implied);
+
+EXPLICIT_INSTANTIATE(rti, addr_mode::implied);
+EXPLICIT_INSTANTIATE(rts, addr_mode::implied);
 
 EXPLICIT_INSTANTIATE(sec, addr_mode::implied);
 

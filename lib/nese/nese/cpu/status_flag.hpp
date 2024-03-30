@@ -92,5 +92,9 @@ using status_flags = u8_t;
     NESE_ASSUME(false);
 }
 
+constexpr auto format_as(status_flag f)
+{
+    return to_string_view(f);
+}
 
 } // namespace nese
