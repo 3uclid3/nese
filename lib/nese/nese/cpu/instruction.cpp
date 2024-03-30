@@ -559,7 +559,7 @@ void execute_ldy(state& state)
 }
 
 template<addr_mode AddrModeT>
-void execute_nop(state& state [[maybe_unused]])
+void execute_nop(state& state)
 {
     state.cycle += cpu_cycle_t(2);
 }
