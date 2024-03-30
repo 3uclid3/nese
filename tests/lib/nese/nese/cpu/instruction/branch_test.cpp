@@ -90,6 +90,11 @@ TEST_CASE_METHOD(branch_fixture, "bne", "[cpu][instruction]")
     test_relative(execute_bne<addr_mode::relative>, status_flag::zero, branch_when::is_clear);
 }
 
+TEST_CASE_METHOD(branch_fixture, "bpl", "[cpu][instruction]")
+{
+    test_relative(execute_bpl<addr_mode::relative>, status_flag::negative, branch_when::is_clear);
+}
+
 TEST_CASE_METHOD(branch_fixture, "bvc", "[cpu][instruction]")
 {
     test_relative(execute_bvc<addr_mode::relative>, status_flag::overflow, branch_when::is_clear);

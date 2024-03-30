@@ -45,10 +45,20 @@ void execute_beq(state& state);
 template<addr_mode AddrModeT>
 void execute_bit(state& state);
 
+// BMI (Branch if Minus):
+// If the negative flag is set, it adds the relative displacement to the program counter to branch to a new location.
+template<addr_mode AddrModeT>
+void execute_bmi(state& state);
+
 // BNE (Branch if Not Equal):
 // If the zero flag is clear, adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrModeT>
 void execute_bne(state& state);
+
+// BPL (Branch if Positive):
+// If the negative flag is clear, it adds the relative displacement to the program counter to branch to a new location.
+template<addr_mode AddrModeT>
+void execute_bpl(state& state);
 
 // BVC (Branch if Overflow Clear):
 // If the overflow flag is clear, it adds the relative displacement to the program counter to branch to a new location.
@@ -159,7 +169,9 @@ EXPLICIT_INSTANTIATION_ALU_NO_IMMEDIATE(sta);
 EXPLICIT_INSTANTIATION(bcc, addr_mode::relative);
 EXPLICIT_INSTANTIATION(bcs, addr_mode::relative);
 EXPLICIT_INSTANTIATION(beq, addr_mode::relative);
+EXPLICIT_INSTANTIATION(bmi, addr_mode::relative);
 EXPLICIT_INSTANTIATION(bne, addr_mode::relative);
+EXPLICIT_INSTANTIATION(bpl, addr_mode::relative);
 EXPLICIT_INSTANTIATION(bvc, addr_mode::relative);
 EXPLICIT_INSTANTIATION(bvs, addr_mode::relative);
 

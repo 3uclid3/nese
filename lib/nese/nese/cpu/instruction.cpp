@@ -118,7 +118,9 @@ struct table
         ADD(bcc, 0x90, addr_mode::relative);
         ADD(bcs, 0xb0, addr_mode::relative);
         ADD(beq, 0xf0, addr_mode::relative);
+        ADD(bmi, 0x30, addr_mode::relative);
         ADD(bne, 0xd0, addr_mode::relative);
+        ADD(bpl, 0x10, addr_mode::relative);
         ADD(bvc, 0x50, addr_mode::relative);
         ADD(bvs, 0x70, addr_mode::relative);
 
@@ -465,9 +467,21 @@ void execute_bit(state& state)
 }
 
 template<addr_mode AddrModeT>
+void execute_bmi(state& state)
+{
+    execute_branch(state, state.registers.is_flag_set(status_flag::negative));
+}
+
+template<addr_mode AddrModeT>
 void execute_bne(state& state)
 {
     execute_branch(state, state.registers.is_flag_clear(status_flag::zero));
+}
+
+template<addr_mode AddrModeT>
+void execute_bpl(state& state)
+{
+    execute_branch(state, state.registers.is_flag_clear(status_flag::negative));
 }
 
 template<addr_mode AddrModeT>
@@ -627,7 +641,9 @@ EXPLICIT_INSTANTIATE_ALU_NO_IMMEDIATE(sta);
 EXPLICIT_INSTANTIATE(bcc, addr_mode::relative);
 EXPLICIT_INSTANTIATE(bcs, addr_mode::relative);
 EXPLICIT_INSTANTIATE(beq, addr_mode::relative);
+EXPLICIT_INSTANTIATE(bmi, addr_mode::relative);
 EXPLICIT_INSTANTIATE(bne, addr_mode::relative);
+EXPLICIT_INSTANTIATE(bpl, addr_mode::relative);
 EXPLICIT_INSTANTIATE(bvc, addr_mode::relative);
 EXPLICIT_INSTANTIATE(bvs, addr_mode::relative);
 
