@@ -448,13 +448,16 @@ void execute_beq(state& state)
 template<addr_mode AddrModeT>
 void execute_bit(state& state)
 {
-    const operand_t operand = decode_operand<AddrModeT>(state);
+    bool page_crossing = false;
+    const operand_t operand = decode_operand<AddrModeT>(state, page_crossing);
     const byte_t byte = read_operand<AddrModeT>(state, operand);
     const byte_t new_byte = byte & state.registers.a;
 
     state.registers.set_flag(status_flag::zero, new_byte == 0);
     state.registers.set_flag(status_flag::overflow, byte & 0x40);
     state.registers.set_flag(status_flag::negative, byte & 0x80);
+
+    state.cycle += get_addr_mode_cycle_cost<AddrModeT>(page_crossing);
 }
 
 template<addr_mode AddrModeT>
