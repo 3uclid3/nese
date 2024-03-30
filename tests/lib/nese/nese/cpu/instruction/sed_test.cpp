@@ -5,9 +5,9 @@
 
 namespace nese::cpu::instruction {
 
-TEST_CASE_METHOD(se_fixture, "sec", "[cpu][instruction]")
+TEST_CASE_METHOD(se_fixture, "sed", "[cpu][instruction]")
 {
-    test_implied(execute_sec<addr_mode::implied>, status_flag::carry);
+    test_implied(execute_sed<addr_mode::implied>, status_flag::decimal);
 }
 
 } // namespace nese::cpu::instruction

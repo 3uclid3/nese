@@ -6,6 +6,7 @@ configure_file("test_config.hpp.in" "${DIR}/test_config.hpp")
 
 set(INCLUDES
     "${DIR}/cpu/instruction/fixture.hpp"
+    "${DIR}/cpu/instruction/se_fixture.hpp"
     "${DIR}/cpu/state_mock.hpp"
     "${DIR}/test_config.hpp"
 )
@@ -23,6 +24,8 @@ set(SOURCES
     "${DIR}/cpu/instruction/rti_test.cpp"
     "${DIR}/cpu/instruction/rts_test.cpp"
     "${DIR}/cpu/instruction/sec_test.cpp"
+    "${DIR}/cpu/instruction/sed_test.cpp"
+    "${DIR}/cpu/instruction/sei_test.cpp"
     "${DIR}/cpu/instruction/st_test.cpp"
     "${DIR}/cpu/instruction_rom_test.cpp"
     "${DIR}/utility/format_test.cpp"

@@ -155,6 +155,8 @@ struct table
         ADD(rts, 0x60, addr_mode::implied);
 
         ADD(sec, 0x38, addr_mode::implied);
+        ADD(sed, 0xf8, addr_mode::implied);
+        ADD(sei, 0x78, addr_mode::implied);
 
         ADD(stx, 0x86, addr_mode::zero_page);
         ADD(stx, 0x96, addr_mode::zero_page_y);
@@ -620,6 +622,22 @@ void execute_sec(state& state)
     state.cycle += cpu_cycle_t(2);
 }
 
+template<addr_mode AddrMode>
+void execute_sed(state& state)
+{
+    state.registers.set_flag(status_flag::decimal);
+
+    state.cycle += cpu_cycle_t(2);
+}
+
+template<addr_mode AddrModeT>
+void execute_sei(state& state)
+{
+    state.registers.set_flag(status_flag::interrupt);
+
+    state.cycle += cpu_cycle_t(2);
+}
+
 template<addr_mode AddrModeT>
 void execute_st_impl(state& state, byte_t value)
 {
@@ -712,6 +730,8 @@ EXPLICIT_INSTANTIATE(rti, addr_mode::implied);
 EXPLICIT_INSTANTIATE(rts, addr_mode::implied);
 
 EXPLICIT_INSTANTIATE(sec, addr_mode::implied);
+EXPLICIT_INSTANTIATE(sed, addr_mode::implied);
+EXPLICIT_INSTANTIATE(sei, addr_mode::implied);
 
 EXPLICIT_INSTANTIATE(stx, addr_mode::zero_page);
 EXPLICIT_INSTANTIATE(stx, addr_mode::zero_page_y);

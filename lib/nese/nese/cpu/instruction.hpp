@@ -145,6 +145,16 @@ void execute_rts(state& state);
 template<addr_mode AddrModeT>
 void execute_sec(state& state);
 
+// SED (Set Decimal Mode):
+// Sets the decimal mode flag, affecting how ADC and SBC instructions work.
+template<addr_mode AddrModeT>
+void execute_sed(state& state);
+
+// SEI (Set Interrupt Disable):
+// Sets the interrupt disable flag, preventing interrupts.
+template<addr_mode AddrModeT>
+void execute_sei(state& state);
+
 // STA (Store Accumulator):
 // Stores the value in the accumulator into a specific location in memory.
 template<addr_mode AddrModeT>
@@ -221,6 +231,8 @@ EXPLICIT_INSTANTIATION(rti, addr_mode::implied);
 EXPLICIT_INSTANTIATION(rts, addr_mode::implied);
 
 EXPLICIT_INSTANTIATION(sec, addr_mode::implied);
+EXPLICIT_INSTANTIATION(sed, addr_mode::implied);
+EXPLICIT_INSTANTIATION(sei, addr_mode::implied);
 
 EXPLICIT_INSTANTIATION(stx, addr_mode::zero_page);
 EXPLICIT_INSTANTIATION(stx, addr_mode::zero_page_y);
