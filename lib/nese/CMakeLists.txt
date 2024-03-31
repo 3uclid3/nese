@@ -5,11 +5,9 @@ set(INCLUDES
     "${DIR}/cpu/instruction/execute_context.hpp"
     "${DIR}/cpu/instruction/opcode.hpp"
     "${DIR}/cpu/addr_mode.hpp"
-    "${DIR}/cpu/instruction.hpp"
     "${DIR}/cpu/registers.hpp"
-    "${DIR}/cpu/state_2.hpp"
+    "${DIR}/cpu/stack.hpp"
     "${DIR}/cpu/state.hpp"
-    "${DIR}/cpu/state_fmt.inl"
     "${DIR}/cpu/status_flag.hpp"
     "${DIR}/memory/mapper.hpp"
     "${DIR}/memory/ram.hpp"
@@ -19,15 +17,16 @@ set(INCLUDES
     "${DIR}/utility/log.hpp"
     "${DIR}/basic_types.hpp"
     "${DIR}/cycle.hpp"
+    "${DIR}/nintendulator.hpp"
 )
 
 set(SOURCES
     "${DIR}/cpu/instruction/execute.cpp"
-    "${DIR}/cpu/instruction.cpp"
     "${DIR}/memory/mapper.cpp"
     "${DIR}/memory/ram.cpp"
     "${DIR}/memory/rom.cpp"
     "${DIR}/utility/format.cpp"
+    "${DIR}/nintendulator.cpp"
 )
 
 add_library(nese ${INCLUDES} ${SOURCES})
@@ -46,6 +45,7 @@ target_find_dependencies(
     PRIVATE_CONFIG
         fmt
         spdlog
+        magic_enum
 )
 
 target_link_system_libraries(
@@ -53,4 +53,5 @@ target_link_system_libraries(
     PUBLIC
         spdlog::spdlog
         fmt::fmt
+        magic_enum::magic_enum
 )

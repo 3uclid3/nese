@@ -64,7 +64,7 @@ void execute_fixture::check_cycle() const
     CHECK(_context.state().cycle == _expected_context.state().cycle);
 }
 
-cpu::state_2& execute_fixture::expected_state()
+cpu::state& execute_fixture::expected_state()
 {
     return get_expected_context().state();
 }
@@ -74,7 +74,7 @@ memory::mapper& execute_fixture::expected_memory()
     return get_expected_context().memory();
 }
 
-cpu::state_2& execute_fixture::state()
+cpu::state& execute_fixture::state()
 {
     NESE_ASSERT(!_expected_context_init);
     return _context.state();

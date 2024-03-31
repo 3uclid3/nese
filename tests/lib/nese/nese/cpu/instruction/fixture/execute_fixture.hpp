@@ -154,10 +154,10 @@ public:
     void check_memory() const;
     void check_cycle() const;
 
-    [[nodiscard]] cpu::state_2& expected_state();
+    [[nodiscard]] cpu::state& expected_state();
     [[nodiscard]] memory::mapper& expected_memory();
 
-    [[nodiscard]] cpu::state_2& state();
+    [[nodiscard]] cpu::state& state();
     [[nodiscard]] memory::mapper& memory();
 
 private:

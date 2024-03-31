@@ -12,7 +12,6 @@ set(INCLUDES
     "${DIR}/cpu/instruction/fixture/status_flag_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/store_fixture.hpp"
     "${DIR}/cpu/instruction/execute_context_mock.hpp"
-    "${DIR}/cpu/state_mock.hpp"
     "${DIR}/test_config.hpp"
 )
 
@@ -40,6 +39,7 @@ set(SOURCES
     "${DIR}/cpu/instruction/ldx_test.cpp"
     "${DIR}/cpu/instruction/ldy_test.cpp"
     "${DIR}/cpu/instruction/nop_test.cpp"
+    "${DIR}/cpu/instruction/opcode_test.cpp"
     "${DIR}/cpu/instruction/php_test.cpp"
     "${DIR}/cpu/instruction/plp_test.cpp"
     "${DIR}/cpu/instruction/rti_test.cpp"

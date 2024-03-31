@@ -44,11 +44,11 @@ public:
 
     constexpr ~execute_context_mock() = default;
 
-    [[nodiscard]] constexpr const cpu::state_2& state() const { return _owned_state; }
-    [[nodiscard]] constexpr cpu::state_2& state() { return _owned_state; }
+    [[nodiscard]] constexpr const cpu::state& state() const { return _owned_state; }
+    [[nodiscard]] constexpr cpu::state& state() { return _owned_state; }
 
 private:
-    cpu::state_2 _owned_state;
+    cpu::state _owned_state;
     memory::mapper _owned_memory;
 };
 

@@ -1,7 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
-#include <nese/cpu/instruction.hpp>
 #include <nese/cpu/instruction/fixture/execute_fixture.hpp>
 
 namespace nese::cpu::instruction {

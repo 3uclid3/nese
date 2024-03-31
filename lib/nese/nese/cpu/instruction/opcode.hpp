@@ -1,8 +1,17 @@
 #pragma once
 
+#include <magic_enum.hpp>
+
 #include <nese/basic_types.hpp>
+#include <nese/cpu/addr_mode.hpp>
 
 namespace nese::cpu::instruction {
+
+enum class opcode;
+
+constexpr string_view get_mnemonic(opcode opcode);
+constexpr addr_mode get_addr_mode_from_name(opcode opcode);
+constexpr byte_t get_operand_size(opcode opcode);
 
 enum class opcode
 {
@@ -188,6 +197,127 @@ enum class opcode
     txs_implied = 0x9A,
     tya_implied = 0x98
 };
+} // namespace nese::cpu::instruction
+
+template<>
+struct magic_enum::customize::enum_range<nese::cpu::instruction::opcode>
+{
+    static constexpr bool is_flags = false;
+
+    static constexpr int min = 0x00;
+    static constexpr int max = 0xFF;
+};
+
+namespace nese::cpu::instruction {
+
+constexpr string_view get_mnemonic(opcode opcode)
+{
+    const string_view name = magic_enum::enum_name(opcode);
+    const string_view::size_type idx = name.find_first_of('_');
+
+    return name.substr(0, idx);
+}
+
+constexpr addr_mode get_addr_mode_from_name(opcode opcode)
+{
+    const string_view name = magic_enum::enum_name(opcode);
+    const string_view::size_type idx = name.find_first_of('_');
+    const string_view addr_mode = name.substr(idx + 1);
+
+    if (addr_mode == "implied")
+    {
+        return addr_mode::implied;
+    }
+
+    if (addr_mode == "accumulator")
+    {
+        return addr_mode::accumulator;
+    }
+
+    if (addr_mode == "immediate")
+    {
+        return addr_mode::immediate;
+    }
+
+    if (addr_mode == "zero_page")
+    {
+        return addr_mode::zero_page;
+    }
+
+    if (addr_mode == "zero_page_x")
+    {
+        return addr_mode::zero_page_x;
+    }
+
+    if (addr_mode == "zero_page_y")
+    {
+        return addr_mode::zero_page_y;
+    }
+
+    if (addr_mode == "absolute")
+    {
+        return addr_mode::absolute;
+    }
+
+    if (addr_mode == "absolute_x")
+    {
+        return addr_mode::absolute_x;
+    }
+
+    if (addr_mode == "absolute_y")
+    {
+        return addr_mode::absolute_y;
+    }
+
+    if (addr_mode == "relative")
+    {
+        return addr_mode::relative;
+    }
+
+    if (addr_mode == "indirect")
+    {
+        return addr_mode::indirect;
+    }
+
+    if (addr_mode == "indexed_indirect")
+    {
+        return addr_mode::indexed_indirect;
+    }
+
+    if (addr_mode == "indirect_indexed")
+    {
+        return addr_mode::indirect_indexed;
+    }
+
+    NESE_ASSUME(false);
+}
+
+constexpr byte_t get_operand_size(opcode opcode)
+{
+    switch (get_addr_mode_from_name(opcode))
+    {
+    case addr_mode::implied:
+    case addr_mode::accumulator:
+        return 0;
+
+    case addr_mode::relative:
+    case addr_mode::immediate:
+    case addr_mode::zero_page:
+    case addr_mode::zero_page_x:
+    case addr_mode::zero_page_y:
+    case addr_mode::indexed_indirect:
+    case addr_mode::indirect_indexed:
+        return 1;
+
+    case addr_mode::indirect:
+    case addr_mode::absolute:
+    case addr_mode::absolute_x:
+    case addr_mode::absolute_y:
+        return 2;
+    }
+
+    NESE_ASSUME(false);
+}
 
 constexpr auto format_as(opcode code)
 {
