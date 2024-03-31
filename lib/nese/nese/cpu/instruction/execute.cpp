@@ -269,24 +269,32 @@ void execute_branch(execute_context ctx, bool condition)
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
+// BCC (Branch if Carry Clear):
+// If the carry flag is clear, it adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrModeT>
 void execute_bcc(execute_context ctx)
 {
     execute_branch(ctx, ctx.registers().is_flag_clear(status_flag::carry));
 }
 
+// BCS (Branch if Carry Set):
+// If the carry flag is set, it adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrModeT>
 void execute_bcs(execute_context ctx)
 {
     execute_branch(ctx, ctx.registers().is_flag_set(status_flag::carry));
 }
 
+// BEQ (Branch if Equal):
+// If the zero flag is set, adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrModeT>
 void execute_beq(execute_context ctx)
 {
     execute_branch(ctx, ctx.registers().is_flag_set(status_flag::zero));
 }
 
+// BIT (Bit Test):
+// Tests bits in memory with the accumulator, affecting the zero, negative, and overflow flags.
 template<addr_mode AddrModeT>
 void execute_bit(execute_context ctx)
 {
@@ -302,36 +310,48 @@ void execute_bit(execute_context ctx)
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
 }
 
+// BMI (Branch if Minus):
+// If the negative flag is set, it adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrModeT>
 void execute_bmi(execute_context ctx)
 {
     execute_branch(ctx, ctx.registers().is_flag_set(status_flag::negative));
 }
 
+// BNE (Branch if Not Equal):
+// If the zero flag is clear, adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrModeT>
 void execute_bne(execute_context ctx)
 {
     execute_branch(ctx, ctx.registers().is_flag_clear(status_flag::zero));
 }
 
+// BPL (Branch if Positive):
+// If the negative flag is clear, it adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrModeT>
 void execute_bpl(execute_context ctx)
 {
     execute_branch(ctx, ctx.registers().is_flag_clear(status_flag::negative));
 }
 
+// BVC (Branch if Overflow Clear):
+// If the overflow flag is clear, it adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrModeT>
 void execute_bvc(execute_context ctx)
 {
     execute_branch(ctx, ctx.registers().is_flag_clear(status_flag::overflow));
 }
 
+// BVS (Branch if Overflow Set):
+// If the overflow flag is set, it adds the relative displacement to the program counter to branch to a new location.
 template<addr_mode AddrModeT>
 void execute_bvs(execute_context ctx)
 {
     execute_branch(ctx, ctx.registers().is_flag_set(status_flag::overflow));
 }
 
+// CLC (Clear Carry Flag):
+// Clears the carry flag to 0.
 template<addr_mode AddrModeT>
 void execute_clc(execute_context ctx)
 {
@@ -339,6 +359,8 @@ void execute_clc(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
+// INX (Increment Register):
+// Increases a register by one, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
 void execute_inx(execute_context ctx)
 {
@@ -346,6 +368,8 @@ void execute_inx(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
+// INX (Increment X Register):
+// Increases the X register by one, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
 void execute_iny(execute_context ctx)
 {
@@ -353,6 +377,8 @@ void execute_iny(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
+// JMP (Jump):
+// Sets the program counter to the address specified by the operand, effectively jumping to a new code location.
 template<addr_mode AddrModeT>
 void execute_jmp(execute_context ctx)
 {
@@ -367,6 +393,8 @@ void execute_jmp(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(3));
 }
 
+// JSR (Jump to Subroutine):
+// Pushes the address (minus one) of the next operation on to the stack and sets the program counter to the target address, for subroutine calls.
 template<addr_mode AddrModeT>
 void execute_jsr(execute_context ctx)
 {
@@ -378,7 +406,7 @@ void execute_jsr(execute_context ctx)
 }
 
 template<addr_mode AddrModeT>
-void execute_ld_impl(execute_context ctx, byte_t& register_value)
+void execute_load(execute_context ctx, byte_t& register_value)
 {
     bool page_crossing{false};
     const word_t operand = decode_operand<AddrModeT>(ctx, page_crossing);
@@ -389,22 +417,28 @@ void execute_ld_impl(execute_context ctx, byte_t& register_value)
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
 }
 
+// LDA (Load Accumulator):
+// Loads a value into the accumulator from memory or an immediate value, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
 void execute_lda(execute_context ctx)
 {
-    execute_ld_impl<AddrModeT>(ctx, ctx.registers().a);
+    execute_load<AddrModeT>(ctx, ctx.registers().a);
 }
 
+// LDX (Load X Register):
+// Loads a value into the X register from memory or an immediate value, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
 void execute_ldx(execute_context ctx)
 {
-    execute_ld_impl<AddrModeT>(ctx, ctx.registers().x);
+    execute_load<AddrModeT>(ctx, ctx.registers().x);
 }
 
+// LDY (Load Y Register):
+// Loads a value into the Y register from memory or an immediate value, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
 void execute_ldy(execute_context ctx)
 {
-    execute_ld_impl<AddrModeT>(ctx, ctx.registers().y);
+    execute_load<AddrModeT>(ctx, ctx.registers().y);
 }
 
 // NOP (No Operation):
@@ -415,6 +449,8 @@ void execute_nop(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
+// PHP (Push Processor Status):
+// Pushes a copy of the status flags onto the stack.
 template<addr_mode AddrModeT>
 void execute_php(execute_context ctx)
 {
@@ -425,6 +461,8 @@ void execute_php(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(3));
 }
 
+// PLP (Pull Processor Status):
+// Pulls the processor status flags from the stack.
 template<addr_mode AddrModeT>
 void execute_plp(execute_context ctx)
 {
@@ -436,6 +474,8 @@ void execute_plp(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(4));
 }
 
+// RTI (Return from Interrupt):
+// Restores the CPU's state from the stack, including the program counter and processor flags, to conclude an interrupt service routine.
 template<addr_mode AddrModeT>
 void execute_rti(execute_context ctx)
 {
@@ -446,6 +486,8 @@ void execute_rti(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
+// RTS (Return from Subroutine):
+// Pulls the program counter (plus one) from the stack, returning from a subroutine.
 template<addr_mode AddrModeT>
 void execute_rts(execute_context ctx)
 {
@@ -454,6 +496,8 @@ void execute_rts(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(6));
 }
 
+// SEC (Set Carry Flag):
+// Sets the carry flag to 1.
 template<addr_mode AddrMode>
 void execute_sec(execute_context ctx)
 {
@@ -462,6 +506,8 @@ void execute_sec(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
+// SED (Set Decimal Mode):
+// Sets the decimal mode flag, affecting how ADC and SBC instructions work.
 template<addr_mode AddrMode>
 void execute_sed(execute_context ctx)
 {
@@ -470,6 +516,8 @@ void execute_sed(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
+// SEI (Set Interrupt Disable):
+// Sets the interrupt disable flag, preventing interrupts.
 template<addr_mode AddrModeT>
 void execute_sei(execute_context ctx)
 {
@@ -479,33 +527,39 @@ void execute_sei(execute_context ctx)
 }
 
 template<addr_mode AddrModeT>
-void execute_st_impl(execute_context ctx, byte_t value)
+void execute_store(execute_context ctx, byte_t value)
 {
     const word_t operand = decode_operand<AddrModeT>(ctx);
 
     ctx.memory().set_byte(operand, value);
 }
 
+// STA (Store Accumulator):
+// Stores the value in the accumulator into a specific location in memory.
 template<addr_mode AddrModeT>
 void execute_sta(execute_context ctx)
 {
-    execute_st_impl<AddrModeT>(ctx, ctx.registers().a);
+    execute_store<AddrModeT>(ctx, ctx.registers().a);
 
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(true));
 }
 
+// STX (Store X Register):
+// Stores the value in the X register into a specified memory location.
 template<addr_mode AddrModeT>
 void execute_stx(execute_context ctx)
 {
-    execute_st_impl<AddrModeT>(ctx, ctx.registers().x);
+    execute_store<AddrModeT>(ctx, ctx.registers().x);
 
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>());
 }
 
+// STY (Store Y Register):
+// Stores the value in the Y register into a specified memory location.
 template<addr_mode AddrModeT>
 void execute_sty(execute_context ctx)
 {
-    execute_st_impl<AddrModeT>(ctx, ctx.registers().y);
+    execute_store<AddrModeT>(ctx, ctx.registers().y);
 
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>());
 }
