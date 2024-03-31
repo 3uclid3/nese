@@ -5,31 +5,35 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <nese/cpu/state_mock.hpp>
+#include <nese/cpu/instruction/execute.hpp>
+#include <nese/cpu/instruction/execute_context_mock.hpp>
+#include <nese/cpu/instruction/opcode.hpp>
 #include <nese/utility/assert.hpp>
 
 namespace nese::cpu::instruction {
 
-static inline state_mock default_state_mock{[] {
-    state_mock state;
+static inline execute_context_mock default_execute_context_mock{[] {
+    execute_context_mock ctx;
 
-    state.registers.a = 0xA;
-    state.registers.x = 0xB;
-    state.registers.y = 0xC;
+    ctx.registers().a = 0xA;
+    ctx.registers().x = 0xB;
+    ctx.registers().y = 0xC;
 
     byte_t value = 0xFF;
-    for (addr_t i = 0; i < static_cast<addr_t>(memory::mapper::capacity - 1); ++i)
+
+    for (std::size_t i = 0; i < memory::mapper::capacity; ++i)
     {
-        state.owned_memory.set_byte(i, value);
+        ctx.memory().set_byte(static_cast<addr_t>(i), value);
 
         value = value == 0x01 ? 0xFF : value - 0x01;
     }
 
-    return state;
+    return ctx;
 }()};
 
-struct fixture
+class execute_fixture
 {
+public:
     enum class register_id
     {
         a,
@@ -126,112 +130,56 @@ struct fixture
             0xFF  // The largest value
         });
 
-    static void set_register(state& state, register_id type, byte_t value)
+    static void set_register(registers& registers, register_id type, byte_t value)
     {
         switch (type)
         {
         case register_id::a:
-            state.registers.a = value;
+            registers.a = value;
             break;
 
         case register_id::x:
-            state.registers.x = value;
+            registers.x = value;
             break;
 
         case register_id::y:
-            state.registers.y = value;
+            registers.y = value;
             break;
         }
     }
 
-    void check_state(bool should_check_cycle = true) const
-    {
-        check_registers();
-        check_memory();
+    void execute_and_check(opcode code, bool should_check_cycle = true) const;
 
-        if (should_check_cycle)
-            check_cycle();
-    }
+    void check_registers() const;
+    void check_memory() const;
+    void check_cycle() const;
 
-    void check_registers() const
-    {
-        CHECK(state.registers.a == expected_state.registers.a);
-        CHECK(state.registers.x == expected_state.registers.x);
-        CHECK(state.registers.y == expected_state.registers.y);
-        CHECK(state.registers.pc == expected_state.registers.pc);
-        CHECK(state.registers.s == expected_state.registers.s);
+    [[nodiscard]] cpu::state_2& expected_state();
+    [[nodiscard]] memory::mapper& expected_memory();
 
-        if (state.registers.p != expected_state.registers.p)
-        {
-            CHECK(state.registers.is_flag_set(status_flag::carry) == expected_state.registers.is_flag_set(status_flag::carry));
-            CHECK(state.registers.is_flag_set(status_flag::zero) == expected_state.registers.is_flag_set(status_flag::zero));
-            CHECK(state.registers.is_flag_set(status_flag::interrupt) == expected_state.registers.is_flag_set(status_flag::interrupt));
-            CHECK(state.registers.is_flag_set(status_flag::decimal) == expected_state.registers.is_flag_set(status_flag::decimal));
-            CHECK(state.registers.is_flag_set(status_flag::break_cmd) == expected_state.registers.is_flag_set(status_flag::break_cmd));
-            CHECK(state.registers.is_flag_set(status_flag::unused) == expected_state.registers.is_flag_set(status_flag::unused));
-            CHECK(state.registers.is_flag_set(status_flag::overflow) == expected_state.registers.is_flag_set(status_flag::overflow));
-            CHECK(state.registers.is_flag_set(status_flag::negative) == expected_state.registers.is_flag_set(status_flag::negative));
-        }
-    }
+    [[nodiscard]] cpu::state_2& state();
+    [[nodiscard]] memory::mapper& memory();
 
-    void check_memory() const
-    {
-        const auto& expected_memory_buffer = expected_state.memory.get().get_bytes();
-        const auto& memory_buffer = state.memory.get().get_bytes();
+private:
+    execute_context_mock& get_expected_context();
 
-        CHECK(expected_memory_buffer.size() == memory_buffer.size());
+    execute_context_mock _context{default_execute_context_mock};
+    execute_context_mock _expected_context{default_execute_context_mock};
 
-        if (std::memcmp(memory_buffer.data(), expected_memory_buffer.data(), memory_buffer.size()) != 0)
-        {
-            std::string fail_message = "expected_state.memory != state.memory\n";
-
-            for (addr_t addr = 0; addr < memory_buffer.size() - 1; ++addr)
-            {
-                if (memory_buffer[addr] != expected_memory_buffer[addr])
-                {
-                    fmt::format_to(std::back_inserter(fail_message), "  Mismatch at address 0x{:04X}: expected 0x{:02X}, actual 0x{:02X}\n", addr, expected_memory_buffer[addr], memory_buffer[addr]);
-                }
-            }
-
-            FAIL_CHECK(fail_message.c_str());
-        }
-    }
-
-    void check_cycle() const
-    {
-        CHECK(state.cycle == expected_state.cycle);
-    }
-
-    static void set_register_a(registers& r, byte_t a)
-    {
-        r.a = a;
-    }
-
-    static void set_register_x(registers& r, byte_t x)
-    {
-        r.x = x;
-    }
-
-    static void set_register_y(registers& r, byte_t y)
-    {
-        r.y = y;
-    }
-
-    state_mock state{default_state_mock};
-    state_mock expected_state{default_state_mock};
+    bool _expected_context_init{false};
 };
 
-constexpr std::string_view format_as(fixture::register_id type)
+constexpr std::string_view format_as(execute_fixture::register_id type)
 {
     switch (type)
     {
-    case fixture::register_id::a:
+    case execute_fixture::register_id::a:
         return "a";
 
-    case fixture::register_id::x:
+    case execute_fixture::register_id::x:
         return "x";
 
-    case fixture::register_id::y:
+    case execute_fixture::register_id::y:
         return "y";
     }
 

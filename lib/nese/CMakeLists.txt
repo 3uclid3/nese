@@ -1,9 +1,13 @@
 set(DIR "${CMAKE_CURRENT_SOURCE_DIR}/nese")
 
 set(INCLUDES
+    "${DIR}/cpu/instruction/execute.hpp"
+    "${DIR}/cpu/instruction/execute_context.hpp"
+    "${DIR}/cpu/instruction/opcode.hpp"
     "${DIR}/cpu/addr_mode.hpp"
     "${DIR}/cpu/instruction.hpp"
     "${DIR}/cpu/registers.hpp"
+    "${DIR}/cpu/state_2.hpp"
     "${DIR}/cpu/state.hpp"
     "${DIR}/cpu/state_fmt.inl"
     "${DIR}/cpu/status_flag.hpp"
@@ -18,6 +22,7 @@ set(INCLUDES
 )
 
 set(SOURCES
+    "${DIR}/cpu/instruction/execute.cpp"
     "${DIR}/cpu/instruction.cpp"
     "${DIR}/memory/mapper.cpp"
     "${DIR}/memory/ram.cpp"

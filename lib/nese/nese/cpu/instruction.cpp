@@ -2,6 +2,7 @@
 
 #include <array>
 
+#include <nese/cpu/stack.hpp>
 #include <nese/cpu/state.hpp>
 #include <nese/memory/mapper.hpp>
 #include <nese/utility/assert.hpp>

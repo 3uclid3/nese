@@ -7,8 +7,6 @@ namespace nese::cpu {
 
 struct state;
 
-constexpr addr_t stack_offset = 0x100;
-
 namespace instruction {
 
 using opcode_t = byte_t;

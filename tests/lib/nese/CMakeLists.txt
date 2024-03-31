@@ -5,14 +5,24 @@ set(TEST_ROMS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test_roms")
 configure_file("test_config.hpp.in" "${DIR}/test_config.hpp")
 
 set(INCLUDES
-    "${DIR}/cpu/instruction/fixture.hpp"
-    "${DIR}/cpu/instruction/branch_fixture.hpp"
-    "${DIR}/cpu/instruction/se_fixture.hpp"
+    "${DIR}/cpu/instruction/fixture/branch_fixture.hpp"
+    "${DIR}/cpu/instruction/fixture/execute_fixture.hpp"
+    "${DIR}/cpu/instruction/fixture/increment_fixture.hpp"
+    "${DIR}/cpu/instruction/fixture/load_fixture.hpp"
+    "${DIR}/cpu/instruction/fixture/status_flag_fixture.hpp"
+    "${DIR}/cpu/instruction/fixture/store_fixture.hpp"
+    "${DIR}/cpu/instruction/execute_context_mock.hpp"
     "${DIR}/cpu/state_mock.hpp"
     "${DIR}/test_config.hpp"
 )
 
 set(SOURCES
+    "${DIR}/cpu/instruction/fixture/branch_fixture.cpp"
+    "${DIR}/cpu/instruction/fixture/execute_fixture.cpp"
+    "${DIR}/cpu/instruction/fixture/increment_fixture.cpp"
+    "${DIR}/cpu/instruction/fixture/load_fixture.cpp"
+    "${DIR}/cpu/instruction/fixture/status_flag_fixture.cpp"
+    "${DIR}/cpu/instruction/fixture/store_fixture.cpp"
     "${DIR}/cpu/instruction/bcc_test.cpp"
     "${DIR}/cpu/instruction/bcs_test.cpp"
     "${DIR}/cpu/instruction/beq_test.cpp"
@@ -22,10 +32,13 @@ set(SOURCES
     "${DIR}/cpu/instruction/bvc_test.cpp"
     "${DIR}/cpu/instruction/bvs_test.cpp"
     "${DIR}/cpu/instruction/clc_test.cpp"
-    "${DIR}/cpu/instruction/in_test.cpp"
+    "${DIR}/cpu/instruction/inx_test.cpp"
+    "${DIR}/cpu/instruction/iny_test.cpp"
     "${DIR}/cpu/instruction/jmp_test.cpp"
     "${DIR}/cpu/instruction/jsr_test.cpp"
-    "${DIR}/cpu/instruction/ld_test.cpp"
+    "${DIR}/cpu/instruction/lda_test.cpp"
+    "${DIR}/cpu/instruction/ldx_test.cpp"
+    "${DIR}/cpu/instruction/ldy_test.cpp"
     "${DIR}/cpu/instruction/nop_test.cpp"
     "${DIR}/cpu/instruction/php_test.cpp"
     "${DIR}/cpu/instruction/plp_test.cpp"
@@ -34,7 +47,8 @@ set(SOURCES
     "${DIR}/cpu/instruction/sec_test.cpp"
     "${DIR}/cpu/instruction/sed_test.cpp"
     "${DIR}/cpu/instruction/sei_test.cpp"
-    "${DIR}/cpu/instruction/st_test.cpp"
+    "${DIR}/cpu/instruction/stx_test.cpp"
+    "${DIR}/cpu/instruction/sty_test.cpp"
     "${DIR}/cpu/instruction_rom_test.cpp"
     "${DIR}/utility/format_test.cpp"
 )

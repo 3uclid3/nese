@@ -1,39 +1,24 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
-#include <nese/cpu/instruction.hpp>
-#include <nese/cpu/instruction/fixture.hpp>
+#include <nese/cpu/instruction/fixture/execute_fixture.hpp>
+#include <nese/cpu/instruction/opcode.hpp>
 
 namespace nese::cpu::instruction {
 
-struct jmp_fixture : fixture
+TEST_CASE_METHOD(execute_fixture, "jmp", "[cpu][instruction]")
 {
-    template<typename ExecuteFunctorT>
-    void test_absolute(const ExecuteFunctorT& execute)
-    {
-        SECTION("absolute")
-        {
-            constexpr cycle_t cycle_cost = cpu_cycle_t(3);
+    constexpr cycle_t cycle_cost = cpu_cycle_t(3);
 
-            const auto [addr, addr_to] = GENERATE(from_range(absolute_scenarios));
+    const auto [addr, addr_to] = GENERATE(from_range(absolute_scenarios));
 
-            state.registers.pc = addr;
-            state.owned_memory.set_word(addr, addr_to);
+    state().registers.pc = addr;
+    memory().set_word(addr, addr_to);
 
-            expected_state = state;
-            expected_state.cycle = cycle_cost;
-            expected_state.registers.pc = addr_to;
+    expected_state().cycle = cycle_cost;
+    expected_state().registers.pc = addr_to;
 
-            execute(state);
-
-            check_state();
-        }
-    }
-};
-
-TEST_CASE_METHOD(jmp_fixture, "jmp", "[cpu][instruction]")
-{
-    test_absolute(execute_jmp<addr_mode::absolute>);
+    execute_and_check(opcode::jmp_absolute);
 }
 
 } // namespace nese::cpu::instruction

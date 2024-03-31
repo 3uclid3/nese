@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nese/basic_types.hpp>
+#include <nese/utility/assert.hpp>
 
 namespace nese::cpu {
 
