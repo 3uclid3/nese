@@ -125,6 +125,11 @@ void execute_ldy(state& state);
 template<addr_mode AddrModeT>
 void execute_nop(state& state);
 
+// PHP (Push Processor Status):
+// Pushes a copy of the status flags onto the stack.
+template<addr_mode AddrModeT>
+void execute_php(state& state);
+
 // PLP (Pull Processor Status):
 // Pulls the processor status flags from the stack.
 template<addr_mode AddrModeT>
@@ -225,6 +230,7 @@ EXPLICIT_INSTANTIATION(ldy, addr_mode::zero_page_x);
 
 EXPLICIT_INSTANTIATION(nop, addr_mode::implied);
 
+EXPLICIT_INSTANTIATION(php, addr_mode::implied);
 EXPLICIT_INSTANTIATION(plp, addr_mode::implied);
 
 EXPLICIT_INSTANTIATION(rti, addr_mode::implied);

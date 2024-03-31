@@ -27,6 +27,7 @@ set(SOURCES
     "${DIR}/cpu/instruction/jsr_test.cpp"
     "${DIR}/cpu/instruction/ld_test.cpp"
     "${DIR}/cpu/instruction/nop_test.cpp"
+    "${DIR}/cpu/instruction/php_test.cpp"
     "${DIR}/cpu/instruction/plp_test.cpp"
     "${DIR}/cpu/instruction/rti_test.cpp"
     "${DIR}/cpu/instruction/rts_test.cpp"

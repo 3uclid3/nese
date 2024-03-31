@@ -149,6 +149,8 @@ struct table
 
         ADD(nop, 0xea, addr_mode::implied);
 
+        ADD(php, 0x08, addr_mode::implied);
+
         ADD(plp, 0x28, addr_mode::implied);
 
         ADD(rti, 0x40, addr_mode::implied);
@@ -586,6 +588,16 @@ void execute_nop(state& state)
 }
 
 template<addr_mode AddrModeT>
+void execute_php(state& state)
+{
+    // http://wiki.nesdev.com/w/index.php/status_flag_behavior
+    // Set bit 5 and 4 to 1 when copy status into from PHP
+    push_byte(state, state.registers.p | 0x30);
+
+    state.cycle += cpu_cycle_t(3);
+}
+
+template<addr_mode AddrModeT>
 void execute_plp(state& state)
 {
     // http://wiki.nesdev.com/w/index.php/status_flag_behavior
@@ -724,6 +736,7 @@ EXPLICIT_INSTANTIATE(ldy, addr_mode::zero_page_x);
 
 EXPLICIT_INSTANTIATE(nop, addr_mode::implied);
 
+EXPLICIT_INSTANTIATE(php, addr_mode::implied);
 EXPLICIT_INSTANTIATE(plp, addr_mode::implied);
 
 EXPLICIT_INSTANTIATE(rti, addr_mode::implied);
