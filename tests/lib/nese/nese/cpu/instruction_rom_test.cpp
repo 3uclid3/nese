@@ -3,7 +3,10 @@
 #include <spdlog/sinks/basic_file_sink.h>
 
 #include <nese/cpu/instruction/execute.hpp>
-#include <nese/cpu/instruction/execute_context_mock.hpp>
+#include <nese/cpu/instruction/execute_context.hpp>
+#include <nese/cpu/state.hpp>
+#include <nese/cycle.hpp>
+#include <nese/memory/mapper.hpp>
 #include <nese/memory/rom.hpp>
 #include <nese/nintendulator.hpp>
 #include <nese/test_config.hpp>

@@ -3,32 +3,37 @@
 #include <array>
 #include <tuple>
 
-#include <catch2/catch_test_macros.hpp>
-
 #include <nese/cpu/instruction/execute.hpp>
-#include <nese/cpu/instruction/execute_context_mock.hpp>
 #include <nese/cpu/instruction/opcode.hpp>
+#include <nese/cpu/state.hpp>
+#include <nese/memory/mapper.hpp>
 #include <nese/utility/assert.hpp>
 
 namespace nese::cpu::instruction {
 
-static inline execute_context_mock default_execute_context_mock{[] {
-    execute_context_mock ctx;
+static inline state test_default_state{[] {
+    state state;
 
-    ctx.registers().a = 0xA;
-    ctx.registers().x = 0xB;
-    ctx.registers().y = 0xC;
+    state.registers.a = 0xA;
+    state.registers.x = 0xB;
+    state.registers.y = 0xC;
+
+    return state;
+}()};
+
+static inline memory::mapper test_default_memory{[] {
+    memory::mapper memory;
 
     byte_t value = 0xFF;
 
     for (std::size_t i = 0; i < memory::mapper::capacity; ++i)
     {
-        ctx.memory().set_byte(static_cast<addr_t>(i), value);
+        memory.set_byte(static_cast<addr_t>(i), value);
 
         value = value == 0x01 ? 0xFF : value - 0x01;
     }
 
-    return ctx;
+    return memory;
 }()};
 
 class execute_fixture
@@ -148,7 +153,7 @@ public:
         }
     }
 
-    void execute_and_check(opcode code, bool should_check_cycle = true) const;
+    void execute_and_check(opcode code, bool should_check_cycle = true);
 
     void check_registers() const;
     void check_memory() const;
@@ -161,12 +166,15 @@ public:
     [[nodiscard]] memory::mapper& memory();
 
 private:
-    execute_context_mock& get_expected_context();
+    void init_expected();
 
-    execute_context_mock _context{default_execute_context_mock};
-    execute_context_mock _expected_context{default_execute_context_mock};
+    cpu::state _state{test_default_state};
+    memory::mapper _memory{test_default_memory};
+    
+    cpu::state _expected_state{test_default_state};
+    memory::mapper _expected_memory{test_default_memory};
 
-    bool _expected_context_init{false};
+    bool _expected_init{false};
 };
 
 constexpr std::string_view format_as(execute_fixture::register_id type)

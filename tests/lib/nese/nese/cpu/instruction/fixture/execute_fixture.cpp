@@ -1,10 +1,14 @@
 #include <nese/cpu/instruction/fixture/execute_fixture.hpp>
 
+#include <catch2/catch_test_macros.hpp>
+
+#include <nese/cpu/instruction/execute_context.hpp>
+
 namespace nese::cpu::instruction {
 
-void execute_fixture::execute_and_check(opcode code, bool should_check_cycle) const
+void execute_fixture::execute_and_check(opcode code, bool should_check_cycle)
 {
-    execute(execute_context(_context), code);
+    execute(execute_context(_state, _memory), code);
 
     check_registers();
     check_memory();
@@ -17,29 +21,29 @@ void execute_fixture::execute_and_check(opcode code, bool should_check_cycle) co
 
 void execute_fixture::check_registers() const
 {
-    CHECK(_context.state().registers.a == _expected_context.state().registers.a);
-    CHECK(_context.state().registers.x == _expected_context.state().registers.x);
-    CHECK(_context.state().registers.y == _expected_context.state().registers.y);
-    CHECK(_context.state().registers.pc == _expected_context.state().registers.pc);
-    CHECK(_context.state().registers.s == _expected_context.state().registers.s);
+    CHECK(_state.registers.a == _expected_state.registers.a);
+    CHECK(_state.registers.x == _expected_state.registers.x);
+    CHECK(_state.registers.y == _expected_state.registers.y);
+    CHECK(_state.registers.pc == _expected_state.registers.pc);
+    CHECK(_state.registers.s == _expected_state.registers.s);
 
-    if (_context.state().registers.p != _expected_context.state().registers.p)
+    if (_state.registers.p != _expected_state.registers.p)
     {
-        CHECK(_context.state().registers.is_flag_set(status_flag::carry) == _expected_context.state().registers.is_flag_set(status_flag::carry));
-        CHECK(_context.state().registers.is_flag_set(status_flag::zero) == _expected_context.state().registers.is_flag_set(status_flag::zero));
-        CHECK(_context.state().registers.is_flag_set(status_flag::interrupt) == _expected_context.state().registers.is_flag_set(status_flag::interrupt));
-        CHECK(_context.state().registers.is_flag_set(status_flag::decimal) == _expected_context.state().registers.is_flag_set(status_flag::decimal));
-        CHECK(_context.state().registers.is_flag_set(status_flag::break_cmd) == _expected_context.state().registers.is_flag_set(status_flag::break_cmd));
-        CHECK(_context.state().registers.is_flag_set(status_flag::unused) == _expected_context.state().registers.is_flag_set(status_flag::unused));
-        CHECK(_context.state().registers.is_flag_set(status_flag::overflow) == _expected_context.state().registers.is_flag_set(status_flag::overflow));
-        CHECK(_context.state().registers.is_flag_set(status_flag::negative) == _expected_context.state().registers.is_flag_set(status_flag::negative));
+        CHECK(_state.registers.is_flag_set(status_flag::carry) == _expected_state.registers.is_flag_set(status_flag::carry));
+        CHECK(_state.registers.is_flag_set(status_flag::zero) == _expected_state.registers.is_flag_set(status_flag::zero));
+        CHECK(_state.registers.is_flag_set(status_flag::interrupt) == _expected_state.registers.is_flag_set(status_flag::interrupt));
+        CHECK(_state.registers.is_flag_set(status_flag::decimal) == _expected_state.registers.is_flag_set(status_flag::decimal));
+        CHECK(_state.registers.is_flag_set(status_flag::break_cmd) == _expected_state.registers.is_flag_set(status_flag::break_cmd));
+        CHECK(_state.registers.is_flag_set(status_flag::unused) == _expected_state.registers.is_flag_set(status_flag::unused));
+        CHECK(_state.registers.is_flag_set(status_flag::overflow) == _expected_state.registers.is_flag_set(status_flag::overflow));
+        CHECK(_state.registers.is_flag_set(status_flag::negative) == _expected_state.registers.is_flag_set(status_flag::negative));
     }
 }
 
 void execute_fixture::check_memory() const
 {
-    const auto& expected_memory_buffer = _expected_context.memory().get_bytes();
-    const auto& memory_buffer = _context.memory().get_bytes();
+    const auto& expected_memory_buffer = _expected_memory.get_bytes();
+    const auto& memory_buffer = _memory.get_bytes();
 
     CHECK(expected_memory_buffer.size() == memory_buffer.size());
 
@@ -61,40 +65,41 @@ void execute_fixture::check_memory() const
 
 void execute_fixture::check_cycle() const
 {
-    CHECK(_context.state().cycle == _expected_context.state().cycle);
+    CHECK(_state.cycle == _expected_state.cycle);
 }
 
 cpu::state& execute_fixture::expected_state()
 {
-    return get_expected_context().state();
+    init_expected();
+    return _expected_state;
 }
 
 memory::mapper& execute_fixture::expected_memory()
 {
-    return get_expected_context().memory();
+    init_expected();
+    return _expected_memory;
 }
 
 cpu::state& execute_fixture::state()
 {
-    NESE_ASSERT(!_expected_context_init);
-    return _context.state();
+    NESE_ASSERT(!_expected_init);
+    return _state;
 }
 
 memory::mapper& execute_fixture::memory()
 {
-    NESE_ASSERT(!_expected_context_init);
-    return _context.memory();
+    NESE_ASSERT(!_expected_init);
+    return _memory;
 }
 
-execute_context_mock& execute_fixture::get_expected_context()
+void execute_fixture::init_expected()
 {
-    if (!_expected_context_init)
+    if (!_expected_init)
     {
-        _expected_context = _context;
-        _expected_context_init = true;
+        _expected_state = _state;
+        _expected_memory = _memory;
+        _expected_init = true;
     }
-
-    return _expected_context;
 }
 
 } // namespace nese::cpu::instruction

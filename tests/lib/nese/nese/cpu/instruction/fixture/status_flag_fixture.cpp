@@ -1,5 +1,7 @@
 #include <nese/cpu/instruction/fixture/status_flag_fixture.hpp>
 
+#include <catch2/catch_test_macros.hpp>
+
 #include <nese/cpu/status_flag.hpp>
 
 namespace nese::cpu::instruction {
