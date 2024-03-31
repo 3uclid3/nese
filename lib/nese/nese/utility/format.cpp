@@ -2,7 +2,6 @@
 
 #include <array>
 #include <span>
-#include <windows.h>
 
 namespace nese {
 
