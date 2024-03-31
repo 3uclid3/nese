@@ -25,8 +25,6 @@ struct execute_callback_table
     std::array<execute_callback, 256> callbacks{};
 };
 
-namespace details {
-
 constexpr addr_t stack_offset = 0x100;
 
 constexpr bool is_page_crossing(addr_t addr, addr_t new_addr)
@@ -512,81 +510,79 @@ void execute_sty(execute_context ctx)
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>());
 }
 
-} // namespace details
-
 consteval execute_callback_table create_execute_callback_table()
 {
     execute_callback_table table{};
 
-    table[opcode::bcc_relative] = &details::execute_bcc<addr_mode::relative>;
-    table[opcode::bcs_relative] = &details::execute_bcs<addr_mode::relative>;
-    table[opcode::beq_relative] = &details::execute_beq<addr_mode::relative>;
-    table[opcode::bmi_relative] = &details::execute_bmi<addr_mode::relative>;
-    table[opcode::bne_relative] = &details::execute_bne<addr_mode::relative>;
-    table[opcode::bpl_relative] = &details::execute_bpl<addr_mode::relative>;
-    table[opcode::bvc_relative] = &details::execute_bvc<addr_mode::relative>;
-    table[opcode::bvs_relative] = &details::execute_bvs<addr_mode::relative>;
+    table[opcode::bcc_relative] = &execute_bcc<addr_mode::relative>;
+    table[opcode::bcs_relative] = &execute_bcs<addr_mode::relative>;
+    table[opcode::beq_relative] = &execute_beq<addr_mode::relative>;
+    table[opcode::bmi_relative] = &execute_bmi<addr_mode::relative>;
+    table[opcode::bne_relative] = &execute_bne<addr_mode::relative>;
+    table[opcode::bpl_relative] = &execute_bpl<addr_mode::relative>;
+    table[opcode::bvc_relative] = &execute_bvc<addr_mode::relative>;
+    table[opcode::bvs_relative] = &execute_bvs<addr_mode::relative>;
 
-    table[opcode::bit_zero_page] = &details::execute_bit<addr_mode::zero_page>;
-    table[opcode::bit_absolute] = &details::execute_bit<addr_mode::absolute>;
+    table[opcode::bit_zero_page] = &execute_bit<addr_mode::zero_page>;
+    table[opcode::bit_absolute] = &execute_bit<addr_mode::absolute>;
 
-    table[opcode::clc_implied] = &details::execute_clc<addr_mode::implied>;
+    table[opcode::clc_implied] = &execute_clc<addr_mode::implied>;
 
-    table[opcode::inx_implied] = &details::execute_inx<addr_mode::implied>;
-    table[opcode::iny_implied] = &details::execute_iny<addr_mode::implied>;
+    table[opcode::inx_implied] = &execute_inx<addr_mode::implied>;
+    table[opcode::iny_implied] = &execute_iny<addr_mode::implied>;
 
-    table[opcode::jmp_absolute] = &details::execute_jmp<addr_mode::absolute>;
-    table[opcode::jsr_absolute] = &details::execute_jsr<addr_mode::absolute>;
+    table[opcode::jmp_absolute] = &execute_jmp<addr_mode::absolute>;
+    table[opcode::jsr_absolute] = &execute_jsr<addr_mode::absolute>;
 
-    table[opcode::lda_immediate] = &details::execute_lda<addr_mode::immediate>;
-    table[opcode::lda_zero_page] = &details::execute_lda<addr_mode::zero_page>;
-    table[opcode::lda_zero_page_x] = &details::execute_lda<addr_mode::zero_page_x>;
-    table[opcode::lda_absolute] = &details::execute_lda<addr_mode::absolute>;
-    table[opcode::lda_absolute_x] = &details::execute_lda<addr_mode::absolute_x>;
-    table[opcode::lda_absolute_y] = &details::execute_lda<addr_mode::absolute_y>;
-    table[opcode::lda_indexed_indirect] = &details::execute_lda<addr_mode::indexed_indirect>;
-    table[opcode::lda_indirect_indexed] = &details::execute_lda<addr_mode::indirect_indexed>;
+    table[opcode::lda_immediate] = &execute_lda<addr_mode::immediate>;
+    table[opcode::lda_zero_page] = &execute_lda<addr_mode::zero_page>;
+    table[opcode::lda_zero_page_x] = &execute_lda<addr_mode::zero_page_x>;
+    table[opcode::lda_absolute] = &execute_lda<addr_mode::absolute>;
+    table[opcode::lda_absolute_x] = &execute_lda<addr_mode::absolute_x>;
+    table[opcode::lda_absolute_y] = &execute_lda<addr_mode::absolute_y>;
+    table[opcode::lda_indexed_indirect] = &execute_lda<addr_mode::indexed_indirect>;
+    table[opcode::lda_indirect_indexed] = &execute_lda<addr_mode::indirect_indexed>;
 
-    table[opcode::ldx_immediate] = &details::execute_ldx<addr_mode::immediate>;
-    table[opcode::ldx_zero_page] = &details::execute_ldx<addr_mode::zero_page>;
-    table[opcode::ldx_zero_page_y] = &details::execute_ldx<addr_mode::zero_page_y>;
-    table[opcode::ldx_absolute] = &details::execute_ldx<addr_mode::absolute>;
-    table[opcode::ldx_absolute_y] = &details::execute_ldx<addr_mode::absolute_y>;
+    table[opcode::ldx_immediate] = &execute_ldx<addr_mode::immediate>;
+    table[opcode::ldx_zero_page] = &execute_ldx<addr_mode::zero_page>;
+    table[opcode::ldx_zero_page_y] = &execute_ldx<addr_mode::zero_page_y>;
+    table[opcode::ldx_absolute] = &execute_ldx<addr_mode::absolute>;
+    table[opcode::ldx_absolute_y] = &execute_ldx<addr_mode::absolute_y>;
 
-    table[opcode::ldy_immediate] = &details::execute_ldy<addr_mode::immediate>;
-    table[opcode::ldy_zero_page] = &details::execute_ldy<addr_mode::zero_page>;
-    table[opcode::ldy_zero_page_x] = &details::execute_ldy<addr_mode::zero_page_x>;
-    table[opcode::ldy_absolute] = &details::execute_ldy<addr_mode::absolute>;
-    table[opcode::ldy_absolute_x] = &details::execute_ldy<addr_mode::absolute_x>;
+    table[opcode::ldy_immediate] = &execute_ldy<addr_mode::immediate>;
+    table[opcode::ldy_zero_page] = &execute_ldy<addr_mode::zero_page>;
+    table[opcode::ldy_zero_page_x] = &execute_ldy<addr_mode::zero_page_x>;
+    table[opcode::ldy_absolute] = &execute_ldy<addr_mode::absolute>;
+    table[opcode::ldy_absolute_x] = &execute_ldy<addr_mode::absolute_x>;
 
-    table[opcode::nop_implied] = &details::execute_nop<addr_mode::implied>;
+    table[opcode::nop_implied] = &execute_nop<addr_mode::implied>;
 
-    table[opcode::php_implied] = &details::execute_php<addr_mode::implied>;
+    table[opcode::php_implied] = &execute_php<addr_mode::implied>;
 
-    table[opcode::plp_implied] = &details::execute_plp<addr_mode::implied>;
+    table[opcode::plp_implied] = &execute_plp<addr_mode::implied>;
 
-    table[opcode::rti_implied] = &details::execute_rti<addr_mode::implied>;
-    table[opcode::rts_implied] = &details::execute_rts<addr_mode::implied>;
+    table[opcode::rti_implied] = &execute_rti<addr_mode::implied>;
+    table[opcode::rts_implied] = &execute_rts<addr_mode::implied>;
 
-    table[opcode::sec_implied] = &details::execute_sec<addr_mode::implied>;
-    table[opcode::sed_implied] = &details::execute_sed<addr_mode::implied>;
-    table[opcode::sei_implied] = &details::execute_sei<addr_mode::implied>;
+    table[opcode::sec_implied] = &execute_sec<addr_mode::implied>;
+    table[opcode::sed_implied] = &execute_sed<addr_mode::implied>;
+    table[opcode::sei_implied] = &execute_sei<addr_mode::implied>;
 
-    table[opcode::sta_zero_page] = &details::execute_sta<addr_mode::zero_page>;
-    table[opcode::sta_zero_page_x] = &details::execute_sta<addr_mode::zero_page_x>;
-    table[opcode::sta_absolute] = &details::execute_sta<addr_mode::absolute>;
-    table[opcode::sta_absolute_x] = &details::execute_sta<addr_mode::absolute_x>;
-    table[opcode::sta_absolute_y] = &details::execute_sta<addr_mode::absolute_y>;
-    table[opcode::sta_indexed_indirect] = &details::execute_sta<addr_mode::indexed_indirect>;
-    table[opcode::sta_indirect_indexed] = &details::execute_sta<addr_mode::indirect_indexed>;
+    table[opcode::sta_zero_page] = &execute_sta<addr_mode::zero_page>;
+    table[opcode::sta_zero_page_x] = &execute_sta<addr_mode::zero_page_x>;
+    table[opcode::sta_absolute] = &execute_sta<addr_mode::absolute>;
+    table[opcode::sta_absolute_x] = &execute_sta<addr_mode::absolute_x>;
+    table[opcode::sta_absolute_y] = &execute_sta<addr_mode::absolute_y>;
+    table[opcode::sta_indexed_indirect] = &execute_sta<addr_mode::indexed_indirect>;
+    table[opcode::sta_indirect_indexed] = &execute_sta<addr_mode::indirect_indexed>;
 
-    table[opcode::stx_zero_page] = &details::execute_stx<addr_mode::zero_page>;
-    table[opcode::stx_zero_page_y] = &details::execute_stx<addr_mode::zero_page_y>;
-    table[opcode::stx_absolute] = &details::execute_stx<addr_mode::absolute>;
+    table[opcode::stx_zero_page] = &execute_stx<addr_mode::zero_page>;
+    table[opcode::stx_zero_page_y] = &execute_stx<addr_mode::zero_page_y>;
+    table[opcode::stx_absolute] = &execute_stx<addr_mode::absolute>;
 
-    table[opcode::sty_zero_page] = &details::execute_sty<addr_mode::zero_page>;
-    table[opcode::sty_zero_page_x] = &details::execute_sty<addr_mode::zero_page_x>;
-    table[opcode::sty_absolute] = &details::execute_sty<addr_mode::absolute>;
+    table[opcode::sty_zero_page] = &execute_sty<addr_mode::zero_page>;
+    table[opcode::sty_zero_page_x] = &execute_sty<addr_mode::zero_page_x>;
+    table[opcode::sty_absolute] = &execute_sty<addr_mode::absolute>;
 
     return table;
 }
