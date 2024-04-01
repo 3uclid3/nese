@@ -1,7 +1,9 @@
+#include <nese/cpu/instruction/execute.hpp>
 #include <nesesan.debugger/cpu_debugger.hpp>
 
-#include <nese/cpu/instruction.hpp>
+#include <nese/cpu/instruction/execute_context.hpp>
 #include <nese/utility/assert.hpp>
+#include <nese.snapshot/snapshotter.hpp>
 
 namespace nese::san::debugger {
 
@@ -28,7 +30,7 @@ void cpu_debugger::power_on(memory::rom&& rom, bool start_running)
     _rom = std::move(rom);
 
     _memory.set_zero();
-    _cpu_state = cpu::state{.memory = _memory};
+    _cpu_state = {};
 
     _cpu_state.registers.pc = _rom.get_prg().size() == 0x4000 ? 0xc000 : 0x8000; // TODO Mapper
 
@@ -41,8 +43,9 @@ void cpu_debugger::power_on(memory::rom&& rom, bool start_running)
     }
 
     // initial state after loading
-    _cpu_snapshotter.reset();
-    _cpu_snapshotter.take_snapshot(_cpu_state);
+    _snapshotter.reset();
+
+    _snapshotter.take_snapshot(snapshot_context(_cpu_state, _memory));
 
     _state = start_running ? state::running : state::paused;
 }
@@ -52,17 +55,16 @@ void cpu_debugger::reset()
     NESE_ASSERT(_state != state::off);
 
     _memory.set_zero();
-    _cpu_state = cpu::state{.memory = _memory};
+    _cpu_state = {};
 
     _state = state::off;
 }
 
 void cpu_debugger::step()
 {
-    const auto opcode = _memory.get_byte(_cpu_state.registers.pc++);
-    cpu::instruction::execute(opcode, _cpu_state);
+    cpu::instruction::execute(cpu::instruction::execute_context(_cpu_state, _memory));
 
-    _cpu_snapshotter.take_snapshot(_cpu_state);
+    _snapshotter.take_snapshot(snapshot_context(_cpu_state, _memory));
 }
 
 void cpu_debugger::pause()

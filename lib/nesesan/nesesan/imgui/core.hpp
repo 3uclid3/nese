@@ -23,7 +23,7 @@ struct color_scope
 
 struct indent_scope
 {
-    indent_scope(f32_t width = 0);
+    explicit indent_scope(f32_t width = 0);
     ~indent_scope();
 
     f32_t indent_width;
@@ -31,7 +31,7 @@ struct indent_scope
 
 struct disabled_scope
 {
-    disabled_scope(bool disabled = true);
+    explicit disabled_scope(bool disabled = true);
     ~disabled_scope();
 };
 

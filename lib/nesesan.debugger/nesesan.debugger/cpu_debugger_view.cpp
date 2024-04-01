@@ -1,8 +1,9 @@
-#include <filesystem>
-#include <nese.debug/cpu/snapshot.hpp>
-#include <nese/utility/assert.hpp>
 #include <nesesan.debugger/cpu_debugger_view.hpp>
 
+#include <nese.snapshot/snapshot.hpp>
+#include <nese/cpu/instruction/opcode.hpp>
+#include <nese/cpu/instruction/operand.hpp>
+#include <nese/utility/assert.hpp>
 #include <nesesan/imgui/core.hpp>
 
 namespace nese::san::debugger {
@@ -142,7 +143,7 @@ void cpu_debugger_view::update(f32_t dt, bool&)
 
         ImGui::TableHeadersRow();
 
-        const auto& snapshots = _debugger.get_cpu_snapshotter().get_snapshots();
+        const auto& snapshots = _debugger.get_snapshotter().get_snapshots();
 
         const f32_t row_height = ImGui::GetTextLineHeightWithSpacing(); // Or your custom row height
         const size_t rows_total = snapshots.size();
@@ -168,7 +169,7 @@ void cpu_debugger_view::update(f32_t dt, bool&)
         {
             imgui::begin_group();
 
-            const cpu::snapshot& snapshot = *snapshots[row];
+            const snapshot& snapshot = *snapshots[row];
 
             // Step #
             ImGui::TableNextColumn();
@@ -176,20 +177,20 @@ void cpu_debugger_view::update(f32_t dt, bool&)
 
             // PC
             ImGui::TableNextColumn();
-            imgui::text("{:04X}", snapshot.registers.pc);
+            imgui::text("{:04X}", snapshot.cpu_state.registers.pc);
 
             // instruction byte 0 (opcode)
-            const cpu::instruction::opcode_t opcode = snapshot.memory.get_byte(snapshot.registers.pc);
+            const cpu::instruction::opcode opcode = static_cast<cpu::instruction::opcode>(snapshot.memory.get_byte(snapshot.cpu_state.registers.pc));
             ImGui::TableNextColumn();
             imgui::text("{:02X}", opcode);
 
-            const size_t operand_count = cpu::instruction::get_opcode_operand_byte_count(opcode);
+            const size_t operand_count = get_operand_size(opcode);
 
             // instruction byte 1 (operand)
             ImGui::TableNextColumn();
             if (operand_count >= 1)
             {
-                imgui::text("{:02X}", snapshot.memory.get_byte(snapshot.registers.pc + 1));
+                imgui::text("{:02X}", snapshot.memory.get_byte(snapshot.cpu_state.registers.pc + 1));
             }
             else
             {
@@ -200,7 +201,7 @@ void cpu_debugger_view::update(f32_t dt, bool&)
             ImGui::TableNextColumn();
             if (operand_count >= 2)
             {
-                imgui::text("{:02X}", snapshot.memory.get_byte(snapshot.registers.pc + 2));
+                imgui::text("{:02X}", snapshot.memory.get_byte(snapshot.cpu_state.registers.pc + 2));
             }
             else
             {
@@ -209,7 +210,7 @@ void cpu_debugger_view::update(f32_t dt, bool&)
 
             // instruction str
             ImGui::TableNextColumn();
-            imgui::text(" {}", cpu::instruction::get_opcode_mnemonic(opcode));
+            imgui::text(" {}", cpu::instruction::mnemonics[opcode]);
 
             // operand
             ImGui::TableNextColumn();
@@ -217,23 +218,23 @@ void cpu_debugger_view::update(f32_t dt, bool&)
 
             // a
             ImGui::TableNextColumn();
-            imgui::text("{:02X}", snapshot.registers.a);
+            imgui::text("{:02X}", snapshot.cpu_state.registers.a);
 
             // x
             ImGui::TableNextColumn();
-            imgui::text("{:02X}", snapshot.registers.x);
+            imgui::text("{:02X}", snapshot.cpu_state.registers.x);
 
             // y
             ImGui::TableNextColumn();
-            imgui::text("{:02X}", snapshot.registers.y);
+            imgui::text("{:02X}", snapshot.cpu_state.registers.y);
 
             // p
             ImGui::TableNextColumn();
-            imgui::text("{:02X}", snapshot.registers.p);
+            imgui::text("{:02X}", snapshot.cpu_state.registers.p);
 
             // sp
             ImGui::TableNextColumn();
-            imgui::text("{:02X}", snapshot.registers.s);
+            imgui::text("{:02X}", snapshot.cpu_state.registers.s);
 
             imgui::end_group();
         }

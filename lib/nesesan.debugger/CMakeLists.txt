@@ -19,9 +19,9 @@ add_library(nesesan.debugger ${INCLUDES} ${SOURCES})
 target_link_libraries(
     nesesan.debugger
     PUBLIC
-        nese.debug
         nesesan
     PRIVATE
+        nese.snapshot
         nese_project_options
         nese_project_warnings
 )

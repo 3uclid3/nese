@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nese.debug/cpu/snapshotter.hpp>
+#include <nese.snapshot/snapshotter.hpp>
 #include <nese/cpu/state.hpp>
 #include <nese/memory/mapper.hpp>
 #include <nese/memory/rom.hpp>
@@ -42,7 +42,7 @@ public:
     void pause();
     void unpause();
 
-    [[nodiscard]] const cpu::snapshotter& get_cpu_snapshotter() const { return _cpu_snapshotter; }
+    [[nodiscard]] const snapshotter& get_snapshotter() const { return _snapshotter; }
     [[nodiscard]] const cpu::state& get_cpu_state() const { return _cpu_state; }
     [[nodiscard]] const memory::rom& get_rom() const { return _rom; }
     [[nodiscard]] const memory::mapper& get_memory() const { return _memory; }
@@ -50,9 +50,8 @@ public:
 private:
     memory::rom _rom;
     memory::mapper _memory;
-    cpu::state _cpu_state{_memory};
-
-    cpu::snapshotter _cpu_snapshotter;
+    cpu::state _cpu_state;
+    snapshotter _snapshotter;
 
     mode _mode{mode::step};
     state _state{state::off};

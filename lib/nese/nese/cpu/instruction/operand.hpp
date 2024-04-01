@@ -1,11 +1,12 @@
 #pragma once
 
 #include <nese/basic_types.hpp>
+#include <nese/cpu/instruction/opcode.hpp>
 #include <nese/cpu/addr_mode.hpp>
 #include <nese/utility/assert.hpp>
 
 namespace nese::cpu::instruction {
-    
+
 constexpr byte_t get_operand_size(addr_mode mode)
 {
     switch (mode)
@@ -33,4 +34,9 @@ constexpr byte_t get_operand_size(addr_mode mode)
     NESE_ASSUME(false);
 }
 
+constexpr byte_t get_operand_size(opcode opcode)
+{
+    return get_operand_size(addr_modes[opcode]);
+}
+    
 }

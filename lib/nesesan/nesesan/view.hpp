@@ -39,7 +39,7 @@ private:
     static void begin(const char* name, bool& is_visible, flags flags);
     static void end();
 
-    view(std::string&& name, update_callback callback = {});
+    explicit view(std::string&& name, update_callback callback = {});
 
 private:
     std::string _name;
