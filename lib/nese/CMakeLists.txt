@@ -4,6 +4,8 @@ set(INCLUDES
     "${DIR}/cpu/instruction/execute.hpp"
     "${DIR}/cpu/instruction/execute_context.hpp"
     "${DIR}/cpu/instruction/opcode.hpp"
+    "${DIR}/cpu/instruction/opcode_enum.hpp"
+    "${DIR}/cpu/instruction/operand.hpp"
     "${DIR}/cpu/addr_mode.hpp"
     "${DIR}/cpu/registers.hpp"
     "${DIR}/cpu/stack.hpp"

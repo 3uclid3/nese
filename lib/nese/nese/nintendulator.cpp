@@ -4,6 +4,7 @@
 
 #include <nese/cpu/addr_mode.hpp>
 #include <nese/cpu/instruction/opcode.hpp>
+#include <nese/cpu/instruction/operand.hpp>
 #include <nese/cpu/state.hpp>
 #include <nese/cycle.hpp>
 #include <nese/memory/mapper.hpp>
@@ -102,8 +103,8 @@ void append_instruction_bytes(auto& out, const cpu::state& cpu_state, const memo
     constexpr byte_t opcode_count = 1;
 
     const cpu::instruction::opcode opcode = static_cast<cpu::instruction::opcode>(memory_mapper.get_byte(cpu_state.registers.pc));
-    const string_view mnemonic = cpu::instruction::get_mnemonic(opcode);
-    const byte_t count = mnemonic.empty() ? opcode_count : opcode_count + cpu::instruction::get_operand_size(opcode);
+    const string_view mnemonic = cpu::instruction::mnemonics[opcode];
+    const byte_t count = mnemonic.empty() ? opcode_count : opcode_count + cpu::instruction::get_operand_size(cpu::instruction::addr_modes[opcode]);
 
     assert(count <= max_count);
 
@@ -119,7 +120,7 @@ void append_instruction_bytes(auto& out, const cpu::state& cpu_state, const memo
 void append_opcode(auto& out, const cpu::state& cpu_state [[maybe_unused]], const memory::mapper& memory_mapper [[maybe_unused]])
 {
     const cpu::instruction::opcode opcode = static_cast<cpu::instruction::opcode>(memory_mapper.get_byte(cpu_state.registers.pc));
-    const string_view mnemonic = cpu::instruction::get_mnemonic(opcode);
+    const string_view mnemonic = cpu::instruction::mnemonics[opcode];
 
     for (const char c : mnemonic)
     {
@@ -133,11 +134,11 @@ void append_operand(auto& out, const cpu::state& cpu_state, const memory::mapper
     std::size_t current_length = 0;
 
     const cpu::instruction::opcode opcode = static_cast<cpu::instruction::opcode>(memory_mapper.get_byte(cpu_state.registers.pc));
-    const string_view mnemonic = cpu::instruction::get_mnemonic(opcode);
+    const string_view mnemonic = cpu::instruction::mnemonics[opcode];
 
     if (!mnemonic.empty())
     {
-        const cpu::addr_mode addr_mode = cpu::instruction::get_addr_mode_from_name(opcode);
+        const cpu::addr_mode addr_mode = cpu::instruction::addr_modes[opcode];
         const addr_t pc = cpu_state.registers.pc + 1;
 
         switch (addr_mode)
@@ -265,7 +266,7 @@ void append_operand(auto& out, const cpu::state& cpu_state, const memory::mapper
     }
 }
 
-void append_registers(auto& out, const cpu::state& cpu_state, const memory::mapper& memory_mapper[[maybe_unused]])
+void append_registers(auto& out, const cpu::state& cpu_state, const memory::mapper& memory_mapper [[maybe_unused]])
 {
     const auto& [a, x, y, pc, s, p] = cpu_state.registers;
 
