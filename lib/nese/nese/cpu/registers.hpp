@@ -27,8 +27,6 @@ struct registers
     constexpr void set_flag(status_flag flag);
     constexpr void clear_flag(status_flag flag);
 
-    constexpr void set_alu_flag(byte_t value);
-
     u8_t a{default_a};
     u8_t x{default_x};
     u8_t y{default_y};
@@ -60,12 +58,6 @@ constexpr void registers::set_flag(status_flag flag)
 constexpr void registers::clear_flag(status_flag flag)
 {
     p = p & ~flag;
-}
-
-constexpr void registers::set_alu_flag(byte_t value)
-{
-    set_flag(status_flag::zero, value == 0);
-    set_flag(status_flag::negative, value & 0x80);
 }
 
 } // namespace nese::cpu

@@ -35,6 +35,21 @@ constexpr bool is_page_crossing(addr_t addr, addr_t new_addr)
     return page_start != new_page_start;
 }
 
+constexpr bool is_zero(byte_t value)
+{
+    return value == 0;
+}
+
+constexpr bool is_negative(byte_t value)
+{
+    return value & 0x80;
+}
+
+constexpr bool is_overflow(byte_t value)
+{
+    return value & 0x40;
+}
+
 template<addr_mode AddrModeT>
 constexpr cpu_cycle_t get_addr_mode_cycle_cost(bool page_crossing = false)
 {
@@ -303,9 +318,9 @@ void execute_bit(execute_context ctx)
     const byte_t byte = read_operand<AddrModeT>(ctx, operand);
     const byte_t new_byte = byte & ctx.registers().a;
 
-    ctx.registers().set_flag(status_flag::zero, new_byte == 0);
-    ctx.registers().set_flag(status_flag::overflow, byte & 0x40);
-    ctx.registers().set_flag(status_flag::negative, byte & 0x80);
+    ctx.registers().set_flag(status_flag::zero, is_zero(new_byte));
+    ctx.registers().set_flag(status_flag::negative, is_negative(byte));
+    ctx.registers().set_flag(status_flag::overflow, is_overflow(byte));
 
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
 }
@@ -364,7 +379,10 @@ void execute_clc(execute_context ctx)
 template<addr_mode AddrModeT>
 void execute_inx(execute_context ctx)
 {
-    ctx.registers().set_alu_flag(++ctx.registers().x);
+    ++ctx.registers().x;
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().x));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().x));
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
@@ -373,7 +391,10 @@ void execute_inx(execute_context ctx)
 template<addr_mode AddrModeT>
 void execute_iny(execute_context ctx)
 {
-    ctx.registers().set_alu_flag(++ctx.registers().y);
+    ++ctx.registers().y;
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().y));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().y));
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
@@ -413,7 +434,8 @@ void execute_load(execute_context ctx, byte_t& register_value)
 
     register_value = read_operand<AddrModeT>(ctx, operand);
 
-    ctx.registers().set_alu_flag(register_value);
+    ctx.registers().set_flag(status_flag::zero, is_zero(register_value));
+    ctx.registers().set_flag(status_flag::negative, is_negative(register_value));
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
 }
 
@@ -459,6 +481,19 @@ void execute_php(execute_context ctx)
     push_byte(ctx, ctx.registers().p | 0x30);
 
     ctx.step_cycle(cpu_cycle_t(3));
+}
+
+// PLA (Pull Accumulator):
+// Pulls a byte from the stack into the accumulator, affecting the zero and negative flags.
+template<addr_mode AddrMode>
+void execute_pla(execute_context ctx)
+{
+    ctx.registers().a = pop_byte(ctx);
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().a));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().a));
+
+    ctx.step_cycle(cpu_cycle_t(4));
 }
 
 // PLP (Pull Processor Status):
@@ -613,6 +648,7 @@ consteval execute_callback_table create_execute_callback_table()
 
     table[opcode::php_implied] = &execute_php<addr_mode::implied>;
 
+    table[opcode::pla_implied] = &execute_pla<addr_mode::implied>;
     table[opcode::plp_implied] = &execute_plp<addr_mode::implied>;
 
     table[opcode::rti_implied] = &execute_rti<addr_mode::implied>;
