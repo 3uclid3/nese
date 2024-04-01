@@ -2,6 +2,7 @@
 
 #include <nese/basic_types.hpp>
 #include <nese/cpu/addr_mode.hpp>
+#include <nese/utility/assert.hpp>
 
 namespace nese::cpu::instruction {
     
