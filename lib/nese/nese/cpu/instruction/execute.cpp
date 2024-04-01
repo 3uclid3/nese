@@ -260,11 +260,28 @@ void write_operand(execute_context ctx, word_t operand, byte_t value)
     }
 }
 
+// AND (Logical AND):
+// Performs a bitwise AND on the accumulator and a memory value, affecting the zero and negative flags.
+template<addr_mode AddrModeT>
+void execute_and(execute_context ctx)
+{
+    bool page_crossing{false};
+    const addr_t addr = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t byte = read_operand<AddrModeT>(ctx, addr);
+
+    ctx.registers().a &= byte;
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().a));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().a));
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+}
+
 void execute_branch(execute_context ctx, bool condition)
 {
     const addr_t initial_pc = ctx.registers().pc;
-    const s8_t byte = decode_byte(ctx);
-    const addr_t target_pc = ctx.registers().pc + byte;
+    const s8_t byte = static_cast<s8_t>(decode_byte(ctx));
+    const addr_t target_pc = static_cast<addr_t>(ctx.registers().pc + byte);
 
     if (condition)
     {
@@ -603,14 +620,23 @@ consteval execute_callback_table create_execute_callback_table()
 {
     execute_callback_table table{};
 
-    table[opcode::bcc_relative] = &execute_bcc<addr_mode::relative>;
-    table[opcode::bcs_relative] = &execute_bcs<addr_mode::relative>;
-    table[opcode::beq_relative] = &execute_beq<addr_mode::relative>;
-    table[opcode::bmi_relative] = &execute_bmi<addr_mode::relative>;
-    table[opcode::bne_relative] = &execute_bne<addr_mode::relative>;
-    table[opcode::bpl_relative] = &execute_bpl<addr_mode::relative>;
-    table[opcode::bvc_relative] = &execute_bvc<addr_mode::relative>;
+    table[opcode::and_immediate] = &execute_and<addr_mode::immediate>;
+    table[opcode::and_zero_page] = &execute_and<addr_mode::absolute>;
+    table[opcode::and_zero_page_x] = &execute_and<addr_mode::absolute_x>;
+    table[opcode::and_absolute] = &execute_and<addr_mode::absolute>;
+    table[opcode::and_absolute_x] = &execute_and<addr_mode::absolute_x>;
+    table[opcode::and_absolute_y] = &execute_and<addr_mode::absolute_y>;
+    table[opcode::and_indexed_indirect] = &execute_and<addr_mode::indexed_indirect>;
+    table[opcode::and_indirect_indexed] = &execute_and<addr_mode::indirect_indexed>;
+
     table[opcode::bvs_relative] = &execute_bvs<addr_mode::relative>;
+    table[opcode::bvc_relative] = &execute_bvc<addr_mode::relative>;
+    table[opcode::bpl_relative] = &execute_bpl<addr_mode::relative>;
+    table[opcode::bne_relative] = &execute_bne<addr_mode::relative>;
+    table[opcode::bmi_relative] = &execute_bmi<addr_mode::relative>;
+    table[opcode::beq_relative] = &execute_beq<addr_mode::relative>;
+    table[opcode::bcs_relative] = &execute_bcs<addr_mode::relative>;
+    table[opcode::bcc_relative] = &execute_bcc<addr_mode::relative>;
 
     table[opcode::bit_zero_page] = &execute_bit<addr_mode::zero_page>;
     table[opcode::bit_absolute] = &execute_bit<addr_mode::absolute>;
