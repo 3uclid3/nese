@@ -25,6 +25,8 @@ target_link_libraries(
         nese_project_warnings
 )
 
+target_disable_static_analysis(nesesan.opengl)
+
 target_include_interface_directories(nesesan.opengl "${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_find_dependencies(

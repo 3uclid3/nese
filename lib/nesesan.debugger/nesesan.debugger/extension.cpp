@@ -6,8 +6,8 @@
 namespace nese::san::debugger {
 
 extension::extension()
+    : _cpu_debugger_view(std::make_unique<cpu_debugger_view>())
 {
-    _cpu_debugger_view = std::make_unique<cpu_debugger_view>();
 }
 
 extension::~extension() = default;
