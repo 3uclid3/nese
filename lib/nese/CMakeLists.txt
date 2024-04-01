@@ -19,6 +19,7 @@ set(INCLUDES
     "${DIR}/utility/crc32.hpp"
     "${DIR}/utility/format.hpp"
     "${DIR}/utility/log.hpp"
+    "${DIR}/utility/name_of.hpp"
     "${DIR}/basic_types.hpp"
     "${DIR}/cycle.hpp"
     "${DIR}/nintendulator.hpp"
