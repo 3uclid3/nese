@@ -8,7 +8,7 @@ namespace nese::cpu::instruction {
 
 void execute_fixture::execute_and_check(opcode code, bool should_check_cycle)
 {
-    execute(execute_context(_state, _memory), code);
+    REQUIRE(execute(execute_context(_state, _memory), code));
 
     check_registers();
     check_memory();
