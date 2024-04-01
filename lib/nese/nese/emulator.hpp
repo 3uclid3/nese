@@ -1,8 +1,8 @@
 #pragma once
 
-#include <nese/cpu/processor.hpp>
+#include <nese/cpu/state.hpp>
 #include <nese/cycle.hpp>
-#include <nese/memory/ram.hpp>
+#include <nese/memory/mapper.hpp>
 
 namespace nese {
 
@@ -12,29 +12,26 @@ public:
     void power_on();
     void reset();
 
-    void step(cycle_t count);
+    void step();
 
-    [[nodiscard]] bool has_stop_requested() const;
-    void stop();
-
-    [[nodiscard]] const cpu::processor& get_cpu() const;
-    [[nodiscard]] const memory::ram& get_ram() const;
+    [[nodiscard]] const cpu::state& get_cpu_state() const;
+    [[nodiscard]] const memory::mapper& get_memory() const;
 
 private:
-    memory::ram _ram{};
-    cpu::processor _cpu{_ram};
+    cpu::state _cpu_state;
+    memory::mapper _memory;
 
     cycle_t _cycle{0};
 };
 
-inline const cpu::processor& emulator::get_cpu() const
+inline const cpu::state& emulator::get_cpu_state() const
 {
-    return _cpu;
+    return _cpu_state;
 }
 
-inline const memory::ram& emulator::get_ram() const
+inline const memory::mapper& emulator::get_memory() const
 {
-    return _ram;
+    return _memory;
 }
 
 } // namespace nese

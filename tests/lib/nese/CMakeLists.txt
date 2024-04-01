@@ -52,6 +52,7 @@ set(SOURCES
     "${DIR}/cpu/instruction_rom_test.cpp"
     "${DIR}/utility/format_test.cpp"
     "${DIR}/utility/crc32_test.cpp"
+    "${DIR}/utility/name_of_test.cpp"
 )
 
 add_executable(nese_test ${INCLUDES} ${SOURCES})

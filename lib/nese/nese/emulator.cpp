@@ -1,5 +1,8 @@
 #include <nese/emulator.hpp>
 
+#include <nese/cpu/instruction/execute.hpp>
+#include <nese/cpu/instruction/execute_context.hpp>
+#include <nese/nintendulator.hpp>
 #include <nese/utility/log.hpp>
 
 namespace nese {
@@ -8,45 +11,32 @@ void emulator::power_on()
 {
     NESE_TRACE("[emulator] power on");
 
-    _cycle = {};
+    _cycle = cycle_t{0};
+    _memory.set_zero();
+    _cpu_state = {};
 
-    _ram.power_on();
-    _cpu.power_on();
+    NESE_TRACE("{}", nintendulator::format(_cpu_state, _memory));
 }
 
 void emulator::reset()
 {
     NESE_TRACE("[emulator] reset");
 
-    _cycle = {};
+    _cycle = cycle_t{0};
+    _memory.set_zero();
+    _cpu_state = {};
 
-    _ram.reset();
-    _cpu.reset();
+    NESE_TRACE("{}", nintendulator::format(_cpu_state, _memory));
 }
 
-void emulator::step(cycle_t count)
+void emulator::step()
 {
-    NESE_TRACE("[emulator] step {}", count);
+    NESE_TRACE("[emulator] step");
 
-    const cycle_t end = _cycle + count;
+    cpu::instruction::execute_context context(_cpu_state, _memory);
+    cpu::instruction::execute(context);
 
-    for (;_cycle < end; _cycle += cycle_t{1})
-    {
-        // TODO Review
-        _cpu.step();
-    }
-}
-
-bool emulator::has_stop_requested() const
-{
-    return _cpu.has_stop_requested();
-}
-
-void emulator::stop()
-{
-    NESE_TRACE("[emulator] stop");
-
-    _cpu.stop();
+    NESE_TRACE("{}", nintendulator::format(_cpu_state, _memory));
 }
 
 } // namespace nese

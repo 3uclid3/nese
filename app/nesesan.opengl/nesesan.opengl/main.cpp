@@ -20,16 +20,26 @@
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
 #include <nese/utility/log.hpp>
-#include <nesesan.debugger/extension.hpp>
 #include <nesesan/application.hpp>
-#include <nesesan/imgui/extension.hpp>
-#include <nesesan/imgui/icons.hpp>
+#include <nesesan/view/window_view.hpp>
+#include <nesesan/icons.hpp>
+#include <nesesan.debugger/cpu_state_view.hpp>
 
 namespace {
 
 void glfw_error_callback(int error, const char* description)
 {
     NESE_ERROR("[GLFW] {}: {}", error, description);
+}
+
+void create_views(nese::san::application& application)
+{
+    using namespace nese::san;
+
+    auto& cpu_state_window = application.get_views().add<window_view<cpu_state_view>>("CPU State");
+    auto& cpu_state_menu = application.get_main_menu().add<callback_menu_item>("View/Debug/CPU State");
+    cpu_state_menu.is_checked = [&cpu_state_window] { return cpu_state_window.is_visible(); };
+    cpu_state_menu.execute = [&cpu_state_window] { cpu_state_window.toggle_visible(); };
 }
 
 } // namespace
@@ -134,8 +144,7 @@ int main(int, char**)
 
     // Our state
     application application;
-    application.install_extension<debugger::extension>();
-    application.install_extension<imgui::extension>();
+    create_views(application);
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
@@ -159,7 +168,7 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        application.update(io.DeltaTime);
+        application.draw();
 
         // Rendering
         ImGui::Render();

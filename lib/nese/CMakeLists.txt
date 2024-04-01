@@ -22,6 +22,7 @@ set(INCLUDES
     "${DIR}/utility/name_of.hpp"
     "${DIR}/basic_types.hpp"
     "${DIR}/cycle.hpp"
+    "${DIR}/emulator.hpp"
     "${DIR}/nintendulator.hpp"
 )
 
@@ -31,6 +32,7 @@ set(SOURCES
     "${DIR}/memory/ram.cpp"
     "${DIR}/memory/rom.cpp"
     "${DIR}/utility/format.cpp"
+    "${DIR}/emulator.cpp"
     "${DIR}/nintendulator.cpp"
 )
 

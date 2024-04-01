@@ -1,12 +1,8 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-
-#include <nese/basic_types.hpp>
+#include <nese/emulator.hpp>
 #include <nesesan/menu/main_menu.hpp>
-#include <nesesan/extension.hpp>
-#include <nesesan/view.hpp>
+#include <nesesan/view/view_registry.hpp>
 
 namespace nese::san {
 
@@ -15,45 +11,42 @@ class application
 public:
     application();
 
-    template<extensible ExtensionT>
-    void install_extension();
-
-    void update(f32_t dt);
+    void draw();
 
     [[nodiscard]] bool has_exit_requested() const;
     void exit();
+
+    main_menu& get_main_menu();
+    view_registry& get_views();
 
 private:
     void initialize_docking();
     void begin_docking();
     void end_docking();
 
-    void create_main_menu_base();
+    void create_main_menu();
+    void create_imgui_windows();
 
 private:
-    using extensions = std::vector<std::unique_ptr<extension>>;
-    using views = std::vector<std::unique_ptr<view>>;
-
-private:
-    extensions _extensions;
     main_menu _main_menu;
-    views _views;
+    view_registry _views;
+    emulator _emulator;
     bool _exit_requested{false};
 };
-
-template<extensible ExtensionT>
-void application::install_extension()
-{
-    auto extension = std::make_unique<ExtensionT>();
-
-    extension::install_context install_context{_main_menu, _views};
-    extension->install(install_context);
-
-    _extensions.emplace_back(std::move(extension));
-}
 
 inline bool application::has_exit_requested() const
 {
     return _exit_requested;
 }
+
+inline main_menu& application::get_main_menu()
+{
+    return _main_menu;
+}
+
+inline view_registry& application::get_views()
+{
+    return _views;
+}
+
 } // namespace nese::san

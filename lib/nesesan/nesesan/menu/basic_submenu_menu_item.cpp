@@ -1,6 +1,6 @@
 #include <nesesan/menu/basic_submenu_menu_item.hpp>
 
-#include <nesesan/imgui/core.hpp>
+#include <nesesan/imgui.hpp>
 
 namespace nese::san {
 
