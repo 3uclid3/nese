@@ -1,8 +1,5 @@
 #pragma once
 
-#include <nese/basic_types.hpp>
-#include <nesesan/view/window_view.hpp>
-
 namespace nese::san {
 
 class view_draw_context;

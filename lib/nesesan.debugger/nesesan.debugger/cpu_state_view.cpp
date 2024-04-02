@@ -14,7 +14,7 @@ void cpu_state_view::draw(const view_draw_context& context)
         return registers.is_flag_set(flag) ? imgui::vec4{.0f, 1.f, .0f, 1.f} : imgui::vec4{1.f, .0f, .0f, 1.f};
     };
 
-    imgui::text("status: ");
+    imgui::text("Status: ");
 
     imgui::same_line();
     imgui::text_colored(get_color(cpu::status_flag::negative), "N");
