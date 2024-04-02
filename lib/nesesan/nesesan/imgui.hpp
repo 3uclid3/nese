@@ -71,6 +71,13 @@ inline void separator()
 #pragma clang diagnostic ignored "-Wformat-security"
 
 template<typename... T>
+bool button(fmt::format_string<T...> format, T&&... args)
+{
+    const char* result = v_format(format, fmt::make_format_args(args...));
+    return ImGui::Button(result);
+}
+
+template<typename... T>
 void text(fmt::format_string<T...> format, T&&... args)
 {
     const char* result = v_format(format, fmt::make_format_args(args...));

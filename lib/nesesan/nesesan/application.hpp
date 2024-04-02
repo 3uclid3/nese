@@ -11,6 +11,7 @@ class application
 public:
     application();
 
+    void update(f32_t dt);
     void draw();
 
     [[nodiscard]] bool has_exit_requested() const;

@@ -20,10 +20,11 @@
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
 #include <nese/utility/log.hpp>
-#include <nesesan/application.hpp>
-#include <nesesan/view/window_view.hpp>
-#include <nesesan/icons.hpp>
 #include <nesesan.debugger/cpu_state_view.hpp>
+#include <nesesan.debugger/debug_control_view.hpp>
+#include <nesesan/application.hpp>
+#include <nesesan/icons.hpp>
+#include <nesesan/view/window_view.hpp>
 
 namespace {
 
@@ -32,14 +33,23 @@ void glfw_error_callback(int error, const char* description)
     NESE_ERROR("[GLFW] {}: {}", error, description);
 }
 
+template<typename T>
+struct tag
+{};
+
 void create_views(nese::san::application& application)
 {
     using namespace nese::san;
 
-    auto& cpu_state_window = application.get_views().add<window_view<cpu_state_view>>("CPU State");
-    auto& cpu_state_menu = application.get_main_menu().add<callback_menu_item>("View/Debug/CPU State");
-    cpu_state_menu.is_checked = [&cpu_state_window] { return cpu_state_window.is_visible(); };
-    cpu_state_menu.execute = [&cpu_state_window] { cpu_state_window.toggle_visible(); };
+    auto create_window = [&application]<typename T>(tag<T>, const char* name, const char* path) {
+        auto& window = application.get_views().add<window_view<T>>(name);
+        auto& menu = application.get_main_menu().add<callback_menu_item>(path);
+        menu.is_checked = [&window] { return window.is_visible(); };
+        menu.execute = [&window] { window.toggle_visible(); };
+    };
+
+    create_window(tag<debug_control_view>(), "Debug Control", "View/Debug/Control");
+    create_window(tag<cpu_state_view>(), "CPU State", "View/Debug/CPU State");
 }
 
 } // namespace
@@ -140,7 +150,7 @@ int main(int, char**)
     icons_config.MergeMode = true;
     icons_config.PixelSnapH = true;
     icons_config.GlyphMinAdvanceX = icon_font_size;
-    io.Fonts->AddFontFromFileTTF(  FONT_ICON_FILE_NAME_FAS, icon_font_size, &icons_config, icons_ranges);
+    io.Fonts->AddFontFromFileTTF(FONT_ICON_FILE_NAME_FAS, icon_font_size, &icons_config, icons_ranges);
 
     // Our state
     application application;
@@ -163,10 +173,14 @@ int main(int, char**)
             application.exit();
         }
 
+
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        // 
+        application.update(ImGui::GetIO().DeltaTime);
 
         application.draw();
 

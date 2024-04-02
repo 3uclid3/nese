@@ -36,6 +36,11 @@ application::application()
     create_imgui_windows();
 }
 
+void application::update(f32_t dt)
+{
+    _emulator.update(dt);
+}
+
 void application::draw()
 {
     begin_docking();
