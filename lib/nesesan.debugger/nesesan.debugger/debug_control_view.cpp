@@ -15,24 +15,24 @@ void debug_control_view::draw(view_draw_context& context)
     static memory::rom loaded_rom = memory::rom::from_file(R"(D:\nese\tests\lib\nese\test_roms\nestest.nes)");
 
     emulator& emulator = context.get_emulator();
-    switch (emulator.get_state())
+
+    if (emulator.get_state() == emulator::state::off)
     {
-    case emulator::state::off:
         if (imgui::button("Power ON"))
         {
             emulator.power_on();
-            emulator.pause();
             emulator.load_rom(loaded_rom);
-        }
-        break;
 
-    case emulator::state::on:
-    case emulator::state::pause:
+            // power on paused for debugging
+            emulator.pause();
+        }
+    }
+    else
+    {
         if (imgui::button("Power OFF"))
         {
             emulator.power_off();
         }
-        break;
     }
 
     imgui::disabled_scope disabled(emulator.get_state() == emulator::state::off);
@@ -44,23 +44,22 @@ void debug_control_view::draw(view_draw_context& context)
         emulator.load_rom(loaded_rom);
     }
 
+    imgui::disabled_scope error_disabled(emulator.get_state() == emulator::state::error);
+
     imgui::same_line(0.0f, 15.0f);
-    switch (emulator.get_state())
+    if (emulator.get_state() == emulator::state::pause)
     {
-    case emulator::state::pause:
         if (imgui::button("Unpause"))
         {
             emulator.unpause();
         }
-        break;
-
-    case emulator::state::off:
-    case emulator::state::on:
+    }
+    else
+    {
         if (imgui::button("Pause"))
         {
             emulator.pause();
         }
-        break;
     }
 
     imgui::same_line();

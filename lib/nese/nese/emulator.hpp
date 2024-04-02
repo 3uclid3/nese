@@ -17,7 +17,9 @@ public:
     {
         off,
         on,
-        pause
+        pause,
+        step,
+        error
     };
 
 public:

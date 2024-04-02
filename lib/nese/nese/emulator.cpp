@@ -3,8 +3,8 @@
 #include <nese/cpu/instruction/execute.hpp>
 #include <nese/cpu/instruction/execute_context.hpp>
 #include <nese/memory/rom.hpp>
-#include <nese/utility/nintendulator.hpp>
 #include <nese/utility/log.hpp>
+#include <nese/utility/nintendulator.hpp>
 
 namespace nese {
 
@@ -23,7 +23,7 @@ void emulator::power_on()
 
 void emulator::power_off()
 {
-    NESE_ASSERT(_state == state::on);
+    NESE_ASSERT(_state != state::off);
     NESE_TRACE("[emulator] power off");
 
     _state = state::off;
@@ -47,9 +47,10 @@ void emulator::load_rom(const memory::rom& rom)
 
 void emulator::reset()
 {
-    NESE_ASSERT(_state == state::on);
+    NESE_ASSERT(_state != state::off);
     NESE_TRACE("[emulator] reset");
 
+    _state = state::on;
     _cycle = cycle_t{0};
     _memory.set_zero();
     _cpu_state = {};
@@ -57,22 +58,35 @@ void emulator::reset()
     NESE_TRACE("{}", nintendulator::format(_cpu_state, _memory));
 }
 
-void emulator::update(f32_t dt[[maybe_unused]])
+void emulator::update(f32_t dt [[maybe_unused]])
 {
-    if (_state == state::on)
+    if (_state != state::on && _state != state::step)
     {
-        step();
+        return;
+    }
+
+    cpu::instruction::execute_context context(_cpu_state, _memory);
+    if (cpu::instruction::execute(context))
+    {
+        NESE_TRACE("{}", nintendulator::format(_cpu_state, _memory));
+
+        if (_state == state::step)
+        {
+            _state = state::pause;
+        }
+    }
+    else
+    {
+        _state = state::error;
     }
 }
 
 void emulator::step()
 {
+    NESE_ASSERT(_state == state::pause);
     NESE_TRACE("[emulator] step");
 
-    cpu::instruction::execute_context context(_cpu_state, _memory);
-    cpu::instruction::execute(context);
-
-    NESE_TRACE("{}", nintendulator::format(_cpu_state, _memory));
+    _state = state::step;
 }
 
 void emulator::pause()
