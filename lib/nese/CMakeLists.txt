@@ -20,10 +20,10 @@ set(INCLUDES
     "${DIR}/utility/format.hpp"
     "${DIR}/utility/log.hpp"
     "${DIR}/utility/name_of.hpp"
+    "${DIR}/utility/nintendulator.hpp"
     "${DIR}/basic_types.hpp"
     "${DIR}/cycle.hpp"
     "${DIR}/emulator.hpp"
-    "${DIR}/nintendulator.hpp"
 )
 
 set(SOURCES
@@ -32,8 +32,8 @@ set(SOURCES
     "${DIR}/memory/ram.cpp"
     "${DIR}/memory/rom.cpp"
     "${DIR}/utility/format.cpp"
+    "${DIR}/utility/nintendulator.cpp"
     "${DIR}/emulator.cpp"
-    "${DIR}/nintendulator.cpp"
 )
 
 add_library(nese ${INCLUDES} ${SOURCES})

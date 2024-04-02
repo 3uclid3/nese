@@ -3,7 +3,7 @@
 #include <nese/cpu/instruction/execute.hpp>
 #include <nese/cpu/instruction/execute_context.hpp>
 #include <nese/memory/rom.hpp>
-#include <nese/nintendulator.hpp>
+#include <nese/utility/nintendulator.hpp>
 #include <nese/utility/log.hpp>
 
 namespace nese {

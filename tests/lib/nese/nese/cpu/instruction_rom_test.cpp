@@ -8,7 +8,7 @@
 #include <nese/cycle.hpp>
 #include <nese/memory/mapper.hpp>
 #include <nese/memory/rom.hpp>
-#include <nese/nintendulator.hpp>
+#include <nese/utility/nintendulator.hpp>
 #include <nese/test_config.hpp>
 #include <nese/utility/format.hpp>
 #include <nese/utility/log.hpp>

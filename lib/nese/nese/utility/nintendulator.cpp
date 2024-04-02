@@ -1,4 +1,4 @@
-#include <nese/nintendulator.hpp>
+#include <nese/utility/nintendulator.hpp>
 
 #include <fmt/format.h>
 
