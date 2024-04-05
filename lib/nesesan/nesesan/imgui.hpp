@@ -1,6 +1,7 @@
 #pragma once
 
 #include <imgui.h>
+#include <imgui_stdlib.h>
 
 #include <nese/basic_types.hpp>
 #include <nese/utility/format.hpp>
