@@ -41,15 +41,15 @@ void create_views(nese::san::application& application)
 {
     using namespace nese::san;
 
-    auto create_window = [&application]<typename T>(tag<T>, const char* name, const char* path) {
-        auto& window = application.get_views().add<window_view<T>>(name);
+    auto create_window = [&application]<typename T>(tag<T>, const char* name, const char* path, window_view_flags flags = window_view_flag::none) {
+        auto& window = application.get_views().add<window_view<T>>(name, flags);
         auto& menu = application.get_main_menu().add<callback_menu_item>(path);
         menu.is_checked = [&window] { return window.is_visible(); };
         menu.execute = [&window] { window.toggle_visible(); };
     };
 
     create_window(tag<debug_control_view>(), "Debug Control", "View/Debug/Control");
-    create_window(tag<cpu_state_view>(), "CPU State", "View/Debug/CPU State");
+    create_window(tag<cpu_state_view>(), "CPU State", "View/Debug/CPU State", window_view_flag::disable_resize);
 }
 
 } // namespace
