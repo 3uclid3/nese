@@ -48,8 +48,8 @@ void create_views(nese::san::application& application)
         menu.execute = [&window] { window.toggle_visible(); };
     };
 
-    create_window(tag<debug_control_view>(), "Debug Control", "View/Debug/Control");
-    create_window(tag<cpu_state_view>(), "CPU State", "View/Debug/CPU State", window_view_flag::disable_resize);
+    create_window(tag<debug_control_view>(), "Debug Control", "View/Debug/Control", window_view_flag::disable_resize | window_view_flag::auto_resize);
+    create_window(tag<cpu_state_view>(), "CPU State", "View/Debug/CPU State", window_view_flag::disable_resize | window_view_flag::auto_resize);
 }
 
 } // namespace

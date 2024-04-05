@@ -8,7 +8,8 @@ namespace nese::san {
 enum class window_view_flag : int
 {
     none = 0,
-    disable_resize = 1 << 1
+    disable_resize = 1 << 1,
+    auto_resize = 1 << 6,
 };
 
 using window_view_flags = window_view_flag;
@@ -41,10 +42,10 @@ private:
     ContentT _content{};
 };
 
-constexpr base_window_view::flag operator|(base_window_view::flag lhs, base_window_view::flag rhs)
+constexpr window_view_flag operator|(window_view_flag lhs, window_view_flag rhs)
 {
     // every static_cast is intentional
-    return static_cast<base_window_view::flag>(static_cast<unsigned int>(lhs) | static_cast<unsigned int>(rhs));
+    return static_cast<window_view_flag>(static_cast<unsigned int>(lhs) | static_cast<unsigned int>(rhs));
 }
 
 template<typename ContentT>
