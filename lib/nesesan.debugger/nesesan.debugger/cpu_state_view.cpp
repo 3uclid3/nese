@@ -1,6 +1,7 @@
 #include <nesesan.debugger/cpu_state_view.hpp>
 
 #include <nese/emulator.hpp>
+#include <nese/cpu/stack.hpp>
 #include <nesesan/imgui.hpp>
 #include <nesesan/view/view_draw_context.hpp>
 
@@ -44,8 +45,9 @@ void cpu_state_view::draw(const view_draw_context& context)
     imgui::text("Y: ${0:02X} [{0:}]", registers.x);
     imgui::text("X: ${0:02X} [{0:}]", registers.y);
 
-    imgui::text("S: {:02X}", registers.s);
-    imgui::text("PC: {:04X}", registers.pc);
+    const addr_t stack_pointer = registers.s + cpu::stack_offset;
+    imgui::text("Stack Pointer: ${:04X}", stack_pointer);
+    imgui::text("PC: ${:04X}", registers.pc);
 }
 
 } // namespace nese::san
