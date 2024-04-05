@@ -5,15 +5,19 @@
 
 namespace nese::san {
 
+enum class window_view_flag : int
+{
+    none = 0,
+    disable_resize = 1 << 1
+};
+
+using window_view_flags = window_view_flag;
+
 class base_window_view : public view
 {
 public:
-    enum class flag : int
-    {
-        none = 0
-    };
-
-    using flags = flag;
+    using flag = window_view_flag;
+    using flags = window_view_flags;
 
 protected:
     explicit base_window_view(string&& name, flags flags = flag::none);
