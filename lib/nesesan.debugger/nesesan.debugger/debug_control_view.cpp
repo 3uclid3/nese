@@ -12,7 +12,7 @@ namespace nese::san {
 void debug_control_view::draw(view_draw_context& context)
 {
     // TODO implement file explorer
-    static memory::rom loaded_rom = memory::rom::from_file(R"(D:\nese\tests\lib\nese\test_roms\nestest.nes)");
+    static memory::rom loaded_rom = memory::rom::from_file(R"(X:\nese\tests\lib\nese\test_roms\nestest.nes)");
 
     emulator& emulator = context.get_emulator();
 
