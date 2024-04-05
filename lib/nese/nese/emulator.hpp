@@ -19,6 +19,7 @@ public:
         on,
         pause,
         step,
+        step_to,
         error
     };
 
@@ -32,6 +33,7 @@ public:
 
     void update(f32_t dt);
     void step();
+    void step_to(addr_t addr);
 
     void pause();
     void unpause();
@@ -45,6 +47,7 @@ private:
     memory::mapper _memory;
     state _state{state::off};
     cycle_t _cycle{0};
+    addr_t _step_to_addr{0};
 };
 
 inline const cpu::state& emulator::get_cpu_state() const

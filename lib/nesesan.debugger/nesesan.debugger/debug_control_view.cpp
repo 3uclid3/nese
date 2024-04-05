@@ -68,6 +68,22 @@ void debug_control_view::draw(view_draw_context& context)
     {
         emulator.step();
     }
+
+    imgui::same_line();
+    if (imgui::button("Step To"))
+    {
+        emulator.step_to(_to_addr);
+    }
+
+    imgui::same_line();
+    ImGui::SetNextItemWidth(50.0f);
+    if (ImGui::InputText("PC", _to_addr_edit.data(), 5, ImGuiInputTextFlags_CharsHexadecimal))
+    {
+        const addr_t addr = static_cast<addr_t>(std::stoi(_to_addr_edit, nullptr, 16)); 
+
+        _to_addr_edit = format("{:04X}", addr);
+        _to_addr = addr;
+    }
 }
 
 } // namespace nese::san

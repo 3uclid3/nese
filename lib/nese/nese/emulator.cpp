@@ -60,7 +60,7 @@ void emulator::reset()
 
 void emulator::update(f32_t dt [[maybe_unused]])
 {
-    if (_state != state::on && _state != state::step)
+    if (_state != state::on && _state != state::step && _state != state::step_to)
     {
         return;
     }
@@ -70,7 +70,7 @@ void emulator::update(f32_t dt [[maybe_unused]])
     {
         NESE_TRACE("{}", nintendulator::format(_cpu_state, _memory));
 
-        if (_state == state::step)
+        if (_state == state::step || (_state == state::step_to && _step_to_addr == _cpu_state.registers.pc))
         {
             _state = state::pause;
         }
@@ -87,6 +87,15 @@ void emulator::step()
     NESE_TRACE("[emulator] step");
 
     _state = state::step;
+}
+
+void emulator::step_to(addr_t addr)
+{
+    NESE_ASSERT(_state == state::pause);
+    NESE_TRACE("[emulator] step to 0x{:04X}", addr);
+
+    _state = state::step_to;
+    _step_to_addr = addr;
 }
 
 void emulator::pause()
