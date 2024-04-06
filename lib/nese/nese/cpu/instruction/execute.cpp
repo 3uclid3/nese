@@ -521,6 +521,16 @@ void execute_nop(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
+// PHA (Push Accumulator):
+// Pushes a copy of the accumulator onto the stack.
+template<addr_mode AddrModeT>
+void execute_pha(execute_context ctx)
+{
+    push_byte(ctx, ctx.registers().a);
+
+    ctx.step_cycle(cpu_cycle_t(3));
+}
+
 // PHP (Push Processor Status):
 // Pushes a copy of the status flags onto the stack.
 template<addr_mode AddrModeT>
@@ -715,6 +725,7 @@ consteval execute_callback_table create_execute_callback_table()
 
     table[opcode::nop_implied] = &execute_nop<addr_mode::implied>;
 
+    table[opcode::pha_implied] = &execute_pha<addr_mode::implied>;
     table[opcode::php_implied] = &execute_php<addr_mode::implied>;
 
     table[opcode::pla_implied] = &execute_pla<addr_mode::implied>;
