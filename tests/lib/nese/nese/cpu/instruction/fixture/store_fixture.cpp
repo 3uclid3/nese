@@ -114,14 +114,57 @@ void store_fixture::test_absolute(opcode opcode, register_id store_register)
             const byte_t value = GENERATE(byte_t{0x00}, byte_t{0xC0}, byte_t{0xFF});
 
             state().registers.pc = default_pc_addr;
-            memory().set_word(default_pc_addr, zero_page_base_addr);
+            memory().set_word(default_pc_addr, absolute_base_addr);
             set_register(state().registers, store_register, value);
 
             expected_state().cycle = cycle_cost;
-            expected_memory().set_byte(zero_page_base_addr, value);
+            expected_memory().set_byte(absolute_base_addr, value);
             expected_state().registers.pc = default_pc_addr + 2;
 
             execute_and_check(opcode);
+        }
+    }
+}
+
+void store_fixture::test_absolute_indexed(opcode opcode, register_id store_register, register_id index_register)
+{
+    DYNAMIC_SECTION(format("absolute_{}", index_register))
+    {
+        // constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(4);
+
+        SECTION("addressing")
+        {
+            const auto [pc_addr, base_addr, idx] = GENERATE(from_range(absolute_indexed_scenarios));
+            const addr_t indexed_addr = base_addr + idx;
+
+            state().registers.pc = pc_addr;
+            memory().set_word(pc_addr, base_addr);
+            set_register(state().registers, store_register, 1);
+            set_register(state().registers, index_register, idx);
+
+            // expected_state().cycle = cycle_cost;
+            expected_memory().set_byte(indexed_addr, 1);
+            expected_state().registers.pc = pc_addr + 2;
+
+            execute_and_check(opcode, false);
+        }
+
+        SECTION("value")
+        {
+            constexpr addr_t indexed_addr = absolute_base_addr + indexed_offset;
+
+            const byte_t value = GENERATE(byte_t{0x00}, byte_t{0xC0}, byte_t{0xFF});
+
+            state().registers.pc = default_pc_addr;
+            memory().set_word(default_pc_addr, absolute_base_addr);
+            set_register(state().registers, store_register, value);
+            set_register(state().registers, index_register, indexed_offset);
+
+            // expected_state().cycle = cycle_cost;
+            expected_memory().set_byte(indexed_addr, value);
+            expected_state().registers.pc = default_pc_addr + 2;
+
+            execute_and_check(opcode, false);
         }
     }
 }
