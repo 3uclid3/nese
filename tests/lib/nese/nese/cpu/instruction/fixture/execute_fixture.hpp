@@ -48,16 +48,16 @@ public:
     };
 
     // Standard PC address
-    static constexpr addr_t default_pc_addr = 0x0200;
+    static constexpr addr_x default_pc_addr = 0x0200;
 
     // Small offset
-    static constexpr addr_t indexed_offset = 0x0020;
+    static constexpr addr_x indexed_offset = 0x0020;
 
     // Well within the zero page
-    static constexpr byte_t zero_page_base_addr = 0x20;
+    static constexpr byte_x zero_page_base_addr = 0x20;
 
     // Well within the zero page
-    static constexpr addr_t absolute_base_addr = 0x0300;
+    static constexpr addr_x absolute_base_addr = 0x0300;
 
     static constexpr std::array zero_page_scenarios = std::to_array<std::tuple<addr_x, byte_x>>(
         {
