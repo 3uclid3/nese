@@ -6,12 +6,13 @@
 #include <nese/cpu/instruction/opcode.hpp>
 #include <nese/cpu/status_flag.hpp>
 #include <nese/utility/format.hpp>
+#include <nese/utility/hex.hpp>
 
 namespace nese::cpu::instruction {
 
 struct sbc_fixture : execute_fixture
 {
-    static constexpr std::array carry_flag_clear_scenarios = std::to_array<std::tuple<byte_t, byte_t, status_flags>>(
+    static constexpr std::array carry_flag_clear_scenarios = std::to_array<std::tuple<byte_x, byte_x, hex<status_flags>>>(
         {
             {0x00, 0x00, status_flag::negative | 0},                                      // 0 - 0 - 1 = -1 (0xFF), negative flag set
             {0x01, 0x00, status_flag::carry | status_flag::zero},                         // 1 - 0 - 1 = 0, carry flag set because 0 is "borrowed" from the carry
@@ -22,7 +23,7 @@ struct sbc_fixture : execute_fixture
 
         });
 
-    static constexpr std::array carry_flag_set_scenarios = std::to_array<std::tuple<byte_t, byte_t, status_flags>>(
+    static constexpr std::array carry_flag_set_scenarios = std::to_array<std::tuple<byte_x, byte_x, hex<status_flags>>>(
         {
             // {Initial A, Value from Memory, Expected Flags}
             {0x00, 0x00, status_flag::carry | status_flag::zero},
@@ -44,7 +45,9 @@ struct sbc_fixture : execute_fixture
 
             SECTION("addressing")
             {
-                const addr_t addr = GENERATE(as<addr_t>(), 0x0000, 0x7FFE, 0xFFFE);
+                const auto addr = GENERATE(as<addr_x>(), 0x0000, 0x7FFE, 0xFFFE);
+
+                CAPTURE(addr);
 
                 state().registers.pc = addr;
                 state().registers.a = 0;
@@ -66,6 +69,10 @@ struct sbc_fixture : execute_fixture
                 SECTION("carry flag clear")
                 {
                     auto [a, value, flags] = GENERATE(from_range(carry_flag_clear_scenarios));
+
+                    CAPTURE(a);
+                    CAPTURE(value);
+                    CAPTURE(flags);
 
                     state().registers.a = a;
                     memory().set_byte(default_pc_addr, value);
@@ -112,6 +119,9 @@ struct sbc_fixture : execute_fixture
             {
                 const auto [pc_addr, base_addr] = GENERATE_COPY(from_range(zero_page_scenarios));
 
+                CAPTURE(pc_addr);
+                CAPTURE(base_addr);
+
                 state().registers.pc = pc_addr;
                 state().registers.a = 0;
                 state().registers.set_flag(status_flag::carry);
@@ -135,6 +145,10 @@ struct sbc_fixture : execute_fixture
                 {
                     auto [a, value, flags] = GENERATE(from_range(carry_flag_clear_scenarios));
 
+                    CAPTURE(a);
+                    CAPTURE(value);
+                    CAPTURE(flags);
+
                     state().registers.a = a;
                     memory().set_byte(zero_page_base_addr, value);
 
@@ -152,7 +166,9 @@ struct sbc_fixture : execute_fixture
 
                     auto [a, value, flags] = GENERATE(from_range(carry_flag_set_scenarios));
 
-                    CHECK(true);
+                    CAPTURE(a);
+                    CAPTURE(value);
+                    CAPTURE(flags);
 
                     state().registers.a = a;
                     memory().set_byte(zero_page_base_addr, value);
@@ -178,6 +194,11 @@ struct sbc_fixture : execute_fixture
             {
                 const auto [pc_addr, base_addr, idx] = GENERATE(from_range(zero_page_indexed_scenarios));
                 const byte_t indexed_addr = base_addr + idx & 0xff;
+
+                CAPTURE(pc_addr);
+                CAPTURE(base_addr);
+                CAPTURE(idx);
+                CAPTURE(indexed_addr);
 
                 state().registers.a = 0;
                 state().registers.pc = pc_addr;
@@ -206,6 +227,10 @@ struct sbc_fixture : execute_fixture
                 {
                     auto [a, value, flags] = GENERATE(from_range(carry_flag_clear_scenarios));
 
+                    CAPTURE(a);
+                    CAPTURE(value);
+                    CAPTURE(flags);
+
                     state().registers.a = a;
                     memory().set_byte(indexed_addr, value);
 
@@ -222,6 +247,10 @@ struct sbc_fixture : execute_fixture
                     state().registers.set_flag(status_flag::carry);
 
                     auto [a, value, flags] = GENERATE(from_range(carry_flag_set_scenarios));
+
+                    CAPTURE(a);
+                    CAPTURE(value);
+                    CAPTURE(flags);
 
                     CHECK(true);
 
@@ -249,6 +278,9 @@ struct sbc_fixture : execute_fixture
             {
                 const auto [pc_addr, base_addr] = GENERATE_COPY(from_range(absolute_scenarios));
 
+                CAPTURE(pc_addr);
+                CAPTURE(base_addr);
+
                 state().registers.pc = pc_addr;
                 state().registers.a = 0;
                 state().registers.set_flag(status_flag::carry);
@@ -272,6 +304,10 @@ struct sbc_fixture : execute_fixture
                 {
                     auto [a, value, flags] = GENERATE(from_range(carry_flag_clear_scenarios));
 
+                    CAPTURE(a);
+                    CAPTURE(value);
+                    CAPTURE(flags);
+
                     state().registers.a = a;
                     memory().set_byte(absolute_base_addr, value);
 
@@ -288,6 +324,10 @@ struct sbc_fixture : execute_fixture
                     state().registers.set_flag(status_flag::carry);
 
                     auto [a, value, flags] = GENERATE(from_range(carry_flag_set_scenarios));
+
+                    CAPTURE(a);
+                    CAPTURE(value);
+                    CAPTURE(flags);
 
                     state().registers.a = a;
                     memory().set_byte(absolute_base_addr, value);
@@ -313,6 +353,11 @@ struct sbc_fixture : execute_fixture
             {
                 const auto [pc_addr, base_addr, idx] = GENERATE(from_range(absolute_indexed_scenarios));
                 const addr_t indexed_addr = base_addr + idx;
+
+                CAPTURE(pc_addr);
+                CAPTURE(base_addr);
+                CAPTURE(idx);
+                CAPTURE(indexed_addr);
 
                 state().registers.a = 0;
                 state().registers.pc = pc_addr;
@@ -341,6 +386,10 @@ struct sbc_fixture : execute_fixture
                 {
                     auto [a, value, flags] = GENERATE(from_range(carry_flag_clear_scenarios));
 
+                    CAPTURE(a);
+                    CAPTURE(value);
+                    CAPTURE(flags);
+
                     state().registers.a = a;
                     memory().set_byte(indexed_addr, value);
 
@@ -358,7 +407,9 @@ struct sbc_fixture : execute_fixture
 
                     auto [a, value, flags] = GENERATE(from_range(carry_flag_set_scenarios));
 
-                    CHECK(true);
+                    CAPTURE(a);
+                    CAPTURE(value);
+                    CAPTURE(flags);
 
                     state().registers.a = a;
                     memory().set_byte(indexed_addr, value);

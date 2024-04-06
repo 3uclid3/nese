@@ -13,6 +13,7 @@ set(INCLUDES
     "${DIR}/cpu/instruction/fixture/load_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/status_flag_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/store_fixture.hpp"
+    "${DIR}/utility/hex.hpp"
     "${DIR}/test_config.hpp"
 )
 
