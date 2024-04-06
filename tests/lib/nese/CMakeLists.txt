@@ -6,6 +6,7 @@ configure_file("test_config.hpp.in" "${DIR}/test_config.hpp")
 
 set(INCLUDES
     "${DIR}/cpu/instruction/fixture/branch_fixture.hpp"
+    "${DIR}/cpu/instruction/fixture/compare_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/execute_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/increment_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/load_fixture.hpp"
@@ -16,6 +17,7 @@ set(INCLUDES
 
 set(SOURCES
     "${DIR}/cpu/instruction/fixture/branch_fixture.cpp"
+    "${DIR}/cpu/instruction/fixture/compare_fixture.cpp"
     "${DIR}/cpu/instruction/fixture/execute_fixture.cpp"
     "${DIR}/cpu/instruction/fixture/increment_fixture.cpp"
     "${DIR}/cpu/instruction/fixture/load_fixture.cpp"
@@ -32,6 +34,7 @@ set(SOURCES
     "${DIR}/cpu/instruction/bvc_test.cpp"
     "${DIR}/cpu/instruction/bvs_test.cpp"
     "${DIR}/cpu/instruction/clc_test.cpp"
+    "${DIR}/cpu/instruction/cmp_test.cpp"
     "${DIR}/cpu/instruction/inx_test.cpp"
     "${DIR}/cpu/instruction/iny_test.cpp"
     "${DIR}/cpu/instruction/jmp_test.cpp"

@@ -391,6 +391,29 @@ void execute_clc(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
+template<addr_mode AddrModeT>
+void execute_compare(execute_context ctx, byte_t to_byte)
+{
+    bool page_crossing = false;
+    const word_t operand = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t byte = read_operand<AddrModeT>(ctx, operand);
+    const byte_t diff = to_byte - byte;
+
+    ctx.registers().set_flag(status_flag::carry, to_byte >= byte);
+    ctx.registers().set_flag(status_flag::zero, is_zero(diff));
+    ctx.registers().set_flag(status_flag::negative, is_negative(diff));
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+}
+
+// CMP (Compare Accumulator):
+// Compares the accumulator with a memory value, setting flags based on the subtraction result (carry, zero, and negative flags).
+template<addr_mode AddrModeT>
+void execute_cmp(execute_context ctx)
+{
+    execute_compare<AddrModeT>(ctx, ctx.registers().a);
+}
+
 // INX (Increment Register):
 // Increases a register by one, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
@@ -642,6 +665,15 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::bit_absolute] = &execute_bit<addr_mode::absolute>;
 
     table[opcode::clc_implied] = &execute_clc<addr_mode::implied>;
+
+    table[opcode::cmp_immediate] = &execute_cmp<addr_mode::immediate>;
+    table[opcode::cmp_zero_page] = &execute_cmp<addr_mode::zero_page>;
+    table[opcode::cmp_zero_page_x] = &execute_cmp<addr_mode::zero_page_x>;
+    table[opcode::cmp_absolute] = &execute_cmp<addr_mode::absolute>;
+    table[opcode::cmp_absolute_x] = &execute_cmp<addr_mode::absolute_x>;
+    table[opcode::cmp_absolute_y] = &execute_cmp<addr_mode::absolute_y>;
+    // table[opcode::cmp_indexed_indirect] = &execute_cmp<addr_mode::indexed_indirect>;
+    // table[opcode::cmp_indirect_indexed] = &execute_cmp<addr_mode::indirect_indexed>;
 
     table[opcode::inx_implied] = &execute_inx<addr_mode::implied>;
     table[opcode::iny_implied] = &execute_iny<addr_mode::implied>;
