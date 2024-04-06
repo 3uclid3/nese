@@ -5,6 +5,7 @@ set(TEST_ROMS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test_roms")
 configure_file("test_config.hpp.in" "${DIR}/test_config.hpp")
 
 set(INCLUDES
+    "${DIR}/cpu/instruction/fixture/bitwise_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/branch_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/compare_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/execute_fixture.hpp"
@@ -16,6 +17,7 @@ set(INCLUDES
 )
 
 set(SOURCES
+    "${DIR}/cpu/instruction/fixture/bitwise_fixture.cpp"
     "${DIR}/cpu/instruction/fixture/branch_fixture.cpp"
     "${DIR}/cpu/instruction/fixture/compare_fixture.cpp"
     "${DIR}/cpu/instruction/fixture/execute_fixture.cpp"
