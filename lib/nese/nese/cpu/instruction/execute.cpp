@@ -626,8 +626,8 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::and_absolute] = &execute_and<addr_mode::absolute>;
     table[opcode::and_absolute_x] = &execute_and<addr_mode::absolute_x>;
     table[opcode::and_absolute_y] = &execute_and<addr_mode::absolute_y>;
-    table[opcode::and_indexed_indirect] = &execute_and<addr_mode::indexed_indirect>;
-    table[opcode::and_indirect_indexed] = &execute_and<addr_mode::indirect_indexed>;
+    // table[opcode::and_indexed_indirect] = &execute_and<addr_mode::indexed_indirect>;
+    // table[opcode::and_indirect_indexed] = &execute_and<addr_mode::indirect_indexed>;
 
     table[opcode::bvs_relative] = &execute_bvs<addr_mode::relative>;
     table[opcode::bvc_relative] = &execute_bvc<addr_mode::relative>;
@@ -655,8 +655,8 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::lda_absolute] = &execute_lda<addr_mode::absolute>;
     table[opcode::lda_absolute_x] = &execute_lda<addr_mode::absolute_x>;
     table[opcode::lda_absolute_y] = &execute_lda<addr_mode::absolute_y>;
-    table[opcode::lda_indexed_indirect] = &execute_lda<addr_mode::indexed_indirect>;
-    table[opcode::lda_indirect_indexed] = &execute_lda<addr_mode::indirect_indexed>;
+    // table[opcode::lda_indexed_indirect] = &execute_lda<addr_mode::indexed_indirect>;
+    // table[opcode::lda_indirect_indexed] = &execute_lda<addr_mode::indirect_indexed>;
 
     table[opcode::ldx_immediate] = &execute_ldx<addr_mode::immediate>;
     table[opcode::ldx_zero_page] = &execute_ldx<addr_mode::zero_page>;
@@ -689,8 +689,8 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::sta_absolute] = &execute_sta<addr_mode::absolute>;
     table[opcode::sta_absolute_x] = &execute_sta<addr_mode::absolute_x>;
     table[opcode::sta_absolute_y] = &execute_sta<addr_mode::absolute_y>;
-    table[opcode::sta_indexed_indirect] = &execute_sta<addr_mode::indexed_indirect>;
-    table[opcode::sta_indirect_indexed] = &execute_sta<addr_mode::indirect_indexed>;
+    // table[opcode::sta_indexed_indirect] = &execute_sta<addr_mode::indexed_indirect>;
+    // table[opcode::sta_indirect_indexed] = &execute_sta<addr_mode::indirect_indexed>;
 
     table[opcode::stx_zero_page] = &execute_stx<addr_mode::zero_page>;
     table[opcode::stx_zero_page_y] = &execute_stx<addr_mode::zero_page_y>;
