@@ -50,6 +50,11 @@ constexpr bool is_overflow(byte_t value)
     return value & 0x40;
 }
 
+constexpr bool is_sign_overflow(byte_t old_byte, byte_t new_byte, byte_t byte)
+{
+    return (old_byte & 0x80) == (byte & 0x80) && (old_byte & 0x80) != (new_byte & 0x80);
+}
+
 template<addr_mode AddrModeT>
 constexpr cpu_cycle_t get_addr_mode_cycle_cost(bool page_crossing = false)
 {
@@ -258,6 +263,38 @@ void write_operand(execute_context ctx, word_t operand, byte_t value)
     {
         ctx.memory().set_byte(operand, value);
     }
+}
+
+// ADC (Add with Carry):
+// Adds a memory value and the carry flag to the accumulator, affecting flags for carry, zero, overflow, and negative.
+template<addr_mode AddrModeT>
+void execute_adc(execute_context ctx)
+{
+    const byte_t old_byte = ctx.registers().a;
+
+    bool page_crossing{false};
+    const addr_t addr = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t byte = read_operand<AddrModeT>(ctx, addr);
+
+    // FF+FF+1=FF -> need to detect such case by checking for overflow in each step
+    // However, for FF+80+1=80 -> the sign bit got "rescued" so we should just check final result
+    byte_t new_byte = ctx.registers().a + byte;
+    bool bit7_overflow = new_byte < old_byte;
+    const byte_t new_byte_pre_carry = new_byte;
+
+    new_byte += ctx.registers().is_flag_set(status_flag::carry) ? 1 : 0;
+    bit7_overflow = bit7_overflow || new_byte < new_byte_pre_carry;
+
+    ctx.registers().a = new_byte;
+
+    ctx.registers().set_flag(status_flag::overflow, is_sign_overflow(old_byte, ctx.registers().a, byte));
+    ctx.registers().set_flag(status_flag::carry, bit7_overflow);
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().a));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().a));
+
+    // cycle count forces page crossing behavior
+    page_crossing = true;
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
 }
 
 // AND (Logical AND):
@@ -714,6 +751,15 @@ consteval execute_callback_table create_execute_callback_table()
 {
     execute_callback_table table{};
 
+    table[opcode::adc_immediate] = &execute_adc<addr_mode::immediate>;
+    table[opcode::adc_zero_page] = &execute_adc<addr_mode::zero_page>;
+    table[opcode::adc_zero_page_x] = &execute_adc<addr_mode::zero_page_x>;
+    table[opcode::adc_absolute] = &execute_adc<addr_mode::absolute>;
+    table[opcode::adc_absolute_x] = &execute_adc<addr_mode::absolute_x>;
+    table[opcode::adc_absolute_y] = &execute_adc<addr_mode::absolute_y>;
+    // table[opcode::adc_indexed_indirect] = &execute_adc<addr_mode::indexed_indirect>;
+    // table[opcode::adc_indirect_indexed] = &execute_adc<addr_mode::indirect_indexed>;
+
     table[opcode::and_immediate] = &execute_and<addr_mode::immediate>;
     table[opcode::and_zero_page] = &execute_and<addr_mode::zero_page>;
     table[opcode::and_zero_page_x] = &execute_and<addr_mode::zero_page_x>;
@@ -824,7 +870,6 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::sty_zero_page] = &execute_sty<addr_mode::zero_page>;
     table[opcode::sty_zero_page_x] = &execute_sty<addr_mode::zero_page_x>;
     table[opcode::sty_absolute] = &execute_sty<addr_mode::absolute>;
-
 
     return table;
 }

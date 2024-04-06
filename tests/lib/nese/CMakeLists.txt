@@ -25,6 +25,7 @@ set(SOURCES
     "${DIR}/cpu/instruction/fixture/load_fixture.cpp"
     "${DIR}/cpu/instruction/fixture/status_flag_fixture.cpp"
     "${DIR}/cpu/instruction/fixture/store_fixture.cpp"
+    "${DIR}/cpu/instruction/adc_test.cpp"
     "${DIR}/cpu/instruction/and_test.cpp"
     "${DIR}/cpu/instruction/bcc_test.cpp"
     "${DIR}/cpu/instruction/bcs_test.cpp"
