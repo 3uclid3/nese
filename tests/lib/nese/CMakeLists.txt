@@ -26,6 +26,7 @@ set(SOURCES
     "${DIR}/cpu/instruction/bcs_test.cpp"
     "${DIR}/cpu/instruction/beq_test.cpp"
     "${DIR}/cpu/instruction/bit_test.cpp"
+    "${DIR}/cpu/instruction/bmi_test.cpp"
     "${DIR}/cpu/instruction/bne_test.cpp"
     "${DIR}/cpu/instruction/bpl_test.cpp"
     "${DIR}/cpu/instruction/bvc_test.cpp"
