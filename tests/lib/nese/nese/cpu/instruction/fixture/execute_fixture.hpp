@@ -119,6 +119,8 @@ public:
             {0xFFFC, 0x0400, 0x40}  /* PC at end, absolute address in common code area with a byte offset */
         });
 
+    static constexpr std::array stack_offset_scenarios = std::to_array<byte_t>({0xFD, 0xFE, 0xFF, 0x01, 0x00});
+
     static constexpr std::array positive_byte_values = std::to_array<byte_t>(
         {
             0x01, // The smallest value

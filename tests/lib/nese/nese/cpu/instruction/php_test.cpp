@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
 #include <nese/cpu/instruction/fixture/execute_fixture.hpp>
@@ -18,7 +19,7 @@ TEST_CASE_METHOD(execute_fixture, "php", "[cpu][instruction]")
 
     SECTION("addressing")
     {
-        const byte_t s = GENERATE(as<byte_t>(), 0xFD, 0xFE, 0xFF, 0x01, 0x00);
+        const byte_t s = GENERATE(from_range(stack_offset_scenarios));
 
         state().registers.s = s;
 
