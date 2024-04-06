@@ -441,6 +441,23 @@ void execute_cmp(execute_context ctx)
     execute_compare<AddrModeT>(ctx, ctx.registers().a);
 }
 
+// EOR (Exclusive OR):
+// Performs a bitwise exclusive OR between the accumulator and a memory value, affecting the zero and negative flags.
+template<addr_mode AddrModeT>
+void execute_eor(execute_context ctx)
+{
+    bool page_crossing{false};
+    const addr_t addr = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t byte = read_operand<AddrModeT>(ctx, addr);
+
+    ctx.registers().a ^= byte;
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().a));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().a));
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+}
+
 // INX (Increment Register):
 // Increases a register by one, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
@@ -731,6 +748,15 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::cmp_absolute_y] = &execute_cmp<addr_mode::absolute_y>;
     // table[opcode::cmp_indexed_indirect] = &execute_cmp<addr_mode::indexed_indirect>;
     // table[opcode::cmp_indirect_indexed] = &execute_cmp<addr_mode::indirect_indexed>;
+
+    table[opcode::eor_immediate] = &execute_eor<addr_mode::immediate>;
+    table[opcode::eor_zero_page] = &execute_eor<addr_mode::zero_page>;
+    table[opcode::eor_zero_page_x] = &execute_eor<addr_mode::zero_page_x>;
+    table[opcode::eor_absolute] = &execute_eor<addr_mode::absolute>;
+    table[opcode::eor_absolute_x] = &execute_eor<addr_mode::absolute_x>;
+    table[opcode::eor_absolute_y] = &execute_eor<addr_mode::absolute_y>;
+    // table[opcode::eor_indexed_indirect] = &execute_eor<addr_mode::indexed_indirect>;
+    // table[opcode::eor_indirect_indexed] = &execute_eor<addr_mode::indirect_indexed>;
 
     table[opcode::inx_implied] = &execute_inx<addr_mode::implied>;
     table[opcode::iny_implied] = &execute_iny<addr_mode::implied>;
