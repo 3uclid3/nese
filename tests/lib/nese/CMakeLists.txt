@@ -35,6 +35,8 @@ set(SOURCES
     "${DIR}/cpu/instruction/bvs_test.cpp"
     "${DIR}/cpu/instruction/clc_test.cpp"
     "${DIR}/cpu/instruction/cld_test.cpp"
+    "${DIR}/cpu/instruction/cli_test.cpp"
+    "${DIR}/cpu/instruction/clv_test.cpp"
     "${DIR}/cpu/instruction/cmp_test.cpp"
     "${DIR}/cpu/instruction/inx_test.cpp"
     "${DIR}/cpu/instruction/iny_test.cpp"

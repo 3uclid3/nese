@@ -391,13 +391,30 @@ void execute_clc(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
-
 // CLD (Clear Decimal Mode):
 // Clears the decimal mode flag, affecting how ADC and SBC instructions work.
 template<addr_mode AddrModeT>
 void execute_cld(execute_context ctx)
 {
     ctx.registers().clear_flag(status_flag::decimal);
+    ctx.step_cycle(cpu_cycle_t(2));
+}
+
+// CLI (Clear Interrupt Disable):
+// Clears the interrupt disable flag, allowing interrupts.
+template<addr_mode AddrModeT>
+void execute_cli(execute_context ctx)
+{
+    ctx.registers().clear_flag(status_flag::interrupt);
+    ctx.step_cycle(cpu_cycle_t(2));
+}
+
+// CLV (Clear Overflow Flag):
+// Clears the overflow flag to 0, affecting subsequent arithmetic and branch instructions.
+template<addr_mode AddrModeT>
+void execute_clv(execute_context ctx)
+{
+    ctx.registers().clear_flag(status_flag::overflow);
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
@@ -703,6 +720,8 @@ consteval execute_callback_table create_execute_callback_table()
 
     table[opcode::clc_implied] = &execute_clc<addr_mode::implied>;
     table[opcode::cld_implied] = &execute_cld<addr_mode::implied>;
+    table[opcode::cli_implied] = &execute_cli<addr_mode::implied>;
+    table[opcode::clv_implied] = &execute_clv<addr_mode::implied>;
 
     table[opcode::cmp_immediate] = &execute_cmp<addr_mode::immediate>;
     table[opcode::cmp_zero_page] = &execute_cmp<addr_mode::zero_page>;
