@@ -32,7 +32,7 @@ void branch_fixture::test_relative(opcode opcode, status_flag flag, branch_when 
         state().registers.pc = addr;
         memory().set_byte(state().registers.pc, offset);
 
-        DYNAMIC_SECTION(nese::format("branch taken when {} is set", to_string_view(flag)))
+        DYNAMIC_SECTION(nese::format("branch taken when {} is set", flag))
         {
             state().registers.set_flag(flag);
 
@@ -42,7 +42,7 @@ void branch_fixture::test_relative(opcode opcode, status_flag flag, branch_when 
             execute_and_check(opcode);
         }
 
-        DYNAMIC_SECTION(nese::format("branch taken when {} is clear", to_string_view(flag)))
+        DYNAMIC_SECTION(nese::format("branch taken when {} is clear", flag))
         {
             state().registers.clear_flag(flag);
 

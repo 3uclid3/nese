@@ -4,7 +4,7 @@
 
 namespace nese::cpu {
 
-enum class status_flag;
+enum class status_flag : u8_t;
 
 namespace instruction {
 

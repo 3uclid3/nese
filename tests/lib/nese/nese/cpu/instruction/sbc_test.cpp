@@ -12,29 +12,29 @@ namespace nese::cpu::instruction {
 
 struct sbc_fixture : execute_fixture
 {
-    static constexpr std::array carry_flag_clear_scenarios = std::to_array<std::tuple<byte_x, byte_x, hex<status_flags>>>(
+    static constexpr std::array carry_flag_clear_scenarios = std::to_array<std::tuple<byte_x, byte_x, enum_hex<status_flags>>>(
         {
-            {0x00, 0x00, status_flag::negative | 0},                                      // 0 - 0 - 1 = -1 (0xFF), negative flag set
+            {0x00, 0x00, status_flag::negative},                                      // 0 - 0 - 1 = -1 (0xFF), negative flag set
             {0x01, 0x00, status_flag::carry | status_flag::zero},                         // 1 - 0 - 1 = 0, carry flag set because 0 is "borrowed" from the carry
             {0x02, 0x01, status_flag::carry | status_flag::zero},                         // 2 - 1 - 1 = 0, no flags set
-            {0x00, 0x01, status_flag::negative | 0},                                      // 0 - 1 - 1 = -2 (0xFE), negative flag set
+            {0x00, 0x01, status_flag::negative},                                      // 0 - 1 - 1 = -2 (0xFE), negative flag set
             {0x80, 0x7F, status_flag::zero | status_flag::carry | status_flag::overflow}, // 0x80 - 0x7F - 1 = 0, zero and carry flag set
-            {0x80, 0x80, status_flag::negative | 0},                                      // 0x80 - 0x80 - 1 = -1 (0xFF), negative flag set, carry flag remains clear due to the underflow
+            {0x80, 0x80, status_flag::negative},                                      // 0x80 - 0x80 - 1 = -1 (0xFF), negative flag set, carry flag remains clear due to the underflow
 
         });
 
-    static constexpr std::array carry_flag_set_scenarios = std::to_array<std::tuple<byte_x, byte_x, hex<status_flags>>>(
+    static constexpr std::array carry_flag_set_scenarios = std::to_array<std::tuple<byte_x, byte_x, enum_hex<status_flags>>>(
         {
             // {Initial A, Value from Memory, Expected Flags}
             {0x00, 0x00, status_flag::carry | status_flag::zero},
             {0x01, 0x01, status_flag::carry | status_flag::zero},
-            {0x02, 0x01, status_flag::carry | 0},
-            {0x7F, 0x01, status_flag::carry | 0},
+            {0x02, 0x01, status_flag::carry},
+            {0x7F, 0x01, status_flag::carry},
             {0x80, 0x7F, status_flag::carry | status_flag::overflow},
             {0x80, 0x80, status_flag::carry | status_flag::zero},
-            {0x7E, 0x7F, status_flag::negative | 0},
+            {0x7E, 0x7F, status_flag::negative},
             {0xFF, 0x7E, status_flag::carry | status_flag::negative},
-            {0x00, 0xFF, 0},
+            {0x00, 0xFF, status_flag::none},
         });
 
     void test_immediate(opcode opcode)

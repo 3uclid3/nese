@@ -37,7 +37,7 @@ struct registers
 
 constexpr bool registers::is_flag_set(status_flag flag) const
 {
-    return (p & flag) != 0;
+    return (p & flag) != status_flag::none;
 }
 
 constexpr bool registers::is_flag_clear(status_flag flag) const
@@ -47,17 +47,17 @@ constexpr bool registers::is_flag_clear(status_flag flag) const
 
 constexpr void registers::set_flag(status_flag flag, bool value)
 {
-    p = value ? p | flag : p & ~flag;
+    p = static_cast<u8_t>(value ? p | flag : p & ~flag);
 }
 
 constexpr void registers::set_flag(status_flag flag)
 {
-    p = p | flag;
+    p = static_cast<u8_t>(p | flag);
 }
 
 constexpr void registers::clear_flag(status_flag flag)
 {
-    p = p & ~flag;
+    p = static_cast<u8_t>(p & ~flag);
 }
 
 } // namespace nese::cpu

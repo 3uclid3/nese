@@ -11,19 +11,19 @@ namespace nese::cpu::instruction {
 
 struct adc_fixture : execute_fixture
 {
-    static constexpr std::array carry_flag_clear_scenarios = std::to_array<std::tuple<byte_t, byte_t, status_flags>>(
+    static constexpr std::array carry_flag_clear_scenarios = std::to_array<std::tuple<byte_t, byte_t, enum_hex<status_flags>>>(
         {
-            {0x01, 0x01, 0},                                             // No overflow, no carry out
+            {0x01, 0x01, status_flag::none},                                             // No overflow, no carry out
             {0x7F, 0x01, status_flag::negative | status_flag::overflow}, // Overflow but no carry out (0x7F + 0x01 = 0x80, sets negative flag)
             {0xFF, 0x01, status_flag::carry | status_flag::zero},        // Carry out but no overflow (0xFF + 0x01 = 0x100, wraps to 0x00, sets carry flag)
-            {0x80, 0x7F, status_flag::negative | 0},                     // Both carry out and overflow (0x80 + 0x7F = 0xFF, no flags set since result is -1 in two's complement but doesn't overflow or carry beyond 0xFF)
+            {0x80, 0x7F, status_flag::negative},                     // Both carry out and overflow (0x80 + 0x7F = 0xFF, no flags set since result is -1 in two's complement but doesn't overflow or carry beyond 0xFF)
         });
 
-    static constexpr std::array carry_flag_set_scenarios = std::to_array<std::tuple<byte_t, byte_t, status_flags>>(
+    static constexpr std::array carry_flag_set_scenarios = std::to_array<std::tuple<byte_t, byte_t, enum_hex<status_flags>>>(
         {
             // {A, Memory Value, Expected Flags}
-            {0x00, 0x00, 0},                                             // Adding zero to zero with carry; result is 0x01, no flags set
-            {0x01, 0x01, 0},                                             // Carry set, no overflow (0x01 + 0x01 + carry = 0x03)
+            {0x00, 0x00, status_flag::none},                                             // Adding zero to zero with carry; result is 0x01, no flags set
+            {0x01, 0x01, status_flag::none},                                             // Carry set, no overflow (0x01 + 0x01 + carry = 0x03)
             {0xFF, 0x00, status_flag::carry | status_flag::zero},        // Carry out but no overflow (0xFF + 0x00 + carry = 0x00, carry set)
             {0x7F, 0x00, status_flag::overflow | status_flag::negative}, // Overflow, no carry out (0x7F + 0x00 + carry = 0x80, overflow and negative set)
             {0x80, 0x7F, status_flag::carry | status_flag::zero},        // Carry out, no overflow (0x80 + 0x7F + carry = 0x00, carry set)

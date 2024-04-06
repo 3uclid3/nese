@@ -75,7 +75,7 @@ TEST_CASE_METHOD(execute_fixture, "rti", "[cpu][instruction]")
                 expected_state().cycle = cycle_cost;
                 expected_state().registers.pc = return_addr;
                 expected_state().registers.s += 3;
-                expected_state().registers.p = flag_set | status_flag::unused; // unused always set
+                expected_state().registers.p = static_cast<byte_t>(flag_set | status_flag::unused); // unused always set
 
                 execute_and_check(opcode::rti_implied);
             }
@@ -95,7 +95,7 @@ TEST_CASE_METHOD(execute_fixture, "rti", "[cpu][instruction]")
                 expected_state().cycle = cycle_cost;
                 expected_state().registers.pc = return_addr;
                 expected_state().registers.s += 3;
-                expected_state().registers.p = flag_ignored | status_flag::unused; // unused always set
+                expected_state().registers.p = static_cast<byte_t>(flag_ignored | status_flag::unused); // unused always set
 
                 execute_and_check(opcode::rti_implied);
             }

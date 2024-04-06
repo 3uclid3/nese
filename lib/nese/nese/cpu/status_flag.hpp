@@ -1,12 +1,15 @@
 #pragma once
 
+#include <magic_enum.hpp>
+
 #include <nese/basic_types.hpp>
 #include <nese/utility/assert.hpp>
 
 namespace nese::cpu {
 
-enum class status_flag
+enum class status_flag : u8_t
 {
+    none = 0,
     carry = 1 << 0,     // Carry Flag
     zero = 1 << 1,      // Zero Flag
     interrupt = 1 << 2, // Interrupt Disable
@@ -17,7 +20,7 @@ enum class status_flag
     negative = 1 << 7   // Negative Flag
 };
 
-using status_flags = u8_t;
+using status_flags = status_flag;
 
 [[nodiscard]] constexpr status_flags operator|(status_flag lhs, status_flag rhs) noexcept
 {
@@ -25,16 +28,9 @@ using status_flags = u8_t;
     return static_cast<status_flags>(static_cast<unsigned int>(lhs) | static_cast<unsigned int>(rhs));
 }
 
-[[nodiscard]] constexpr status_flags operator|(status_flags lhs, status_flag rhs) noexcept
+[[nodiscard]] constexpr status_flags operator|(u8_t lhs, status_flag rhs) noexcept
 {
-    // every static_cast is intentional
-    return static_cast<status_flags>(static_cast<unsigned int>(lhs) | static_cast<unsigned int>(rhs));
-}
-
-[[nodiscard]] constexpr status_flags operator|(status_flag lhs, status_flags rhs) noexcept
-{
-    // every static_cast is intentional
-    return static_cast<status_flags>(static_cast<unsigned int>(lhs) | static_cast<unsigned int>(rhs));
+    return static_cast<status_flags>(lhs) | rhs;
 }
 
 [[nodiscard]] constexpr status_flags operator&(status_flag lhs, status_flag rhs) noexcept
@@ -43,16 +39,9 @@ using status_flags = u8_t;
     return static_cast<status_flags>(static_cast<unsigned int>(lhs) & static_cast<unsigned int>(rhs));
 }
 
-[[nodiscard]] constexpr status_flags operator&(status_flags lhs, status_flag rhs) noexcept
+[[nodiscard]] constexpr status_flags operator&(u8_t lhs, status_flag rhs) noexcept
 {
-    // every static_cast is intentional
-    return static_cast<status_flags>(static_cast<unsigned int>(lhs) & static_cast<unsigned int>(rhs));
-}
-
-[[nodiscard]] constexpr status_flags operator&(status_flag lhs, status_flags rhs) noexcept
-{
-    // every static_cast is intentional
-    return static_cast<status_flags>(static_cast<unsigned int>(lhs) & static_cast<unsigned int>(rhs));
+    return static_cast<status_flags>(lhs) & rhs;
 }
 
 [[nodiscard]] constexpr status_flag operator~(status_flag w) noexcept
@@ -61,41 +50,9 @@ using status_flags = u8_t;
     return static_cast<status_flag>(static_cast<u8_t>(~static_cast<unsigned int>(w)));
 }
 
-[[nodiscard]] constexpr std::string_view to_string_view(status_flag flag)
-{
-    switch (flag)
-    {
-    case status_flag::carry:
-        return "carry";
-
-    case status_flag::zero:
-        return "zero";
-
-    case status_flag::interrupt:
-        return "interrupt";
-
-    case status_flag::decimal:
-        return "decimal";
-
-    case status_flag::break_cmd:
-        return "break_cmd";
-
-    case status_flag::unused:
-        return "unused";
-
-    case status_flag::overflow:
-        return "overflow";
-
-    case status_flag::negative:
-        return "negative";
-    }
-
-    NESE_ASSUME(false);
-}
-
 constexpr auto format_as(status_flag f)
 {
-    return to_string_view(f);
+    return magic_enum::enum_name(f);
 }
 
 } // namespace nese

@@ -12,7 +12,7 @@ namespace nese::cpu::instruction {
 TEST_CASE_METHOD(execute_fixture, "php", "[cpu][instruction]")
 {
     constexpr cycle_t cycle_cost = cpu_cycle_t(3);
-    constexpr status_flags mandatory_flags = 0x30;
+    constexpr status_flags mandatory_flags = static_cast<status_flags>(0x30);
 
     // Clear all flags
     state().registers.p = 0;
@@ -25,7 +25,7 @@ TEST_CASE_METHOD(execute_fixture, "php", "[cpu][instruction]")
 
         expected_state().cycle = cycle_cost;
         expected_state().registers.s = s - 1;
-        expected_memory().set_byte(stack_offset + s, mandatory_flags);
+        expected_memory().set_byte(stack_offset + s, static_cast<byte_t>(mandatory_flags));
 
         execute_and_check(opcode::php_implied);
     }
@@ -50,7 +50,7 @@ TEST_CASE_METHOD(execute_fixture, "php", "[cpu][instruction]")
 
             expected_state().cycle = cycle_cost;
             expected_state().registers.s = expected_state().registers.s - 1;
-            expected_memory().set_byte(stack_offset + s, static_cast<byte_t>(flag_set) | mandatory_flags);
+            expected_memory().set_byte(stack_offset + s, static_cast<byte_t>(flag_set | mandatory_flags));
 
             execute_and_check(opcode::php_implied);
         }
@@ -70,7 +70,7 @@ TEST_CASE_METHOD(execute_fixture, "php", "[cpu][instruction]")
 
             expected_state().cycle = cycle_cost;
             expected_state().registers.s = expected_state().registers.s - 1;
-            expected_memory().set_byte(stack_offset + s, mandatory_flags);
+            expected_memory().set_byte(stack_offset + s, static_cast<byte_t>(mandatory_flags));
 
             execute_and_check(opcode::php_implied);
         }
