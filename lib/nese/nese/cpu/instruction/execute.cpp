@@ -478,6 +478,22 @@ void execute_cmp(execute_context ctx)
     execute_compare<AddrModeT>(ctx, ctx.registers().a);
 }
 
+// CPX (Compare X Register):
+// Compares the X register with a memory value, setting flags based on the subtraction result (carry, zero, and negative flags).
+template<addr_mode AddrModeT>
+void execute_cpx(execute_context ctx)
+{
+    execute_compare<AddrModeT>(ctx, ctx.registers().x);
+}
+
+// CPY (Compare Y Register):
+// Compares the Y register with a memory value, setting flags based on the subtraction result (carry, zero, and negative flags).
+template<addr_mode AddrModeT>
+void execute_cpy(execute_context ctx)
+{
+    execute_compare<AddrModeT>(ctx, ctx.registers().y);
+}
+
 // EOR (Exclusive OR):
 // Performs a bitwise exclusive OR between the accumulator and a memory value, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
@@ -794,6 +810,14 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::cmp_absolute_y] = &execute_cmp<addr_mode::absolute_y>;
     // table[opcode::cmp_indexed_indirect] = &execute_cmp<addr_mode::indexed_indirect>;
     // table[opcode::cmp_indirect_indexed] = &execute_cmp<addr_mode::indirect_indexed>;
+
+    table[opcode::cpx_immediate] = &execute_cpx<addr_mode::immediate>;
+    table[opcode::cpx_zero_page] = &execute_cpx<addr_mode::zero_page>;
+    table[opcode::cpx_absolute] = &execute_cpx<addr_mode::absolute>;
+
+    table[opcode::cpy_immediate] = &execute_cpy<addr_mode::immediate>;
+    table[opcode::cpy_zero_page] = &execute_cpy<addr_mode::zero_page>;
+    table[opcode::cpy_absolute] = &execute_cpy<addr_mode::absolute>;
 
     table[opcode::eor_immediate] = &execute_eor<addr_mode::immediate>;
     table[opcode::eor_zero_page] = &execute_eor<addr_mode::zero_page>;
