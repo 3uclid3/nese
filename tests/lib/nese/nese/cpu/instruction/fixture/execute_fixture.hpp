@@ -8,6 +8,7 @@
 #include <nese/cpu/state.hpp>
 #include <nese/memory/mapper.hpp>
 #include <nese/utility/assert.hpp>
+#include <nese/utility/hex.hpp>
 
 namespace nese::cpu::instruction {
 
@@ -47,22 +48,22 @@ public:
     };
 
     // Standard PC address
-    static constexpr addr_t default_pc_addr = 0x0200;
+    static constexpr addr_x default_pc_addr = 0x0200;
 
     // Small offset
-    static constexpr addr_t indexed_offset = 0x0020;
+    static constexpr addr_x indexed_offset = 0x0020;
 
     // Well within the zero page
-    static constexpr byte_t zero_page_base_addr = 0x20;
+    static constexpr byte_x zero_page_base_addr = 0x20;
 
     // Well within the zero page
-    static constexpr addr_t absolute_base_addr = 0x0300;
+    static constexpr addr_x absolute_base_addr = 0x0300;
 
-    static constexpr std::array zero_page_scenarios = std::to_array<std::tuple<addr_t, byte_t>>(
+    static constexpr std::array zero_page_scenarios = std::to_array<std::tuple<addr_x, byte_x>>(
         {
             /* Simple zero-page tests */
-            {0x0200, 0x00}, /* PC in a common code area, val_addr at zero page start */
-            {0x0200, 0xFF}, /* PC in a common code area, val_addr at zero page end */
+            {0x0200, 0x00}, /* PC in a common code area, val_addr at zero-page start */
+            {0x0200, 0xFF}, /* PC in a common code area, val_addr at zero-page end */
             /* Boundary conditions */
             {0x01FF, 0x00}, /* PC just before zero page, val_addr at zero page start */
             {0x0200, 0x01}, /* PC in a common code area, val_addr just into zero page */
@@ -77,7 +78,7 @@ public:
             {0x0400, 0x20}  /* Another common code area, testing nonzero page value */
         });
 
-    static constexpr std::array zero_page_indexed_scenarios = std::to_array<std::tuple<addr_t, byte_t, byte_t>>(
+    static constexpr std::array zero_page_indexed_scenarios = std::to_array<std::tuple<addr_x, byte_x, byte_x>>(
         {
             // Offset within zero-page without wrap: Tests basic indexed addressing within the zero page without crossing the zero-page boundary.
             {0x0200, 0x00, 0x01}, // PC in common area, base at start of zero page, offset +1.
@@ -93,7 +94,7 @@ public:
             {0xFFFC, 0xFD, 0x02}  // PC at end of memory space, base in zero page, offset without wrap.
         });
 
-    static constexpr std::array absolute_scenarios = std::to_array<std::tuple<addr_t, addr_t>>(
+    static constexpr std::array absolute_scenarios = std::to_array<std::tuple<addr_x, addr_x>>(
         {
             /* Absolute addressing tests in different memory regions */
             {0x0200, 0x0100}, /* PC in common code area, absolute address in lower memory */
@@ -108,7 +109,7 @@ public:
             {0xFFFC, 0x0400}  /* PC at the very end of memory space, absolute address in common code area */
         });
 
-    static constexpr std::array absolute_indexed_scenarios = std::to_array<std::tuple<addr_t, addr_t, byte_t>>(
+    static constexpr std::array absolute_indexed_scenarios = std::to_array<std::tuple<addr_x, addr_x, byte_x>>(
         {
             /* Conceptual tests with "offsets" for absolute addressing */
             {0x0200, 0x0100, 0x01}, /* Common code area, lower memory with a byte offset */
@@ -119,9 +120,9 @@ public:
             {0xFFFC, 0x0400, 0x40}  /* PC at end, absolute address in common code area with a byte offset */
         });
 
-    static constexpr std::array stack_offset_scenarios = std::to_array<byte_t>({0xFD, 0xFE, 0xFF, 0x01, 0x00});
+    static constexpr std::array stack_offset_scenarios = std::to_array<byte_x>({0xFD, 0xFE, 0xFF, 0x01, 0x00});
 
-    static constexpr std::array positive_byte_values = std::to_array<byte_t>(
+    static constexpr std::array positive_byte_values = std::to_array<byte_x>(
         {
             0x01, // The smallest value
             0x10, // A low value
@@ -129,7 +130,7 @@ public:
             0x7F  // The largest value
         });
 
-    static constexpr std::array negative_byte_values = std::to_array<byte_t>(
+    static constexpr std::array negative_byte_values = std::to_array<byte_x>(
         {
             0x80, // The smallest negative
             0x90, // A low negative value
@@ -172,7 +173,7 @@ private:
 
     cpu::state _state{test_default_state};
     memory::mapper _memory{test_default_memory};
-    
+
     cpu::state _expected_state{test_default_state};
     memory::mapper _expected_memory{test_default_memory};
 
