@@ -15,7 +15,7 @@ namespace details {
 
 struct local_data
 {
-    static constexpr size_t size = 94;
+    static constexpr size_t size = 100;
     static constexpr size_t count = 16;
 
     static constexpr size_t last_buffer_index = count - 1;
