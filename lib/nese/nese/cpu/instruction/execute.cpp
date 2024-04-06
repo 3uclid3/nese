@@ -264,17 +264,10 @@ void write_operand(execute_context ctx, word_t operand, byte_t value)
         ctx.memory().set_byte(operand, value);
     }
 }
-
-// ADC (Add with Carry):
-// Adds a memory value and the carry flag to the accumulator, affecting flags for carry, zero, overflow, and negative.
 template<addr_mode AddrModeT>
-void execute_adc(execute_context ctx)
+void execute_adc_impl(execute_context ctx, byte_t byte)
 {
     const byte_t old_byte = ctx.registers().a;
-
-    bool page_crossing{false};
-    const addr_t addr = decode_operand<AddrModeT>(ctx, page_crossing);
-    const byte_t byte = read_operand<AddrModeT>(ctx, addr);
 
     // FF+FF+1=FF -> need to detect such case by checking for overflow in each step
     // However, for FF+80+1=80 -> the sign bit got "rescued" so we should just check final result
@@ -291,8 +284,19 @@ void execute_adc(execute_context ctx)
     ctx.registers().set_flag(status_flag::carry, bit7_overflow);
     ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().a));
     ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().a));
+}
 
-    // cycle count forces page crossing behavior
+// ADC (Add with Carry):
+// Adds a memory value and the carry flag to the accumulator, affecting flags for carry, zero, overflow, and negative.
+template<addr_mode AddrModeT>
+void execute_adc(execute_context ctx)
+{
+    bool page_crossing{false};
+    const addr_t addr = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t byte = read_operand<AddrModeT>(ctx, addr);
+
+    execute_adc_impl<AddrModeT>(ctx, byte);
+
     page_crossing = true;
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
 }
@@ -695,6 +699,20 @@ void execute_rts(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(6));
 }
 
+// SBC (Subtract with Carry):
+// Subtracts a memory value and the carry flag from the accumulator, affecting flags for carry, zero, overflow, and negative.
+template<addr_mode AddrModeT>
+void execute_sbc(execute_context ctx)
+{
+    bool page_crossing{false};
+    const addr_t addr = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t byte = read_operand<AddrModeT>(ctx, addr);
+
+    execute_adc_impl<AddrModeT>(ctx, ~byte);
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+}
+
 // SEC (Set Carry Flag):
 // Sets the carry flag to 1.
 template<addr_mode AddrMode>
@@ -874,6 +892,15 @@ consteval execute_callback_table create_execute_callback_table()
 
     table[opcode::rti_implied] = &execute_rti<addr_mode::implied>;
     table[opcode::rts_implied] = &execute_rts<addr_mode::implied>;
+
+    table[opcode::sbc_immediate] = &execute_sbc<addr_mode::immediate>;
+    table[opcode::sbc_zero_page] = &execute_sbc<addr_mode::zero_page>;
+    table[opcode::sbc_zero_page_x] = &execute_sbc<addr_mode::zero_page_x>;
+    table[opcode::sbc_absolute] = &execute_sbc<addr_mode::absolute>;
+    table[opcode::sbc_absolute_x] = &execute_sbc<addr_mode::absolute_x>;
+    table[opcode::sbc_absolute_y] = &execute_sbc<addr_mode::absolute_y>;
+    // table[opcode::sbc_indexed_indirect] = &execute_sbc<addr_mode::indexed_indirect>;
+    // table[opcode::sbc_indirect_indexed] = &execute_sbc<addr_mode::indirect_indexed>;
 
     table[opcode::sec_implied] = &execute_sec<addr_mode::implied>;
     table[opcode::sed_implied] = &execute_sed<addr_mode::implied>;

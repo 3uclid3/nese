@@ -60,6 +60,7 @@ set(SOURCES
     "${DIR}/cpu/instruction/plp_test.cpp"
     "${DIR}/cpu/instruction/rti_test.cpp"
     "${DIR}/cpu/instruction/rts_test.cpp"
+    "${DIR}/cpu/instruction/sbc_test.cpp"
     "${DIR}/cpu/instruction/sec_test.cpp"
     "${DIR}/cpu/instruction/sed_test.cpp"
     "${DIR}/cpu/instruction/sei_test.cpp"
