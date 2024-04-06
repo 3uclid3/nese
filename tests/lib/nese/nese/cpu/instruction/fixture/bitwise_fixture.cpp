@@ -37,7 +37,7 @@ void bitwise_fixture::test_immediate(opcode opcode, behavior_scenarios behavior_
 
             SECTION("result in zero")
             {
-                auto [a, value] = GENERATE_REF(from_range(behavior_scenarios.zero_scenarios));
+                auto [a, value] = GENERATE_COPY(from_range(behavior_scenarios.zero_scenarios));
 
                 state().registers.a = a;
                 memory().set_byte(default_pc_addr, value);
@@ -53,7 +53,7 @@ void bitwise_fixture::test_immediate(opcode opcode, behavior_scenarios behavior_
 
             SECTION("result in negative")
             {
-                auto [a, value, expected_a] = GENERATE_REF(from_range(behavior_scenarios.negative_scenarios));
+                auto [a, value, expected_a] = GENERATE_COPY(from_range(behavior_scenarios.negative_scenarios));
 
                 state().registers.a = a;
                 memory().set_byte(default_pc_addr, value);
@@ -69,7 +69,7 @@ void bitwise_fixture::test_immediate(opcode opcode, behavior_scenarios behavior_
 
             SECTION("result in positive")
             {
-                auto [a, value, expected_a] = GENERATE_REF(from_range(behavior_scenarios.positive_scenarios));
+                auto [a, value, expected_a] = GENERATE_COPY(from_range(behavior_scenarios.positive_scenarios));
 
                 state().registers.a = a;
                 memory().set_byte(default_pc_addr, value);
@@ -94,7 +94,7 @@ void bitwise_fixture::test_zero_page(opcode opcode, behavior_scenarios behavior_
 
         SECTION("addressing")
         {
-            const auto [pc_addr, base_addr] = GENERATE_REF(from_range(zero_page_scenarios));
+            const auto [pc_addr, base_addr] = GENERATE_COPY(from_range(zero_page_scenarios));
 
             state().registers.a = 0;
             state().registers.pc = pc_addr;
@@ -115,7 +115,7 @@ void bitwise_fixture::test_zero_page(opcode opcode, behavior_scenarios behavior_
 
             SECTION("result in zero")
             {
-                auto [a, value] = GENERATE_REF(from_range(behavior_scenarios.zero_scenarios));
+                auto [a, value] = GENERATE_COPY(from_range(behavior_scenarios.zero_scenarios));
 
                 state().registers.a = a;
                 memory().set_byte(zero_page_base_addr, value);
@@ -131,7 +131,7 @@ void bitwise_fixture::test_zero_page(opcode opcode, behavior_scenarios behavior_
 
             SECTION("result in negative")
             {
-                auto [a, value, expected_a] = GENERATE_REF(from_range(behavior_scenarios.negative_scenarios));
+                auto [a, value, expected_a] = GENERATE_COPY(from_range(behavior_scenarios.negative_scenarios));
 
                 state().registers.a = a;
                 memory().set_byte(zero_page_base_addr, value);
@@ -147,7 +147,7 @@ void bitwise_fixture::test_zero_page(opcode opcode, behavior_scenarios behavior_
 
             SECTION("result in positive")
             {
-                auto [a, value, expected_a] = GENERATE_REF(from_range(behavior_scenarios.positive_scenarios));
+                auto [a, value, expected_a] = GENERATE_COPY(from_range(behavior_scenarios.positive_scenarios));
 
                 state().registers.a = a;
                 memory().set_byte(zero_page_base_addr, value);
@@ -198,7 +198,7 @@ void bitwise_fixture::test_zero_page_indexed(opcode opcode, register_id index_re
 
             SECTION("result in zero")
             {
-                auto [a, value] = GENERATE_REF(from_range(behavior_scenarios.zero_scenarios));
+                auto [a, value] = GENERATE_COPY(from_range(behavior_scenarios.zero_scenarios));
 
                 state().registers.a = a;
                 memory().set_byte(indexed_addr, value);
@@ -214,7 +214,7 @@ void bitwise_fixture::test_zero_page_indexed(opcode opcode, register_id index_re
 
             SECTION("result in negative")
             {
-                auto [a, value, expected_a] = GENERATE_REF(from_range(behavior_scenarios.negative_scenarios));
+                auto [a, value, expected_a] = GENERATE_COPY(from_range(behavior_scenarios.negative_scenarios));
 
                 state().registers.a = a;
                 memory().set_byte(indexed_addr, value);
@@ -230,7 +230,7 @@ void bitwise_fixture::test_zero_page_indexed(opcode opcode, register_id index_re
 
             SECTION("result in positive")
             {
-                auto [a, value, expected_a] = GENERATE_REF(from_range(behavior_scenarios.positive_scenarios));
+                auto [a, value, expected_a] = GENERATE_COPY(from_range(behavior_scenarios.positive_scenarios));
 
                 state().registers.a = a;
                 memory().set_byte(indexed_addr, value);
@@ -276,7 +276,7 @@ void bitwise_fixture::test_absolute(opcode opcode, behavior_scenarios behavior_s
 
             SECTION("result in zero")
             {
-                auto [a, value] = GENERATE_REF(from_range(behavior_scenarios.zero_scenarios));
+                auto [a, value] = GENERATE_COPY(from_range(behavior_scenarios.zero_scenarios));
 
                 state().registers.a = a;
                 memory().set_byte(absolute_base_addr, value);
@@ -292,7 +292,7 @@ void bitwise_fixture::test_absolute(opcode opcode, behavior_scenarios behavior_s
 
             SECTION("result in negative")
             {
-                auto [a, value, expected_a] = GENERATE_REF(from_range(behavior_scenarios.negative_scenarios));
+                auto [a, value, expected_a] = GENERATE_COPY(from_range(behavior_scenarios.negative_scenarios));
 
                 state().registers.a = a;
                 memory().set_byte(absolute_base_addr, value);
@@ -308,7 +308,7 @@ void bitwise_fixture::test_absolute(opcode opcode, behavior_scenarios behavior_s
 
             SECTION("result in positive")
             {
-                auto [a, value, expected_a] = GENERATE_REF(from_range(behavior_scenarios.positive_scenarios));
+                auto [a, value, expected_a] = GENERATE_COPY(from_range(behavior_scenarios.positive_scenarios));
 
                 state().registers.a = a;
                 memory().set_byte(absolute_base_addr, value);
@@ -357,7 +357,7 @@ void bitwise_fixture::test_absolute_indexed(opcode opcode, register_id index_reg
 
             SECTION("result in zero")
             {
-                auto [a, value] = GENERATE_REF(from_range(behavior_scenarios.zero_scenarios));
+                auto [a, value] = GENERATE_COPY(from_range(behavior_scenarios.zero_scenarios));
 
                 state().registers.a = a;
                 memory().set_byte(indexed_addr, value);
@@ -373,7 +373,7 @@ void bitwise_fixture::test_absolute_indexed(opcode opcode, register_id index_reg
 
             SECTION("result in negative")
             {
-                auto [a, value, expected_a] = GENERATE_REF(from_range(behavior_scenarios.negative_scenarios));
+                auto [a, value, expected_a] = GENERATE_COPY(from_range(behavior_scenarios.negative_scenarios));
 
                 state().registers.a = a;
                 memory().set_byte(indexed_addr, value);
@@ -389,7 +389,7 @@ void bitwise_fixture::test_absolute_indexed(opcode opcode, register_id index_reg
 
             SECTION("result in positive")
             {
-                auto [a, value, expected_a] = GENERATE_REF(from_range(behavior_scenarios.positive_scenarios));
+                auto [a, value, expected_a] = GENERATE_COPY(from_range(behavior_scenarios.positive_scenarios));
 
                 state().registers.a = a;
                 memory().set_byte(indexed_addr, value);
