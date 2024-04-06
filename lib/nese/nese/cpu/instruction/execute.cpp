@@ -621,8 +621,8 @@ consteval execute_callback_table create_execute_callback_table()
     execute_callback_table table{};
 
     table[opcode::and_immediate] = &execute_and<addr_mode::immediate>;
-    table[opcode::and_zero_page] = &execute_and<addr_mode::absolute>;
-    table[opcode::and_zero_page_x] = &execute_and<addr_mode::absolute_x>;
+    table[opcode::and_zero_page] = &execute_and<addr_mode::zero_page>;
+    table[opcode::and_zero_page_x] = &execute_and<addr_mode::zero_page_x>;
     table[opcode::and_absolute] = &execute_and<addr_mode::absolute>;
     table[opcode::and_absolute_x] = &execute_and<addr_mode::absolute_x>;
     table[opcode::and_absolute_y] = &execute_and<addr_mode::absolute_y>;
