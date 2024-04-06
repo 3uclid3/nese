@@ -45,6 +45,7 @@ set(SOURCES
     "${DIR}/cpu/instruction/ldy_test.cpp"
     "${DIR}/cpu/instruction/nop_test.cpp"
     "${DIR}/cpu/instruction/opcode_test.cpp"
+    "${DIR}/cpu/instruction/ora_test.cpp"
     "${DIR}/cpu/instruction/pha_test.cpp"
     "${DIR}/cpu/instruction/php_test.cpp"
     "${DIR}/cpu/instruction/pla_test.cpp"

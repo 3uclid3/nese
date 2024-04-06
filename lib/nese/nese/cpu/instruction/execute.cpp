@@ -521,6 +521,23 @@ void execute_nop(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
+// ORA (Logical Inclusive OR):
+// Performs a bitwise OR between the accumulator and a memory value, affecting the zero and negative flags.
+template<addr_mode AddrModeT>
+void execute_ora(execute_context ctx)
+{
+    bool page_crossing{false};
+    const addr_t addr = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t byte = read_operand<AddrModeT>(ctx, addr);
+
+    ctx.registers().a |= byte;
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().a));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().a));
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+}
+
 // PHA (Push Accumulator):
 // Pushes a copy of the accumulator onto the stack.
 template<addr_mode AddrModeT>
@@ -725,6 +742,15 @@ consteval execute_callback_table create_execute_callback_table()
 
     table[opcode::nop_implied] = &execute_nop<addr_mode::implied>;
 
+    table[opcode::ora_immediate] = &execute_ora<addr_mode::immediate>;
+    table[opcode::ora_zero_page] = &execute_ora<addr_mode::zero_page>;
+    table[opcode::ora_zero_page_x] = &execute_ora<addr_mode::zero_page_x>;
+    table[opcode::ora_absolute] = &execute_ora<addr_mode::absolute>;
+    table[opcode::ora_absolute_x] = &execute_ora<addr_mode::absolute_x>;
+    table[opcode::ora_absolute_y] = &execute_ora<addr_mode::absolute_y>;
+    // table[opcode::ora_indexed_indirect] = &execute_ora<addr_mode::indexed_indirect>;
+    // table[opcode::ora_indirect_indexed] = &execute_ora<addr_mode::indirect_indexed>;
+
     table[opcode::pha_implied] = &execute_pha<addr_mode::implied>;
     table[opcode::php_implied] = &execute_php<addr_mode::implied>;
 
@@ -753,6 +779,7 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::sty_zero_page] = &execute_sty<addr_mode::zero_page>;
     table[opcode::sty_zero_page_x] = &execute_sty<addr_mode::zero_page_x>;
     table[opcode::sty_absolute] = &execute_sty<addr_mode::absolute>;
+
 
     return table;
 }
