@@ -8,7 +8,7 @@
 
 namespace nese::cpu::instruction {
 
-void increment_fixture::test_inc(opcode opcode, register_id increment_register)
+void increment_fixture::test_implied(opcode opcode, register_id increment_register)
 {
     constexpr cycle_t cycle_cost = cpu_cycle_t(2);
 

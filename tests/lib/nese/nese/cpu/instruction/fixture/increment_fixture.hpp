@@ -8,7 +8,7 @@ enum class opcode;
 
 struct increment_fixture : execute_fixture
 {
-    void test_inc(opcode opcode, register_id increment_register);
+    void test_implied(opcode opcode, register_id increment_register);
 };
 
 } // namespace nese::cpu::instruction
