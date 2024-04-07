@@ -318,6 +318,25 @@ void execute_and(execute_context ctx)
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
 }
 
+// ASL (Arithmetic Shift Left):
+// Shifts all bits of the accumulator or a memory location one bit to the left, setting the carry flag with the last bit's value and affecting the zero and negative flags.
+template<addr_mode AddrModeT>
+void execute_asl(execute_context ctx)
+{
+    bool page_crossing{false};
+    const word_t operand = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t value = read_operand<AddrModeT>(ctx, operand);
+    const byte_t new_value = value << 1;
+
+    write_operand<AddrModeT>(ctx, value, new_value);
+
+    ctx.registers().set_flag(status_flag::carry, value & 0x80);
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().a));
+    ctx.registers().set_flag(status_flag::negative, is_negative(new_value));
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+}
+
 void execute_branch(execute_context ctx, bool condition)
 {
     const addr_t initial_pc = ctx.registers().pc;
@@ -628,6 +647,25 @@ void execute_ldy(execute_context ctx)
     execute_load<AddrModeT>(ctx, ctx.registers().y);
 }
 
+// LSR (Logical Shift Right):
+// Shifts all bits of the accumulator or a memory location one bit to the right, setting the carry flag with the first bit's value and affecting the zero and negative flags.
+template<addr_mode AddrModeT>
+void execute_lsr(execute_context ctx)
+{
+    bool page_crossing{false};
+    const word_t operand = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t value = read_operand<AddrModeT>(ctx, operand);
+    const byte_t new_value = value >> 1;
+
+    write_operand<AddrModeT>(ctx, value, new_value);
+
+    ctx.registers().set_flag(status_flag::carry, value & 0x1);
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().a));
+    ctx.registers().set_flag(status_flag::negative, is_negative(new_value));
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+}
+
 // NOP (No Operation):
 // Performs no operation and is used for timing adjustments and code alignment.
 template<addr_mode AddrModeT>
@@ -813,7 +851,7 @@ void execute_tax(execute_context ctx)
     ctx.registers().x = ctx.registers().a;
 
     ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().x));
-    ctx.registers().set_flag(status_flag::negative  , is_negative(ctx.registers().x));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().x));
 
     ctx.step_cycle(cpu_cycle_t(2));
 }
@@ -903,6 +941,12 @@ consteval execute_callback_table create_execute_callback_table()
     // table[opcode::and_indexed_indirect] = &execute_and<addr_mode::indexed_indirect>;
     // table[opcode::and_indirect_indexed] = &execute_and<addr_mode::indirect_indexed>;
 
+    table[opcode::asl_accumulator] = &execute_asl<addr_mode::accumulator>;
+    table[opcode::asl_zero_page] = &execute_asl<addr_mode::zero_page>;
+    table[opcode::asl_zero_page_x] = &execute_asl<addr_mode::zero_page_x>;
+    table[opcode::asl_absolute] = &execute_asl<addr_mode::absolute>;
+    table[opcode::asl_absolute_x] = &execute_asl<addr_mode::absolute_x>;
+
     table[opcode::bvs_relative] = &execute_bvs<addr_mode::relative>;
     table[opcode::bvc_relative] = &execute_bvc<addr_mode::relative>;
     table[opcode::bpl_relative] = &execute_bpl<addr_mode::relative>;
@@ -975,6 +1019,12 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::ldy_zero_page_x] = &execute_ldy<addr_mode::zero_page_x>;
     table[opcode::ldy_absolute] = &execute_ldy<addr_mode::absolute>;
     table[opcode::ldy_absolute_x] = &execute_ldy<addr_mode::absolute_x>;
+
+    table[opcode::lsr_accumulator] = &execute_lsr<addr_mode::accumulator>;
+    table[opcode::lsr_zero_page] = &execute_lsr<addr_mode::zero_page>;
+    table[opcode::lsr_zero_page_x] = &execute_lsr<addr_mode::zero_page_x>;
+    table[opcode::lsr_absolute] = &execute_lsr<addr_mode::absolute>;
+    table[opcode::lsr_absolute_x] = &execute_lsr<addr_mode::absolute_x>;
 
     table[opcode::nop_implied] = &execute_nop<addr_mode::implied>;
 
