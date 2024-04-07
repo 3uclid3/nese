@@ -498,6 +498,30 @@ void execute_cpy(execute_context ctx)
     execute_compare<AddrModeT>(ctx, ctx.registers().y);
 }
 
+// DEX (Decrement X Register):
+// Decreases the value in the X register by one, affecting the zero and negative flags.
+template<addr_mode AddrModeT>
+void execute_dex(execute_context ctx)
+{
+    --ctx.registers().x;
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().x));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().x));
+    ctx.step_cycle(cpu_cycle_t(2));
+}
+
+// DEY (Decrement Y Register):
+// Decreases the value in the Y register by one, affecting the zero and negative flags.
+template<addr_mode AddrModeT>
+void execute_dey(execute_context ctx)
+{
+    --ctx.registers().y;
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().y));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().y));
+    ctx.step_cycle(cpu_cycle_t(2));
+}
+
 // EOR (Exclusive OR):
 // Performs a bitwise exclusive OR between the accumulator and a memory value, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
@@ -836,6 +860,9 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::cpy_immediate] = &execute_cpy<addr_mode::immediate>;
     table[opcode::cpy_zero_page] = &execute_cpy<addr_mode::zero_page>;
     table[opcode::cpy_absolute] = &execute_cpy<addr_mode::absolute>;
+
+    table[opcode::dex_implied] = &execute_dex<addr_mode::implied>;
+    table[opcode::dey_implied] = &execute_dey<addr_mode::implied>;
 
     table[opcode::eor_immediate] = &execute_eor<addr_mode::immediate>;
     table[opcode::eor_zero_page] = &execute_eor<addr_mode::zero_page>;
