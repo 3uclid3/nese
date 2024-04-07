@@ -44,7 +44,9 @@ public:
     {
         a,
         x,
-        y
+        y,
+
+        s
     };
 
     // Standard PC address
@@ -153,6 +155,10 @@ public:
         case register_id::y:
             registers.y = value;
             break;
+
+        case register_id::s:
+            registers.s = value;
+            break;
         }
     }
 
@@ -192,6 +198,9 @@ constexpr std::string_view format_as(execute_fixture::register_id type)
 
     case execute_fixture::register_id::y:
         return "y";
+
+    case execute_fixture::register_id::s:
+        return "s";
     }
 
     NESE_ASSUME(false);

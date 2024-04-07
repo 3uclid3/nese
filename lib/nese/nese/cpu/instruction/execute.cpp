@@ -677,7 +677,7 @@ void execute_php(execute_context ctx)
 
 // PLA (Pull Accumulator):
 // Pulls a byte from the stack into the accumulator, affecting the zero and negative flags.
-template<addr_mode AddrMode>
+template<addr_mode AddrModeT>
 void execute_pla(execute_context ctx)
 {
     ctx.registers().a = pop_byte(ctx);
@@ -739,7 +739,7 @@ void execute_sbc(execute_context ctx)
 
 // SEC (Set Carry Flag):
 // Sets the carry flag to 1.
-template<addr_mode AddrMode>
+template<addr_mode AddrModeT>
 void execute_sec(execute_context ctx)
 {
     ctx.registers().set_flag(status_flag::carry);
@@ -749,7 +749,7 @@ void execute_sec(execute_context ctx)
 
 // SED (Set Decimal Mode):
 // Sets the decimal mode flag, affecting how ADC and SBC instructions work.
-template<addr_mode AddrMode>
+template<addr_mode AddrModeT>
 void execute_sed(execute_context ctx)
 {
     ctx.registers().set_flag(status_flag::decimal);
@@ -803,6 +803,82 @@ void execute_sty(execute_context ctx)
     execute_store<AddrModeT>(ctx, ctx.registers().y);
 
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>());
+}
+
+// TAX (Transfer Accumulator to X):
+// Transfers the value in the accumulator to the X register, affecting the zero and negative flags.
+template<addr_mode AddrModeT>
+void execute_tax(execute_context ctx)
+{
+    ctx.registers().x = ctx.registers().a;
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().x));
+    ctx.registers().set_flag(status_flag::negative  , is_negative(ctx.registers().x));
+
+    ctx.step_cycle(cpu_cycle_t(2));
+}
+
+// TAY (Transfer Accumulator to Y):
+// Transfers the value in the accumulator to the Y register, affecting the zero and negative flags.
+template<addr_mode AddrModeT>
+void execute_tay(execute_context ctx)
+{
+    ctx.registers().y = ctx.registers().a;
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().y));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().y));
+
+    ctx.step_cycle(cpu_cycle_t(2));
+}
+
+// TSX (Transfer Stack Pointer to X):
+// Transfers the current stack pointer value to the X register, affecting the zero and negative flags.
+template<addr_mode AddrModeT>
+void execute_tsx(execute_context ctx)
+{
+    ctx.registers().x = ctx.registers().s;
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().x));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().x));
+
+    ctx.step_cycle(cpu_cycle_t(2));
+}
+
+// TXA (Transfer X to Accumulator):
+// Transfers the value in the X register to the accumulator, affecting the zero and negative flags.
+template<addr_mode AddrModeT>
+void execute_txa(execute_context ctx)
+{
+    ctx.registers().a = ctx.registers().x;
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().a));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().a));
+
+    ctx.step_cycle(cpu_cycle_t(2));
+}
+
+// TXS (Transfer X to Stack Pointer):
+// Transfers the value in the X register to the stack pointer. Note that this instruction does not affect any flags.
+template<addr_mode AddrModeT>
+void execute_txs(execute_context ctx)
+{
+    // cppcheck-suppress unreadVariable
+    ctx.registers().s = ctx.registers().x;
+
+    ctx.step_cycle(cpu_cycle_t(2));
+}
+
+// TYA (Transfer Y to Accumulator):
+// Transfers the value in the Y register to the accumulator, affecting the zero and negative flags.
+template<addr_mode AddrModeT>
+void execute_tya(execute_context ctx)
+{
+    ctx.registers().a = ctx.registers().y;
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().a));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().a));
+
+    ctx.step_cycle(cpu_cycle_t(2));
 }
 
 consteval execute_callback_table create_execute_callback_table()
@@ -948,6 +1024,13 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::sty_zero_page] = &execute_sty<addr_mode::zero_page>;
     table[opcode::sty_zero_page_x] = &execute_sty<addr_mode::zero_page_x>;
     table[opcode::sty_absolute] = &execute_sty<addr_mode::absolute>;
+
+    table[opcode::tax_implied] = &execute_tax<addr_mode::implied>;
+    table[opcode::tay_implied] = &execute_tay<addr_mode::implied>;
+    table[opcode::tsx_implied] = &execute_tsx<addr_mode::implied>;
+    table[opcode::txa_implied] = &execute_txa<addr_mode::implied>;
+    table[opcode::txs_implied] = &execute_txs<addr_mode::implied>;
+    table[opcode::tya_implied] = &execute_tya<addr_mode::implied>;
 
     return table;
 }
