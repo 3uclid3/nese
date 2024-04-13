@@ -661,7 +661,27 @@ void execute_iny(execute_context ctx)
 template<addr_mode AddrModeT>
 void execute_jmp(execute_context ctx)
 {
-    const addr_t new_addr = decode_operand_addr<AddrModeT>(ctx);
+    addr_t new_addr;
+
+    if constexpr (AddrModeT == addr_mode::indirect)
+    {
+        const addr_t addr = decode_word(ctx);
+
+        if ((addr & 0xff) == 0xff)
+        {
+            // Account for JMP hardware bug
+            // http://wiki.nesdev.com/w/index.php/Errata
+            new_addr = ctx.memory().get_byte(addr) + (static_cast<addr_t>(ctx.memory().get_byte(addr & 0xff00)) << 8);
+        }
+        else
+        {
+            new_addr = ctx.memory().get_word(addr);
+        }
+    }
+    else
+    {
+        new_addr = decode_operand_addr<AddrModeT>(ctx);
+    }
 
     if (new_addr == ctx.registers().pc - 1)
     {
@@ -1122,6 +1142,7 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::iny_implied] = &execute_iny<addr_mode::implied>;
 
     table[opcode::jmp_absolute] = &execute_jmp<addr_mode::absolute>;
+    table[opcode::jmp_indirect] = &execute_jmp<addr_mode::indirect>;
     table[opcode::jsr_absolute] = &execute_jsr<addr_mode::absolute>;
 
     table[opcode::lda_immediate] = &execute_lda<addr_mode::immediate>;
