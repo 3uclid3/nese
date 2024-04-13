@@ -105,8 +105,45 @@ private:
     std::array<addr_mode, 256> _addr_modes{};
 };
 
+class is_official_table
+{
+public:
+    static consteval is_official_table create()
+    {
+        is_official_table table;
+
+        for (size_t i = 0; i < table._is_officials.size(); ++i)
+        {
+            const string_view name = magic_enum::enum_name(static_cast<opcode>(i));
+
+            if (name.empty())
+            {
+                continue;
+            }
+
+            table._is_officials[i] = !name.contains("unofficial");
+        }
+
+        return table;
+    }
+
+    constexpr bool operator[](size_t opcode) const
+    {
+        return _is_officials[opcode];
+    }
+
+    constexpr bool operator[](opcode opcode) const
+    {
+        return _is_officials[static_cast<size_t>(opcode)];
+    }
+
+private:
+    std::array<bool, 256> _is_officials{};
+};
+
 static inline constexpr mnemonic_table mnemonics{mnemonic_table::create()};
 static inline constexpr addr_mode_table addr_modes{addr_mode_table::create()};
+static inline constexpr is_official_table is_officials{is_official_table::create()};
 
 constexpr auto format_as(opcode code)
 {
