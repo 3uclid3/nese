@@ -1251,27 +1251,22 @@ consteval execute_callback_table create_execute_callback_table()
 
 #if NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
     table[opcode::nop_immediate_unofficial_80] = &execute_nop<addr_mode::immediate>;
-
     table[opcode::nop_implied_unofficial_1A] = &execute_nop<addr_mode::implied>;
     table[opcode::nop_implied_unofficial_3A] = &execute_nop<addr_mode::implied>;
     table[opcode::nop_implied_unofficial_5A] = &execute_nop<addr_mode::implied>;
     table[opcode::nop_implied_unofficial_7A] = &execute_nop<addr_mode::implied>;
     table[opcode::nop_implied_unofficial_DA] = &execute_nop<addr_mode::implied>;
     table[opcode::nop_implied_unofficial_FA] = &execute_nop<addr_mode::implied>;
-
     table[opcode::nop_zero_page_unofficial_04] = &execute_nop<addr_mode::zero_page>;
     table[opcode::nop_zero_page_unofficial_44] = &execute_nop<addr_mode::zero_page>;
     table[opcode::nop_zero_page_unofficial_64] = &execute_nop<addr_mode::zero_page>;
-
-    table[opcode::nop_absolute_unofficial_0C] = &execute_nop<addr_mode::absolute>;
-
     table[opcode::nop_zero_page_x_unofficial_14] = &execute_nop<addr_mode::zero_page_x>;
     table[opcode::nop_zero_page_x_unofficial_34] = &execute_nop<addr_mode::zero_page_x>;
     table[opcode::nop_zero_page_x_unofficial_54] = &execute_nop<addr_mode::zero_page_x>;
     table[opcode::nop_zero_page_x_unofficial_74] = &execute_nop<addr_mode::zero_page_x>;
     table[opcode::nop_zero_page_x_unofficial_D4] = &execute_nop<addr_mode::zero_page_x>;
     table[opcode::nop_zero_page_x_unofficial_F4] = &execute_nop<addr_mode::zero_page_x>;
-
+    table[opcode::nop_absolute_unofficial_0C] = &execute_nop<addr_mode::absolute>;
     table[opcode::nop_absolute_x_unofficial_1C] = &execute_nop<addr_mode::absolute_x>;
     table[opcode::nop_absolute_x_unofficial_3C] = &execute_nop<addr_mode::absolute_x>;
     table[opcode::nop_absolute_x_unofficial_5C] = &execute_nop<addr_mode::absolute_x>;
