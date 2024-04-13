@@ -1063,6 +1063,26 @@ void execute_tya(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(2));
 }
 
+#if NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
+// LAX (Load Accumulator and X):
+// Loads both the accumulator (A) and the X register with the same memory content, updating the zero and negative flags based on the value loaded.
+template<addr_mode AddrModeT>
+void execute_lax(execute_context ctx)
+{
+    bool page_crossing{false};
+    const addr_t addr = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t value = read_operand<AddrModeT>(ctx, addr);
+
+    ctx.registers().a = value;
+    ctx.registers().x = value;
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(value));
+    ctx.registers().set_flag(status_flag::negative, is_negative(value));
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+}
+#endif // NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
+
 consteval execute_callback_table create_execute_callback_table()
 {
     execute_callback_table table{};
@@ -1273,6 +1293,13 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::nop_absolute_x_unofficial_7C] = &execute_nop<addr_mode::absolute_x>;
     table[opcode::nop_absolute_x_unofficial_DC] = &execute_nop<addr_mode::absolute_x>;
     table[opcode::nop_absolute_x_unofficial_FC] = &execute_nop<addr_mode::absolute_x>;
+
+    table[opcode::lax_zero_page_unofficial] = &execute_lax<addr_mode::zero_page>;
+    table[opcode::lax_zero_page_y_unofficial] = &execute_lax<addr_mode::zero_page_y>;
+    table[opcode::lax_absolute_unofficial] = &execute_lax<addr_mode::absolute>;
+    table[opcode::lax_absolute_y_unofficial] = &execute_lax<addr_mode::absolute_y>;
+    table[opcode::lax_indexed_indirect_unofficial] = &execute_lax<addr_mode::indexed_indirect>;
+    table[opcode::lax_indirect_indexed_unofficial] = &execute_lax<addr_mode::indirect_indexed>;
 #endif // NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
 
     return table;

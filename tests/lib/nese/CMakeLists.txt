@@ -50,6 +50,7 @@ set(SOURCES
     "${DIR}/cpu/instruction/iny_test.cpp"
     "${DIR}/cpu/instruction/jmp_test.cpp"
     "${DIR}/cpu/instruction/jsr_test.cpp"
+    "${DIR}/cpu/instruction/lax_test.cpp"
     "${DIR}/cpu/instruction/lda_test.cpp"
     "${DIR}/cpu/instruction/ldx_test.cpp"
     "${DIR}/cpu/instruction/ldy_test.cpp"
