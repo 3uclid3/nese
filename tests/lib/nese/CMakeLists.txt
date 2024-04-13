@@ -41,6 +41,7 @@ set(SOURCES
     "${DIR}/cpu/instruction/cmp_test.cpp"
     "${DIR}/cpu/instruction/cpx_test.cpp"
     "${DIR}/cpu/instruction/cpy_test.cpp"
+    "${DIR}/cpu/instruction/dcp_test.cpp"
     "${DIR}/cpu/instruction/dec_test.cpp"
     "${DIR}/cpu/instruction/dex_test.cpp"
     "${DIR}/cpu/instruction/dey_test.cpp"
