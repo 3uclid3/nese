@@ -94,7 +94,7 @@ struct isb_fixture : execute_fixture
     // clang-format on
 };
 
-TEST_CASE_METHOD(isb_fixture, "inx", "[cpu][instruction]")
+TEST_CASE_METHOD(isb_fixture, "isb", "[cpu][instruction]")
 {
     test_zero_page(opcode::isb_zero_page_unofficial, addr_mode_scenario, behavior_scenarios);
     test_zero_page_indexed(opcode::isb_zero_page_x_unofficial, register_id::x, addr_mode_scenario, behavior_scenarios);
