@@ -72,19 +72,19 @@ public:
             const string_view addr_mode = name.substr(index + 1); // skip the '_'
 
             // clang-format off
-            if (addr_mode == "implied") table._addr_modes[i] = addr_mode::implied;
-            else if (addr_mode == "accumulator") table._addr_modes[i] = addr_mode::accumulator;
-            else if (addr_mode == "immediate") table._addr_modes[i] = addr_mode::immediate;
-            else if (addr_mode == "zero_page_x") table._addr_modes[i] = addr_mode::zero_page_x;
-            else if (addr_mode == "zero_page_y") table._addr_modes[i] = addr_mode::zero_page_y;
-            else if (addr_mode == "zero_page") table._addr_modes[i] = addr_mode::zero_page;
-            else if (addr_mode == "absolute_x") table._addr_modes[i] = addr_mode::absolute_x;
-            else if (addr_mode == "absolute_y") table._addr_modes[i] = addr_mode::absolute_y;
-            else if (addr_mode == "absolute") table._addr_modes[i] = addr_mode::absolute;
-            else if (addr_mode == "relative") table._addr_modes[i] = addr_mode::relative;
-            else if (addr_mode == "indirect") table._addr_modes[i] = addr_mode::indirect;
-            else if (addr_mode == "indexed_indirect") table._addr_modes[i] = addr_mode::indexed_indirect;
-            else if (addr_mode == "indirect_indexed") table._addr_modes[i] = addr_mode::indirect_indexed;
+            if (addr_mode.starts_with("implied")) table._addr_modes[i] = addr_mode::implied;
+            else if (addr_mode.starts_with( "accumulator")) table._addr_modes[i] = addr_mode::accumulator;
+            else if (addr_mode.starts_with( "immediate")) table._addr_modes[i] = addr_mode::immediate;
+            else if (addr_mode.starts_with( "zero_page_x")) table._addr_modes[i] = addr_mode::zero_page_x;
+            else if (addr_mode.starts_with( "zero_page_y")) table._addr_modes[i] = addr_mode::zero_page_y;
+            else if (addr_mode.starts_with("zero_page")) table._addr_modes[i] = addr_mode::zero_page;
+            else if (addr_mode.starts_with("absolute_x")) table._addr_modes[i] = addr_mode::absolute_x;
+            else if (addr_mode.starts_with("absolute_y")) table._addr_modes[i] = addr_mode::absolute_y;
+            else if (addr_mode.starts_with("absolute")) table._addr_modes[i] = addr_mode::absolute;
+            else if (addr_mode.starts_with("relative")) table._addr_modes[i] = addr_mode::relative;
+            else if (addr_mode.starts_with("indexed_indirect")) table._addr_modes[i] = addr_mode::indexed_indirect;
+            else if (addr_mode.starts_with("indirect_indexed")) table._addr_modes[i] = addr_mode::indirect_indexed;
+            else if (addr_mode.starts_with("indirect")) table._addr_modes[i] = addr_mode::indirect;
             // clang-format on
         }
 
