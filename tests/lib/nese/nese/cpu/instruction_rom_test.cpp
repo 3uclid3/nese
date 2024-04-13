@@ -43,7 +43,11 @@ struct fixture
             previous_state = state;
             previous_memory = memory;
 
-            nintendulator_logger->trace(nintendulator::format(state, memory));
+            nintendulator::format_flags format_flags = nintendulator::format_flag::all;
+            format_flags = format_flags & ~nintendulator::format_flag::ppu;
+            format_flags = format_flags & ~nintendulator::format_flag::cycle;
+
+            nintendulator_logger->trace(nintendulator::format(state, memory, format_flags));
 
             const instruction::execute_context context(state, memory);
             last_instruction_succeeded = instruction::execute(context);

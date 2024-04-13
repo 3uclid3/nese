@@ -41,10 +41,9 @@ struct output
     {
     }
 
-    output& operator=(char v)
+    [[nodiscard]] char& previous()
     {
-        buffer[size++] = v;
-        return *this;
+        return buffer[size - 1];
     }
 
     [[nodiscard]] char& operator*()
@@ -286,7 +285,7 @@ void append_cycle(auto& out, const cpu::state& cpu_state, const memory::mapper& 
 }
 } // namespace details
 
-const char* format(const cpu::state& cpu_state, const memory::mapper& memory_mapper)
+const char* format(const cpu::state& cpu_state, const memory::mapper& memory_mapper, format_flags flags)
 {
     // Follow Nintendulator log format
     // 0         1         2         3         4         5         6         7         8
@@ -295,27 +294,53 @@ const char* format(const cpu::state& cpu_state, const memory::mapper& memory_map
 
     details::output out(details::data.next_buffer());
 
-    append_program_counter(out, cpu_state, memory_mapper);
-    append_space(out);
+    if ((flags & format_flag::pc) != format_flag::none)
+    {
+        append_program_counter(out, cpu_state, memory_mapper);
+        append_space(out);
+    }
 
-    append_instruction_bytes(out, cpu_state, memory_mapper);
-    append_space(out);
+    if ((flags & format_flag::instruction_bytes) != format_flag::none)
+    {
+        append_instruction_bytes(out, cpu_state, memory_mapper);
+        append_space(out);
+    }
 
-    append_opcode(out, cpu_state, memory_mapper);
-    append_space(out);
+    if ((flags & format_flag::opcode) != format_flag::none)
+    {
+        append_opcode(out, cpu_state, memory_mapper);
+        append_space(out);
+    }
 
-    append_operand(out, cpu_state, memory_mapper);
-    append_space(out);
+    if ((flags & format_flag::operand) != format_flag::none)
+    {
+        append_operand(out, cpu_state, memory_mapper);
+        append_space(out);
+    }
 
-    append_registers(out, cpu_state, memory_mapper);
-    append_space(out);
+    if ((flags & format_flag::registers) != format_flag::none)
+    {
+        append_registers(out, cpu_state, memory_mapper);
+        append_space(out);
+    }
 
-    append_ppu(out, cpu_state, memory_mapper);
-    append_space(out);
+    if ((flags & format_flag::ppu) != format_flag::none)
+    {
+        append_ppu(out, cpu_state, memory_mapper);
+        append_space(out);
+    }
 
-    append_cycle(out, cpu_state, memory_mapper);
+    if ((flags & format_flag::cycle) != format_flag::none)
+    {
+        append_cycle(out, cpu_state, memory_mapper);
+    }
 
-    out = '\0';
+    if (out.previous() != ' ')
+    {
+        ++out;
+    }
+
+    out.previous() = '\0';
 
     return out.buffer.data();
 }
