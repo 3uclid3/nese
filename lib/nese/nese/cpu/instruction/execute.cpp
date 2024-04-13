@@ -269,6 +269,7 @@ void write_operand(execute_context ctx, word_t operand, byte_t value)
         ctx.memory().set_byte(operand, value);
     }
 }
+
 template<addr_mode AddrModeT>
 void execute_adc_impl(execute_context ctx, byte_t byte)
 {
@@ -519,6 +520,40 @@ void execute_cpy(execute_context ctx)
     execute_compare<AddrModeT>(ctx, ctx.registers().y);
 }
 
+// DEC (Decrement Memory):
+// Decrements the value at a specified memory location by one, setting the zero and negative flags based on the result.
+template<addr_mode AddrModeT>
+void execute_dec(execute_context ctx)
+{
+    const addr_t addr = decode_operand_addr<AddrModeT>(ctx);
+    const byte_t value = ctx.memory().get_byte(addr);
+    const byte_t new_value = value - 1;
+
+    ctx.memory().set_byte(addr, new_value);
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(new_value));
+    ctx.registers().set_flag(status_flag::negative, is_negative(new_value));
+
+    switch (AddrModeT)
+    {
+    case addr_mode::zero_page:
+        ctx.step_cycle(cpu_cycle_t(5));
+        break;
+
+    case addr_mode::zero_page_x:
+    case addr_mode::absolute:
+        ctx.step_cycle(cpu_cycle_t(6));
+        break;
+
+    case addr_mode::absolute_x:
+        ctx.step_cycle(cpu_cycle_t(7));
+        break;
+
+    default:
+        NESE_ASSERT(false);
+    }
+}
+
 // DEX (Decrement X Register):
 // Decreases the value in the X register by one, affecting the zero and negative flags.
 template<addr_mode AddrModeT>
@@ -558,6 +593,40 @@ void execute_eor(execute_context ctx)
     ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().a));
 
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+}
+
+// INC (Increment Memory):
+// Increments the value at a specified memory location by one, setting the zero and negative flags based on the result.
+template<addr_mode AddrModeT>
+void execute_inc(execute_context ctx)
+{
+    const addr_t addr = decode_operand_addr<AddrModeT>(ctx);
+    const byte_t value = ctx.memory().get_byte(addr);
+    const byte_t new_value = value + 1;
+
+    ctx.memory().set_byte(addr, new_value);
+
+    ctx.registers().set_flag(status_flag::zero, is_zero(new_value));
+    ctx.registers().set_flag(status_flag::negative, is_negative(new_value));
+
+    switch (AddrModeT)
+    {
+    case addr_mode::zero_page:
+        ctx.step_cycle(cpu_cycle_t(5));
+        break;
+
+    case addr_mode::zero_page_x:
+    case addr_mode::absolute:
+        ctx.step_cycle(cpu_cycle_t(6));
+        break;
+
+    case addr_mode::absolute_x:
+        ctx.step_cycle(cpu_cycle_t(7));
+        break;
+
+    default:
+        NESE_ASSERT(false);
+    }
 }
 
 // INX (Increment Register):
@@ -763,7 +832,6 @@ void execute_rts(execute_context ctx)
 
     ctx.step_cycle(cpu_cycle_t(6));
 }
-
 
 // ROL (Rotate Left):
 // Rotates all bits of the accumulator or a memory location one bit to the left, including the carry flag, affecting the carry, zero, and negative flags.template<addr_mode AddrModeT>
@@ -1025,6 +1093,11 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::cpy_zero_page] = &execute_cpy<addr_mode::zero_page>;
     table[opcode::cpy_absolute] = &execute_cpy<addr_mode::absolute>;
 
+    table[opcode::dec_zero_page] = &execute_dec<addr_mode::zero_page>;
+    table[opcode::dec_zero_page_x] = &execute_dec<addr_mode::zero_page_x>;
+    table[opcode::dec_absolute] = &execute_dec<addr_mode::absolute>;
+    table[opcode::dec_absolute_x] = &execute_dec<addr_mode::absolute_x>;
+
     table[opcode::dex_implied] = &execute_dex<addr_mode::implied>;
     table[opcode::dey_implied] = &execute_dey<addr_mode::implied>;
 
@@ -1036,6 +1109,11 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::eor_absolute_y] = &execute_eor<addr_mode::absolute_y>;
     table[opcode::eor_indexed_indirect] = &execute_eor<addr_mode::indexed_indirect>;
     // table[opcode::eor_indirect_indexed] = &execute_eor<addr_mode::indirect_indexed>;
+
+    table[opcode::inc_zero_page] = &execute_inc<addr_mode::zero_page>;
+    table[opcode::inc_zero_page_x] = &execute_inc<addr_mode::zero_page_x>;
+    table[opcode::inc_absolute] = &execute_inc<addr_mode::absolute>;
+    table[opcode::inc_absolute_x] = &execute_inc<addr_mode::absolute_x>;
 
     table[opcode::inx_implied] = &execute_inx<addr_mode::implied>;
     table[opcode::iny_implied] = &execute_iny<addr_mode::implied>;

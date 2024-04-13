@@ -444,16 +444,16 @@ struct execute_fixture
     // Well within the absolute
     static constexpr addr_x absolute_base_addr = 0x0300;
 
-    void test_acculumator(opcode opcode, std::span<const scenario> behavior_scenarios);
-    void test_implied(opcode opcode, std::span<const scenario> behavior_scenarios);
-    void test_immediate(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
-    void test_zero_page(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
-    void test_zero_page_indexed(opcode opcode, register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
-    void test_absolute(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
-    void test_absolute_indexed(opcode opcode, register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
-    void test_indexed_indirect(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
+    void test_acculumator(opcode opcode, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(2));
+    void test_implied(opcode opcode, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(0));
+    void test_immediate(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(2));
+    void test_zero_page(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(3));
+    void test_zero_page_indexed(opcode opcode, register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(4));
+    void test_absolute(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(4));
+    void test_absolute_indexed(opcode opcode, register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(4));
+    void test_indexed_indirect(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(6));
 
-    void test_unspecified(opcode opcode, std::span<const scenario> behavior_scenarios);
+    void test_unspecified(opcode opcode, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(0));
 
     void apply_changes(auto& changes, change_context& context);
 

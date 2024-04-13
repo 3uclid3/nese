@@ -112,7 +112,7 @@ string execute_fixture::scenario::to_string() const
 
     return string;
 }
-void execute_fixture::test_acculumator(opcode opcode, std::span<const scenario> behavior_scenarios)
+void execute_fixture::test_acculumator(opcode opcode, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost)
 {
     SECTION("accumulator")
     {
@@ -128,7 +128,7 @@ void execute_fixture::test_acculumator(opcode opcode, std::span<const scenario> 
         expected_state = state;
         expected_memory = memory;
 
-        expected_state.cycle = cpu_cycle_t(2) + scenario.base_cycle_cost;
+        expected_state.cycle = base_cycle_cost + scenario.base_cycle_cost;
 
         change_context expected_context{default_pc_addr, addr_mode::accumulator, expected_state, expected_memory};
         apply_changes(scenario.expected_changes, expected_context);
@@ -137,7 +137,7 @@ void execute_fixture::test_acculumator(opcode opcode, std::span<const scenario> 
     }
 }
 
-void execute_fixture::test_implied(opcode opcode, std::span<const scenario> behavior_scenarios)
+void execute_fixture::test_implied(opcode opcode, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost)
 {
     SECTION("implied")
     {
@@ -153,7 +153,7 @@ void execute_fixture::test_implied(opcode opcode, std::span<const scenario> beha
         expected_state = state;
         expected_memory = memory;
 
-        expected_state.cycle = scenario.base_cycle_cost;
+        expected_state.cycle = base_cycle_cost + scenario.base_cycle_cost;
 
         change_context expected_context{default_pc_addr, addr_mode::implied, expected_state, expected_memory};
         apply_changes(scenario.expected_changes, expected_context);
@@ -162,9 +162,9 @@ void execute_fixture::test_implied(opcode opcode, std::span<const scenario> beha
     }
 }
 
-void execute_fixture::test_immediate(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios)
+void execute_fixture::test_immediate(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost)
 {
-    auto test = [this, opcode](addr_x pc_addr, const scenario& scenario) {
+    auto test = [this, opcode, base_cycle_cost](addr_x pc_addr, const scenario& scenario) {
         CAPTURE(pc_addr);
         CAPTURE(scenario);
 
@@ -176,7 +176,7 @@ void execute_fixture::test_immediate(opcode opcode, const scenario& addressing_s
         expected_state = state;
         expected_memory = memory;
 
-        expected_state.cycle = cpu_cycle_t(2) + scenario.base_cycle_cost;
+        expected_state.cycle = base_cycle_cost + scenario.base_cycle_cost;
         expected_state.registers.pc = pc_addr + 1;
 
         change_context expected_context{pc_addr, addr_mode::immediate, expected_state, expected_memory};
@@ -205,9 +205,9 @@ void execute_fixture::test_immediate(opcode opcode, const scenario& addressing_s
     }
 }
 
-void execute_fixture::test_zero_page(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios)
+void execute_fixture::test_zero_page(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost)
 {
-    auto test = [this, opcode](addr_x pc_addr, byte_x base_addr, const scenario& scenario) {
+    auto test = [this, opcode, base_cycle_cost](addr_x pc_addr, byte_x base_addr, const scenario& scenario) {
         CAPTURE(pc_addr);
         CAPTURE(base_addr);
         CAPTURE(scenario);
@@ -221,7 +221,7 @@ void execute_fixture::test_zero_page(opcode opcode, const scenario& addressing_s
         expected_state = state;
         expected_memory = memory;
 
-        expected_state.cycle = cpu_cycle_t(3) + scenario.base_cycle_cost;
+        expected_state.cycle = base_cycle_cost + scenario.base_cycle_cost;
         expected_state.registers.pc = pc_addr + 1;
 
         change_context expected_context{base_addr, addr_mode::zero_page, expected_state, expected_memory};
@@ -250,9 +250,9 @@ void execute_fixture::test_zero_page(opcode opcode, const scenario& addressing_s
     }
 }
 
-void execute_fixture::test_zero_page_indexed(opcode opcode, register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios)
+void execute_fixture::test_zero_page_indexed(opcode opcode, register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost)
 {
-    auto test = [this, opcode, index_register](addr_x pc_addr, byte_x base_addr, byte_x index, const scenario& scenario) {
+    auto test = [this, opcode, index_register, base_cycle_cost](addr_x pc_addr, byte_x base_addr, byte_x index, const scenario& scenario) {
         const byte_x indexed_addr = base_addr + index & 0xff;
 
         CAPTURE(pc_addr);
@@ -272,7 +272,7 @@ void execute_fixture::test_zero_page_indexed(opcode opcode, register_id index_re
         expected_state = state;
         expected_memory = memory;
 
-        expected_state.cycle = cpu_cycle_t(4) + scenario.base_cycle_cost;
+        expected_state.cycle = base_cycle_cost + scenario.base_cycle_cost;
         expected_state.registers.pc = pc_addr + 1;
 
         change_context expected_context{indexed_addr, addr_modes[opcode], expected_state, expected_memory};
@@ -301,9 +301,9 @@ void execute_fixture::test_zero_page_indexed(opcode opcode, register_id index_re
     }
 }
 
-void execute_fixture::test_absolute(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios)
+void execute_fixture::test_absolute(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost)
 {
-    auto test = [this, opcode](addr_x pc_addr, addr_x base_addr, const scenario& scenario) {
+    auto test = [this, opcode, base_cycle_cost](addr_x pc_addr, addr_x base_addr, const scenario& scenario) {
         CAPTURE(pc_addr);
         CAPTURE(base_addr);
         CAPTURE(scenario);
@@ -317,7 +317,7 @@ void execute_fixture::test_absolute(opcode opcode, const scenario& addressing_sc
         expected_state = state;
         expected_memory = memory;
 
-        expected_state.cycle = cpu_cycle_t(4) + scenario.base_cycle_cost;
+        expected_state.cycle = base_cycle_cost + scenario.base_cycle_cost;
         expected_state.registers.pc = pc_addr + 2;
 
         change_context expected_context{base_addr, addr_mode::absolute, expected_state, expected_memory};
@@ -346,9 +346,9 @@ void execute_fixture::test_absolute(opcode opcode, const scenario& addressing_sc
     }
 }
 
-void execute_fixture::test_absolute_indexed(opcode opcode, register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios)
+void execute_fixture::test_absolute_indexed(opcode opcode, register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost)
 {
-    auto test = [this, opcode, index_register](addr_x pc_addr, addr_x base_addr, byte_x index, const scenario& scenario) {
+    auto test = [this, opcode, index_register, base_cycle_cost](addr_x pc_addr, addr_x base_addr, byte_x index, const scenario& scenario) {
         const addr_x indexed_addr = base_addr + index;
 
         CAPTURE(pc_addr);
@@ -368,7 +368,7 @@ void execute_fixture::test_absolute_indexed(opcode opcode, register_id index_reg
         expected_state = state;
         expected_memory = memory;
 
-        expected_state.cycle = cpu_cycle_t(4) + scenario.base_cycle_cost;
+        expected_state.cycle = base_cycle_cost + scenario.base_cycle_cost;
         expected_state.registers.pc = pc_addr + 2;
 
         change_context expected_context{indexed_addr, addr_modes[opcode], expected_state, expected_memory};
@@ -397,9 +397,9 @@ void execute_fixture::test_absolute_indexed(opcode opcode, register_id index_reg
     }
 }
 
-void execute_fixture::test_indexed_indirect(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios)
+void execute_fixture::test_indexed_indirect(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost)
 {
-    auto test = [this, opcode](addr_x pc_addr, byte_x base_addr, byte_x x, byte_x value_addr, const scenario& scenario) {
+    auto test = [this, opcode, base_cycle_cost](addr_x pc_addr, byte_x base_addr, byte_x x, byte_x value_addr, const scenario& scenario) {
         CAPTURE(pc_addr);
         CAPTURE(base_addr);
         CAPTURE(x);
@@ -417,7 +417,7 @@ void execute_fixture::test_indexed_indirect(opcode opcode, const scenario& addre
         expected_state = state;
         expected_memory = memory;
 
-        expected_state.cycle = cpu_cycle_t(6) + scenario.base_cycle_cost;
+        expected_state.cycle = base_cycle_cost + scenario.base_cycle_cost;
         expected_state.registers.pc = pc_addr + 1;
 
         change_context expected_context{value_addr, addr_modes[opcode], expected_state, expected_memory};
@@ -446,7 +446,7 @@ void execute_fixture::test_indexed_indirect(opcode opcode, const scenario& addre
     }
 }
 
-void execute_fixture::test_unspecified(opcode opcode, std::span<const scenario> behavior_scenarios)
+void execute_fixture::test_unspecified(opcode opcode, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost)
 {
     SECTION("behavior")
     {
@@ -462,7 +462,7 @@ void execute_fixture::test_unspecified(opcode opcode, std::span<const scenario> 
         expected_state = state;
         expected_memory = memory;
 
-        expected_state.cycle = scenario.base_cycle_cost;
+        expected_state.cycle = base_cycle_cost + scenario.base_cycle_cost;
 
         change_context expected_context{default_pc_addr, addr_modes[opcode], expected_state, expected_memory};
         apply_changes(scenario.expected_changes, expected_context);
