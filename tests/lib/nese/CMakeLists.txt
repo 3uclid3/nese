@@ -49,6 +49,7 @@ set(SOURCES
     "${DIR}/cpu/instruction/inc_test.cpp"
     "${DIR}/cpu/instruction/inx_test.cpp"
     "${DIR}/cpu/instruction/iny_test.cpp"
+    "${DIR}/cpu/instruction/isb_test.cpp"
     "${DIR}/cpu/instruction/jmp_test.cpp"
     "${DIR}/cpu/instruction/jsr_test.cpp"
     "${DIR}/cpu/instruction/lax_test.cpp"

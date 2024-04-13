@@ -199,13 +199,14 @@ enum class opcode
     dcp_indexed_indirect_unofficial = 0xC3,
     dcp_indirect_indexed_unofficial = 0xD3,
 
-    isc_zero_page_unofficial = 0xE7,
-    isc_zero_page_x_unofficial = 0xF7,
-    isc_absolute_unofficial = 0xEF,
-    isc_absolute_x_unofficial = 0xFF,
-    isc_absolute_y_unofficial = 0xFB,
-    isc_indexed_indirect_unofficial = 0xE3,
-    isc_indirect_indexed_unofficial = 0xF3,
+    // isc == isb
+    isb_zero_page_unofficial = 0xE7,
+    isb_zero_page_x_unofficial = 0xF7,
+    isb_absolute_unofficial = 0xEF,
+    isb_absolute_x_unofficial = 0xFF,
+    isb_absolute_y_unofficial = 0xFB,
+    isb_indexed_indirect_unofficial = 0xE3,
+    isb_indirect_indexed_unofficial = 0xF3,
 
     lax_zero_page_unofficial = 0xA7,
     lax_zero_page_y_unofficial = 0xB7,

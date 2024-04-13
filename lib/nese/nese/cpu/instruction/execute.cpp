@@ -1085,6 +1085,23 @@ void execute_dcp(execute_context ctx)
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing) + cpu_cycle_t(2));
 }
 
+// ISB (Increment Memory then Subtract with Borrow):
+// Increments the value at a memory location, then subtracts it from the accumulator with borrow, affecting the carry, zero, negative, and overflow flags.
+template<addr_mode AddrModeT>
+void execute_isb(execute_context ctx)
+{
+    bool page_crossing{false};
+    const addr_t addr = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t value = read_operand<AddrModeT>(ctx, addr);
+    const byte_t new_value = value + 1;
+
+    write_operand<AddrModeT>(ctx, addr, new_value);
+
+    execute_adc_impl<AddrModeT>(ctx, ~new_value);
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing) + cpu_cycle_t(2));
+}
+
 // LAX (Load Accumulator and X):
 // Loads both the accumulator and the X register with the same memory content, updating the zero and negative flags based on the value loaded.
 template<addr_mode AddrModeT>
@@ -1311,6 +1328,14 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::dcp_absolute_y_unofficial] = &execute_dcp<addr_mode::absolute_y>;
     table[opcode::dcp_indexed_indirect_unofficial] = &execute_dcp<addr_mode::indexed_indirect>;
     table[opcode::dcp_indirect_indexed_unofficial] = &execute_dcp<addr_mode::indirect_indexed>;
+
+    table[opcode::isb_zero_page_unofficial] = &execute_isb<addr_mode::zero_page>;
+    table[opcode::isb_zero_page_x_unofficial] = &execute_isb<addr_mode::zero_page_x>;
+    table[opcode::isb_absolute_unofficial] = &execute_isb<addr_mode::absolute>;
+    table[opcode::isb_absolute_x_unofficial] = &execute_isb<addr_mode::absolute_x>;
+    table[opcode::isb_absolute_y_unofficial] = &execute_isb<addr_mode::absolute_y>;
+    table[opcode::isb_indexed_indirect_unofficial] = &execute_isb<addr_mode::indexed_indirect>;
+    table[opcode::isb_indirect_indexed_unofficial] = &execute_isb<addr_mode::indirect_indexed>;
 
     table[opcode::lax_zero_page_unofficial] = &execute_lax<addr_mode::zero_page>;
     table[opcode::lax_zero_page_y_unofficial] = &execute_lax<addr_mode::zero_page_y>;
