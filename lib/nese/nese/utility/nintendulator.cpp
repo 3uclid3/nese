@@ -224,15 +224,15 @@ void append_operand(auto& out, const cpu::state& cpu_state, const memory::mapper
 
             if (mnemonic != "jmp" || (addr & 0xff) != 0xff)
             {
-                out = fmt::format_to(out, "({:04X}) = {:04X}", addr, memory_mapper.get_word(addr));
-                current_length += 13;
+                out = fmt::format_to(out, "(${:04X}) = {:04X}", addr, memory_mapper.get_word(addr));
+                current_length += 14;
             }
             else
             {
                 // Account for JMP hardware bug
                 // http://wiki.nesdev.com/w/index.php/Errata
-                out = fmt::format_to(out, "({:04X}) = {:04X}", addr, static_cast<word_t>(memory_mapper.get_byte(addr) + (static_cast<word_t>(memory_mapper.get_byte(addr & 0xff00)) << 8)));
-                current_length += 13;
+                out = fmt::format_to(out, "(${:04X}) = {:04X}", addr, static_cast<word_t>(memory_mapper.get_byte(addr) + (static_cast<word_t>(memory_mapper.get_byte(addr & 0xff00)) << 8)));
+                current_length += 14;
             }
         }
         break;
