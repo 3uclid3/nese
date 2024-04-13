@@ -158,9 +158,12 @@ void append_operand(auto& out, const cpu::state& cpu_state, const memory::mapper
             break;
 
         case cpu::addr_mode::relative:
-            out = fmt::format_to(out, "${:04X}", static_cast<word_t>(memory_mapper.get_byte(pc) + pc + 1));
+        {
+            const s8_t byte = static_cast<s8_t>(memory_mapper.get_byte(pc));
+            out = fmt::format_to(out, "${:04X}", static_cast<word_t>(pc + byte + 1));
             current_length += 5;
-            break;
+        }
+        break;
 
         case cpu::addr_mode::zero_page:
         case cpu::addr_mode::zero_page_x:
