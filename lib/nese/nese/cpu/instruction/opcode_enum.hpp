@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
+#define NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED 1
+#endif
+
 namespace nese::cpu::instruction {
 
 enum class opcode
@@ -184,7 +188,40 @@ enum class opcode
     tsx_implied = 0xBA,
     txa_implied = 0x8A,
     txs_implied = 0x9A,
-    tya_implied = 0x98
+    tya_implied = 0x98,
+
+#if NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
+    // Unofficial instructions
+    nop_immediate_unofficial_80 = 0x80,
+
+    nop_implied_unofficial_1A = 0x1A,
+    nop_implied_unofficial_3A = 0x3A,
+    nop_implied_unofficial_5A = 0x5A,
+    nop_implied_unofficial_7A = 0x7A,
+    nop_implied_unofficial_DA = 0xDA,
+    nop_implied_unofficial_FA = 0xFA,
+
+    nop_zero_page_unofficial_04 = 0x04,
+    nop_zero_page_unofficial_44 = 0x44,
+    nop_zero_page_unofficial_64 = 0x64,
+
+    nop_absolute_unofficial_0C = 0x0C,
+
+    nop_zero_page_x_unofficial_14 = 0x14,
+    nop_zero_page_x_unofficial_34 = 0x34,
+    nop_zero_page_x_unofficial_54 = 0x54,
+    nop_zero_page_x_unofficial_74 = 0x74,
+    nop_zero_page_x_unofficial_D4 = 0xD4,
+    nop_zero_page_x_unofficial_F4 = 0xF4,
+
+    nop_absolute_x_unofficial_1C = 0x1C,
+    nop_absolute_x_unofficial_3C = 0x3C,
+    nop_absolute_x_unofficial_5C = 0x5C,
+    nop_absolute_x_unofficial_7C = 0x7C,
+    nop_absolute_x_unofficial_DC = 0xDC,
+    nop_absolute_x_unofficial_FC = 0xFC,
+
+#endif // NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
 };
 
 } // namespace nese::cpu::instruction

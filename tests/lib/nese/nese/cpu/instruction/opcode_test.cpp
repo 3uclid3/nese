@@ -4,13 +4,13 @@
 
 namespace nese::cpu::instruction {
 
-TEST_CASE("get_mnemonic", "[cpu][instruction]")
+TEST_CASE("mnemonics", "[cpu][instruction]")
 {
     CHECK(mnemonics[opcode::adc_absolute] == "adc");
     CHECK(mnemonics[opcode::nop_implied] == "nop");
 }
 
-TEST_CASE("get_addr_mode_from_name", "[cpu][instruction]")
+TEST_CASE("addr_modes", "[cpu][instruction]")
 {
     CHECK(addr_modes[opcode::nop_implied] == addr_mode::implied);
     CHECK(addr_modes[opcode::asl_accumulator] == addr_mode::accumulator);
@@ -25,6 +25,28 @@ TEST_CASE("get_addr_mode_from_name", "[cpu][instruction]")
     CHECK(addr_modes[opcode::jmp_indirect] == addr_mode::indirect);
     CHECK(addr_modes[opcode::adc_indexed_indirect] == addr_mode::indexed_indirect);
     CHECK(addr_modes[opcode::adc_indirect_indexed] == addr_mode::indirect_indexed);
+
+#if NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
+    CHECK(addr_modes[opcode::nop_immediate_unofficial_80] == addr_mode::immediate);
+    CHECK(addr_modes[opcode::nop_zero_page_unofficial_44] == addr_mode::zero_page);
+    CHECK(addr_modes[opcode::nop_absolute_unofficial_0C] == addr_mode::absolute);
+#endif // NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
+}
+
+TEST_CASE("is_officials", "[cpu][instruction]")
+{
+    CHECK(is_officials[opcode::adc_immediate]);
+    CHECK(is_officials[opcode::adc_zero_page]);
+    CHECK(is_officials[opcode::adc_zero_page_x]);
+    CHECK(is_officials[opcode::adc_absolute]);
+    CHECK(is_officials[opcode::adc_absolute_x]);
+    CHECK(is_officials[opcode::adc_absolute_y]);
+
+#if NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
+    CHECK_FALSE(is_officials[opcode::nop_immediate_unofficial_80]);
+    CHECK_FALSE(is_officials[opcode::nop_zero_page_unofficial_44]);
+    CHECK_FALSE(is_officials[opcode::nop_absolute_unofficial_0C]);
+#endif // NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
 }
 
 } // namespace nese::cpu::instruction
