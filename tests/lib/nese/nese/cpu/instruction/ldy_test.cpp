@@ -7,11 +7,11 @@ namespace nese::cpu::instruction {
 
 TEST_CASE_METHOD(load_fixture, "ldy", "[cpu][instruction]")
 {
-    test_immediate(opcode::ldy_immediate, register_id::y);
-    test_zero_page(opcode::ldy_zero_page, register_id::y);
-    test_zero_page_indexed(opcode::ldy_zero_page_x, register_id::y, register_id::x);
-    test_absolute(opcode::ldy_absolute, register_id::y);
-    test_absolute_indexed(opcode::ldy_absolute_x, register_id::y, register_id::x);
+    test_immediate(opcode::ldy_immediate, addr_mode_scenario<register_id::y>, behavior_scenarios<register_id::y>);
+    test_zero_page(opcode::ldy_zero_page, addr_mode_scenario<register_id::y>, behavior_scenarios<register_id::y>);
+    test_zero_page_indexed(opcode::ldy_zero_page_x, register_id::x, addr_mode_scenario<register_id::y>, behavior_scenarios<register_id::y>);
+    test_absolute(opcode::ldy_absolute, addr_mode_scenario<register_id::y>, behavior_scenarios<register_id::y>);
+    test_absolute_indexed(opcode::ldy_absolute_x, register_id::x, addr_mode_scenario<register_id::y>, behavior_scenarios<register_id::y>);
 }
 
 } // namespace nese::cpu::instruction

@@ -4,103 +4,83 @@
 #include <nese/cpu/instruction/fixture/execute_fixture.hpp>
 #include <nese/cpu/instruction/opcode.hpp>
 #include <nese/cpu/stack.hpp>
-#include <nese/utility/format.hpp>
 
 namespace nese::cpu::instruction {
 
-TEST_CASE_METHOD(execute_fixture, "rti", "[cpu][instruction]")
+struct rti_fixture : execute_fixture
 {
-    constexpr cycle_t cycle_cost = cpu_cycle_t(6);
+    static constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(6);
 
-    // Clear all flags
-    state().registers.p = 0;
-
-    SECTION("addressing")
-    {
-        auto [pc_addr, return_addr, s] = GENERATE(table<addr_t, addr_t, u8_t>(
-            {
-                {0x8000, 0x4000, 0xFD}, // Test with initial SP away from wrap-around, typical usage scenario
-                {0xC000, 0x1234, 0xFE}, // Test with initial SP at FE to simulate edge case of wrapping around from 0x01FF to 0x0100
-                {0xFFFC, 0x0200, 0xFF}, // Test with SP at FF, demonstrating a pop operation wrapping from 0x0100 back to 0x01FF
-                {0xC000, 0x1234, 0x01}, // Edge case: Test with SP at the edge of the stack page, to ensure correct wrap-around behavior
-                {0xC000, 0x1234, 0x80}  // Typical case: Test with SP in the middle of the stack page, far from the wrap-around edges
-            }));
-
-        state().registers.pc = pc_addr;
-        state().registers.s = s;
-
-        const byte_t s0 = s + 1;
-        const byte_t s1 = s + 2;
-        const byte_t s2 = s + 3;
-
-        memory().set_byte(stack_offset + s0, 0x00);
-        memory().set_byte(stack_offset + s1, return_addr & 0xFF);
-        memory().set_byte(stack_offset + s2, return_addr >> 8);
-
-        expected_state().cycle = cycle_cost;
-        expected_state().registers.pc = return_addr;
-        expected_state().registers.p = static_cast<u8_t>(status_flag::unused);
-        expected_state().registers.s = s + 3;
-
-        execute_and_check(opcode::rti_implied);
-    }
-
-    SECTION("flag")
-    {
-        constexpr addr_t return_addr = 0x4000;
-
-        const byte_t s0 = state().registers.s + 1;
-        const byte_t s1 = state().registers.s + 2;
-        const byte_t s2 = state().registers.s + 3;
-
-        memory().set_byte(stack_offset + s1, return_addr & 0xFF);
-        memory().set_byte(stack_offset + s2, return_addr >> 8);
-
-        SECTION("set")
+    // clang-format off
+    inline static const std::array behavior_scenarios = std::to_array<scenario>({
+        // addr
         {
-            auto flag_set = GENERATE(
-                as<status_flag>(),
-                status_flag::carry,
-                status_flag::zero,
-                status_flag::interrupt,
-                status_flag::decimal,
-                status_flag::unused,
-                status_flag::overflow,
-                status_flag::negative);
-
-            DYNAMIC_SECTION(format("{}", flag_set))
-            {
-                memory().set_byte(stack_offset + s0, static_cast<byte_t>(flag_set));
-
-                expected_state().cycle = cycle_cost;
-                expected_state().registers.pc = return_addr;
-                expected_state().registers.s += 3;
-                expected_state().registers.p = static_cast<byte_t>(flag_set | status_flag::unused); // unused always set
-
-                execute_and_check(opcode::rti_implied);
-            }
-        }
-
-        SECTION("ignored")
+            .initial_changes = {set_register_s(0xFC), set_stack_value(0xFD, 0x00), set_stack_word_value(0xFE, 0x4000)},
+            .expected_changes = {set_register_pc(0x4000), set_register_s(0xFF), set_status_flag_unused()},
+            .base_cycle_cost = cycle_cost
+        },
         {
-            auto flag_ignored = GENERATE(
-                as<status_flag>(),
-                status_flag::break_cmd);
+            .initial_changes = {set_register_s(0xFD), set_stack_value(0xFE, 0x00), set_stack_word_value(0xFF, 0x1234)},
+            .expected_changes = {set_register_pc(0x1234), set_register_s(0x00), set_status_flag_unused()},
+            .description = "SP at FE to simulate edge case of wrapping around from 0x01FF to 0x0100",
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0xFE), set_stack_value(0xFF, 0x00), set_stack_word_value(0x00, 0x0200)},
+            .expected_changes = {set_register_pc(0x0200), set_register_s(0x01), set_status_flag_unused()},
+            .base_cycle_cost = cycle_cost
+        },
 
-            DYNAMIC_SECTION(format("{}", flag_ignored))
-            {
-                state().registers.p = static_cast<byte_t>(flag_ignored);
-                memory().set_byte(stack_offset + s0, 0x00);
+        // flag set
+        {
+            .initial_changes = {set_register_s(0x00), set_stack_value(0x01, static_cast<byte_t>(status_flag::carry)), set_stack_word_value(0x02, 0x0200)},
+            .expected_changes = {set_register_pc(0x0200), set_register_s(0x03), set_status_flag_carry(), set_status_flag_unused()},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_stack_value(0x01, static_cast<byte_t>(status_flag::decimal)), set_stack_word_value(0x02, 0x0200)},
+            .expected_changes = {set_register_pc(0x0200), set_register_s(0x03), set_status_flag_decimal(), set_status_flag_unused()},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_stack_value(0x01, static_cast<byte_t>(status_flag::interrupt)), set_stack_word_value(0x02, 0x0200)},
+            .expected_changes = {set_register_pc(0x0200), set_register_s(0x03), set_status_flag_interrupt(), set_status_flag_unused()},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_stack_value(0x01, static_cast<byte_t>(status_flag::negative)), set_stack_word_value(0x02, 0x0200)},
+            .expected_changes = {set_register_pc(0x0200), set_register_s(0x03), set_status_flag_negative(), set_status_flag_unused()},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_stack_value(0x01, static_cast<byte_t>(status_flag::overflow)), set_stack_word_value(0x02, 0x0200)},
+            .expected_changes = {set_register_pc(0x0200), set_register_s(0x03), set_status_flag_overflow(), set_status_flag_unused()},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_stack_value(0x01, static_cast<byte_t>(status_flag::unused)), set_stack_word_value(0x02, 0x0200)},
+            .expected_changes = {set_register_pc(0x0200), set_register_s(0x03), set_status_flag_unused()},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_stack_value(0x01, static_cast<byte_t>(status_flag::zero)), set_stack_word_value(0x02, 0x0200)},
+            .expected_changes = {set_register_pc(0x0200), set_register_s(0x03), set_status_flag_zero(), set_status_flag_unused()},
+            .base_cycle_cost = cycle_cost
+        },
 
-                expected_state().cycle = cycle_cost;
-                expected_state().registers.pc = return_addr;
-                expected_state().registers.s += 3;
-                expected_state().registers.p = static_cast<byte_t>(flag_ignored | status_flag::unused); // unused always set
+        // flag ignore
+        {
+            .initial_changes = {set_register_s(0x00), set_stack_value(0x01, static_cast<byte_t>(status_flag::break_cmd)), set_stack_word_value(0x02, 0x0200)},
+            .expected_changes = {set_register_pc(0x0200), set_register_s(0x03), set_status_flag_unused()},
+            .base_cycle_cost = cycle_cost
+        },
+    });
+    // clang-format on
+};
 
-                execute_and_check(opcode::rti_implied);
-            }
-        }
-    }
+TEST_CASE_METHOD(rti_fixture, "rti", "[cpu][instruction]")
+{
+    test_implied(opcode::rti_implied, behavior_scenarios);
 }
 
 } // namespace nese::cpu::instruction

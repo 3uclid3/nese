@@ -6,17 +6,34 @@
 
 namespace nese::cpu::instruction {
 
-TEST_CASE_METHOD(execute_fixture, "nop", "[cpu][instruction]")
+struct nop_fixture : execute_fixture
 {
-    constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(2);
+    static constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(2);
 
-    const addr_t addr = GENERATE(as<addr_t>(), 0x1234, 0x4321);
+    // clang-format off
+    inline static const std::array behavior_scenarios = std::to_array<scenario>({
+        {
+            .initial_changes = { set_register_pc(default_pc_addr)},
+            .expected_changes = {},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = { set_register_pc(0x1234)},
+            .expected_changes = {},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = { set_register_pc(0x4321)},
+            .expected_changes = {},
+            .base_cycle_cost = cycle_cost
+        },
+    });
+    // clang-format on
+};
 
-    state().registers.pc = addr;
-
-    expected_state().cycle = cycle_cost;
-
-    execute_and_check(opcode::nop_implied);
+TEST_CASE_METHOD(nop_fixture, "nop", "[cpu][instruction]")
+{
+    test_implied(opcode::nop_implied, behavior_scenarios);
 }
 
 } // namespace nese::cpu::instruction

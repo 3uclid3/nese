@@ -1,166 +1,446 @@
 #pragma once
 
-#include <array>
-#include <tuple>
+#include <variant>
 
 #include <nese/cpu/instruction/execute.hpp>
 #include <nese/cpu/instruction/opcode.hpp>
+#include <nese/cpu/stack.hpp>
 #include <nese/cpu/state.hpp>
+#include <nese/cpu/state_mock.hpp>
+#include <nese/cpu/status_flag.hpp>
 #include <nese/memory/mapper.hpp>
 #include <nese/utility/assert.hpp>
+#include <nese/utility/format.hpp>
 #include <nese/utility/hex.hpp>
 
 namespace nese::cpu::instruction {
 
-static inline state test_default_state{[] {
-    state state;
-
-    state.registers.a = 0xA;
-    state.registers.x = 0xB;
-    state.registers.y = 0xC;
-
-    return state;
-}()};
-
-static inline memory::mapper test_default_memory{[] {
-    memory::mapper memory;
-
-    byte_t value = 0xFF;
-
-    for (std::size_t i = 0; i < memory::mapper::capacity; ++i)
-    {
-        memory.set_byte(static_cast<addr_t>(i), value);
-
-        value = value == 0x01 ? 0xFF : value - 0x01;
-    }
-
-    return memory;
-}()};
-
-class execute_fixture
+struct execute_fixture
 {
-public:
-    enum class register_id
-    {
-        a,
-        x,
-        y,
+    template<typename T, typename... Args>
+    struct concat;
 
-        s
+    template<typename... Args0, typename... Args1>
+    struct concat<std::variant<Args0...>, Args1...>
+    {
+        using type = std::variant<Args0..., Args1...>;
+    };
+
+    template<typename T, typename... Args>
+    using concat_t = typename concat<T, Args...>::type;
+
+    static inline state_mock default_state{[] {
+        state_mock state;
+
+        state.registers.a = 0xA;
+        state.registers.x = 0xB;
+        state.registers.y = 0xC;
+
+        state.registers.p = 0x0; // clear flags
+
+        return state;
+    }()};
+
+    static inline memory::mapper default_memory{[] {
+        constexpr byte_t first_tag = 0xDE;
+        constexpr byte_t second_tag = 0xAD;
+
+        memory::mapper memory;
+
+        byte_t value = first_tag;
+        for (size_t i = 0; i < memory::mapper::capacity; ++i)
+        {
+            memory.set_byte(static_cast<addr_t>(i), value);
+
+            value = value == first_tag ? second_tag : first_tag;
+        }
+
+        return memory;
+    }()};
+
+    struct change_context
+    {
+        addr_t operand_addr;
+        cpu::state_mock& state;
+        memory::mapper& memory;
+    };
+
+    struct set_operand_value
+    {
+        constexpr set_operand_value(byte_t byte)
+            : operand_value(byte) {}
+
+        void apply(change_context& ctx) const
+        {
+            ctx.memory.set_byte(ctx.operand_addr, operand_value);
+        }
+
+        string_view to_string() const
+        {
+            return format("operand_value := {}", operand_value);
+        }
+
+        byte_x operand_value;
+    };
+
+    struct set_operand_word_value
+    {
+        constexpr set_operand_word_value(word_t word)
+            : operand_value(word) {}
+
+        void apply(change_context& ctx) const
+        {
+            ctx.memory.set_word(ctx.operand_addr, operand_value);
+        }
+
+        string_view to_string() const
+        {
+            return format("operand_value := {}", operand_value);
+        }
+
+        word_x operand_value;
+    };
+
+    struct set_memory_value
+    {
+        constexpr set_memory_value(addr_t a, byte_t v)
+            : addr(a)
+            , value(v) {}
+
+        void apply(change_context& ctx) const
+        {
+            ctx.memory.set_byte(addr, value);
+        }
+
+        string_view to_string() const
+        {
+            return format("addr := {}, value := {}", addr, value);
+        }
+
+        addr_x addr;
+        byte_x value;
+    };
+
+    struct set_memory_word_value
+    {
+        constexpr set_memory_word_value(addr_t a, word_t v)
+            : addr(a)
+            , value(v) {}
+
+        void apply(change_context& ctx) const
+        {
+            ctx.memory.set_word(addr, value);
+        }
+
+        string_view to_string() const
+        {
+            return format("addr := {}, value := {}", addr, value);
+        }
+
+        addr_x addr;
+        word_x value;
+    };
+
+    struct set_stack_value
+    {
+        constexpr set_stack_value(byte_t s_, byte_t v)
+            : s(s_)
+            , value(v) {}
+
+        void apply(change_context& ctx) const
+        {
+            ctx.memory.set_byte(stack_offset + s, value);
+        }
+
+        string_view to_string() const
+        {
+            return format("s := {}, value := {}", s, value);
+        }
+
+        byte_x s;
+        byte_x value;
+    };
+
+    struct set_stack_word_value
+    {
+        constexpr set_stack_word_value(byte_t s_, word_t v)
+            : s(s_)
+            , value(v) {}
+
+        void apply(change_context& ctx) const
+        {
+            const byte_t s0 = s;
+            const byte_t s1 = s + 1;
+
+            ctx.memory.set_byte(stack_offset + s0, value & 0xFF);
+            ctx.memory.set_byte(stack_offset + s1, value >> 8);
+        }
+
+        string_view to_string() const
+        {
+            return format("s := {}, value := {}", s, value);
+        }
+
+        byte_x s;
+        word_x value;
+    };
+
+    template<register_id RegisterT>
+    struct set_register
+    {
+        constexpr set_register(byte_t v)
+            : value(v) {}
+
+        void apply(change_context& ctx) const
+        {
+            ctx.state.set_register(RegisterT, value);
+        }
+
+        string_view to_string() const
+        {
+            return format("{} := {}", RegisterT, value);
+        }
+
+        byte_x value;
+    };
+
+    template<>
+    struct set_register<register_id::pc>
+    {
+        constexpr set_register(word_t v)
+            : value(v) {}
+
+        void apply(change_context& ctx) const
+        {
+            ctx.state.registers.pc = value;
+        }
+
+        string_view to_string() const
+        {
+            return format("{} := {}", register_id::pc, value);
+        }
+
+        word_x value;
+    };
+
+    using set_register_a = set_register<register_id::a>;
+    using set_register_x = set_register<register_id::x>;
+    using set_register_y = set_register<register_id::y>;
+    using set_register_s = set_register<register_id::s>;
+    using set_register_pc = set_register<register_id::pc>;
+
+    template<status_flag StatusFlagT>
+    struct set_status_flag
+    {
+        void apply(change_context& ctx) const
+        {
+            ctx.state.registers.set_flag(StatusFlagT);
+        }
+
+        string_view to_string() const
+        {
+            return format("{} := true", StatusFlagT);
+        }
+    };
+
+    template<status_flag StatusFlagT>
+    struct clear_status_flag
+    {
+        void apply(change_context& ctx) const
+        {
+            ctx.state.registers.clear_flag(StatusFlagT);
+        }
+
+        string_view to_string() const
+        {
+            return format("{} := false", StatusFlagT);
+        }
+    };
+
+    using set_status_flag_carry = set_status_flag<status_flag::carry>;
+    using set_status_flag_break_cmd = set_status_flag<status_flag::break_cmd>;
+    using set_status_flag_decimal = set_status_flag<status_flag::decimal>;
+    using set_status_flag_interrupt = set_status_flag<status_flag::interrupt>;
+    using set_status_flag_negative = set_status_flag<status_flag::negative>;
+    using set_status_flag_overflow = set_status_flag<status_flag::overflow>;
+    using set_status_flag_unused = set_status_flag<status_flag::unused>;
+    using set_status_flag_zero = set_status_flag<status_flag::zero>;
+
+    using clear_status_flag_carry = clear_status_flag<status_flag::carry>;
+    using clear_status_flag_break_cmd = clear_status_flag<status_flag::break_cmd>;
+    using clear_status_flag_decimal = clear_status_flag<status_flag::decimal>;
+    using clear_status_flag_interrupt = clear_status_flag<status_flag::interrupt>;
+    using clear_status_flag_negative = clear_status_flag<status_flag::negative>;
+    using clear_status_flag_overflow = clear_status_flag<status_flag::overflow>;
+    using clear_status_flag_unused = clear_status_flag<status_flag::unused>;
+    using clear_status_flag_zero = clear_status_flag<status_flag::zero>;
+
+    struct set_status_flags
+    {
+        constexpr set_status_flags(status_flag v)
+            : flags(v) {}
+
+        void apply(change_context& ctx) const
+        {
+            ctx.state.registers.p = static_cast<u8_t>(flags);
+        }
+
+        string_view to_string() const
+        {
+            return nese::format("p := {:02X}", static_cast<u8_t>(flags));
+        }
+
+        status_flags flags;
+    };
+
+    struct push_stack
+    {
+        constexpr push_stack(byte_t byte)
+            : value(byte) {}
+
+        void apply(change_context& ctx) const
+        {
+            ctx.memory.set_byte(ctx.state.registers.s + stack_offset, value);
+            --ctx.state.registers.s;
+        }
+
+        string_view to_string() const
+        {
+            return format("push value := {}", value);
+        }
+
+        byte_x value;
+    };
+
+    struct push_word_stack
+    {
+        constexpr push_word_stack(word_t word)
+            : value(word) {}
+
+        void apply(change_context& ctx) const
+        {
+            ctx.memory.set_byte(ctx.state.registers.s + stack_offset, value >> 8);
+            --ctx.state.registers.s;
+
+            ctx.memory.set_byte(ctx.state.registers.s + stack_offset, value & 0xFF);
+            --ctx.state.registers.s;
+        }
+
+        string_view to_string() const
+        {
+            return format("push value := {}", value);
+        }
+
+        word_x value;
+    };
+
+    using base_scenario_change = std::variant<
+        set_operand_value,
+        set_operand_word_value,
+
+        set_memory_value,
+        set_memory_word_value,
+
+        set_stack_value,
+        set_stack_word_value,
+
+        set_register_a,
+        set_register_x,
+        set_register_y,
+        set_register_s,
+        set_register_pc,
+
+        set_status_flag_break_cmd,
+        set_status_flag_carry,
+        set_status_flag_decimal,
+        set_status_flag_interrupt,
+        set_status_flag_negative,
+        set_status_flag_overflow,
+        set_status_flag_unused,
+        set_status_flag_zero,
+        set_status_flags,
+
+        clear_status_flag_break_cmd,
+        clear_status_flag_carry,
+        clear_status_flag_decimal,
+        clear_status_flag_interrupt,
+        clear_status_flag_negative,
+        clear_status_flag_overflow,
+        clear_status_flag_unused,
+        clear_status_flag_zero,
+
+        push_stack,
+        push_word_stack>;
+
+    struct conditional
+    {
+        using scenario_change = base_scenario_change;
+
+        constexpr conditional(scenario_change change, bool condition)
+            : change(change)
+            , condition(condition)
+        {}
+
+        void apply(change_context& ctx) const
+        {
+            if (condition)
+            {
+                std::visit([&ctx](const auto& c) { c.apply(ctx); }, change);
+            }
+        }
+
+        string_view to_string() const
+        {
+            string_view result{};
+
+            if (condition)
+            {
+                std::visit([&result](const auto& c) { result = c.to_string(); }, change);
+            }
+
+            return result;
+        }
+
+        scenario_change change;
+        bool condition;
+    };
+
+    using scenario_change = concat_t<
+        base_scenario_change,
+        conditional>;
+
+    struct scenario
+    {
+        string to_string() const;
+
+        std::vector<scenario_change> initial_changes;
+        std::vector<scenario_change> expected_changes;
+        std::string description{};
+        cpu_cycle_t base_cycle_cost{0};
     };
 
     // Standard PC address
     static constexpr addr_x default_pc_addr = 0x0200;
 
     // Small offset
-    static constexpr addr_x indexed_offset = 0x0020;
+    static constexpr byte_x indexed_offset = 0x20;
 
     // Well within the zero page
     static constexpr byte_x zero_page_base_addr = 0x20;
 
-    // Well within the zero page
+    // Well within the absolute
     static constexpr addr_x absolute_base_addr = 0x0300;
 
-    static constexpr std::array zero_page_scenarios = std::to_array<std::tuple<addr_x, byte_x>>(
-        {
-            /* Simple zero-page tests */
-            {0x0200, 0x00}, /* PC in a common code area, val_addr at zero-page start */
-            {0x0200, 0xFF}, /* PC in a common code area, val_addr at zero-page end */
-            /* Boundary conditions */
-            {0x01FF, 0x00}, /* PC just before zero page, val_addr at zero page start */
-            {0x0200, 0x01}, /* PC in a common code area, val_addr just into zero page */
-            {0x01FF, 0xFF}, /* PC just before zero page, val_addr at zero page end */
-            {0xF000, 0x80}, /* Higher PC value, val_addr in middle of zero page */
-            /* Testing PC at various points */
-            {0x0000, 0x02}, /* PC at start of memory, testing very early execution */
-            {0x8000, 0x04}, /* PC in a typical ROM area, val_addr early in zero page */
-            {0xFFFC, 0xFE}, /* PC at the very end of memory space */
-            /* Varied val_addr values to test LDA, LDX, LDY behavior */
-            {0x0300, 0x10}, /* Common code area, testing nonzero page value */
-            {0x0400, 0x20}  /* Another common code area, testing nonzero page value */
-        });
+    void test_implied(opcode opcode, std::span<const scenario> behavior_scenarios);
+    void test_immediate(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
+    void test_zero_page(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
+    void test_zero_page_indexed(opcode opcode, register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
+    void test_absolute(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
+    void test_absolute_indexed(opcode opcode, register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
 
-    static constexpr std::array zero_page_indexed_scenarios = std::to_array<std::tuple<addr_x, byte_x, byte_x>>(
-        {
-            // Offset within zero-page without wrap: Tests basic indexed addressing within the zero page without crossing the zero-page boundary.
-            {0x0200, 0x00, 0x01}, // PC in common area, base at start of zero page, offset +1.
-            {0x0200, 0x10, 0x0F}, // PC in common area, base within zero page, offset to edge without wrapping.
+    void test_unspecified(opcode opcode, std::span<const scenario> behavior_scenarios);
 
-            // Offset causing wrap-around: Validates correct handling of address wrap-around within the zero-page (255 + offset wraps to start of zero page).
-            {0x0200, 0xFE, 0x01}, // PC in common area, base near end of zero page, +1 offset wraps.
-            {0x0200, 0xFD, 0x03}, // PC in common area, base within zero page, +3 offset wraps.
-
-            // Varied PC values with offset: Tests how indexed zero-page addressing behaves with different PC values, ensuring PC location doesn't affect indexed addressing calculation.
-            {0x0000, 0x02, 0x01}, // PC at memory start, base early in zero page, small offset.
-            {0x8000, 0x03, 0x02}, // PC in typical ROM area, base early in zero page, small offset.
-            {0xFFFC, 0xFD, 0x02}  // PC at end of memory space, base in zero page, offset without wrap.
-        });
-
-    static constexpr std::array absolute_scenarios = std::to_array<std::tuple<addr_x, addr_x>>(
-        {
-            /* Absolute addressing tests in different memory regions */
-            {0x0200, 0x0100}, /* PC in common code area, absolute address in lower memory */
-            {0x0200, 0x8000}, /* PC in common code area, absolute address in upper memory */
-            /* Boundary conditions */
-            {0x01FF, 0x0000}, /* PC just before zero page, testing absolute address at memory start */
-            {0x0200, 0xFFFF}, /* PC in common code area, testing absolute address at memory end */
-            {0xF000, 0x4000}, /* Higher PC value, absolute address in the middle of memory */
-            /* Testing PC at various points */
-            {0x0000, 0x0200}, /* PC at start of memory, absolute address in common code area */
-            {0x8000, 0x0300}, /* PC in a typical ROM area, absolute address in common code area */
-            {0xFFFC, 0x0400}  /* PC at the very end of memory space, absolute address in common code area */
-        });
-
-    static constexpr std::array absolute_indexed_scenarios = std::to_array<std::tuple<addr_x, addr_x, byte_x>>(
-        {
-            /* Conceptual tests with "offsets" for absolute addressing */
-            {0x0200, 0x0100, 0x01}, /* Common code area, lower memory with a byte offset */
-            {0x0200, 0x8000, 0x10}, /* Common code area, upper memory with a byte offset */
-            /* Varied PC values with "offsets" */
-            {0x0000, 0x0200, 0x20}, /* PC at start, absolute address in common code area with a byte offset */
-            {0x8000, 0x0300, 0x30}, /* PC in ROM area, absolute address in common code area with a byte offset */
-            {0xFFFC, 0x0400, 0x40}  /* PC at end, absolute address in common code area with a byte offset */
-        });
-
-    static constexpr std::array stack_offset_scenarios = std::to_array<byte_x>({0xFD, 0xFE, 0xFF, 0x01, 0x00});
-
-    static constexpr std::array positive_byte_values = std::to_array<byte_x>(
-        {
-            0x01, // The smallest value
-            0x10, // A low value
-            0x40, // A mid-range value
-            0x7F  // The largest value
-        });
-
-    static constexpr std::array negative_byte_values = std::to_array<byte_x>(
-        {
-            0x80, // The smallest negative
-            0x90, // A low negative value
-            0xC0, // A mid-range value
-            0xFF  // The largest value
-        });
-
-    static void set_register(registers& registers, register_id type, byte_t value)
-    {
-        switch (type)
-        {
-        case register_id::a:
-            registers.a = value;
-            break;
-
-        case register_id::x:
-            registers.x = value;
-            break;
-
-        case register_id::y:
-            registers.y = value;
-            break;
-
-        case register_id::s:
-            registers.s = value;
-            break;
-        }
-    }
+    void apply_changes(auto& changes, change_context& context);
 
     void execute_and_check(opcode code, bool should_check_cycle = true);
 
@@ -168,42 +448,17 @@ public:
     void check_memory() const;
     void check_cycle() const;
 
-    [[nodiscard]] cpu::state& expected_state();
-    [[nodiscard]] memory::mapper& expected_memory();
+    cpu::state_mock state{default_state};
+    memory::mapper memory{default_memory};
 
-    [[nodiscard]] cpu::state& state();
-    [[nodiscard]] memory::mapper& memory();
-
-private:
-    void init_expected();
-
-    cpu::state _state{test_default_state};
-    memory::mapper _memory{test_default_memory};
-
-    cpu::state _expected_state{test_default_state};
-    memory::mapper _expected_memory{test_default_memory};
-
-    bool _expected_init{false};
+    cpu::state_mock expected_state{};
+    memory::mapper expected_memory{};
 };
 
-constexpr std::string_view format_as(execute_fixture::register_id type)
+inline std::ostream& operator<<(std::ostream& os, const execute_fixture::scenario& value)
 {
-    switch (type)
-    {
-    case execute_fixture::register_id::a:
-        return "a";
-
-    case execute_fixture::register_id::x:
-        return "x";
-
-    case execute_fixture::register_id::y:
-        return "y";
-
-    case execute_fixture::register_id::s:
-        return "s";
-    }
-
-    NESE_ASSUME(false);
+    os << value.to_string();
+    return os;
 }
 
 } // namespace nese::cpu::instruction

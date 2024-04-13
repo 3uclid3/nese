@@ -14,7 +14,7 @@ template<typename T>
 concept enum_hexadecimalable = std::is_enum_v<T>;
 
 template<typename T>
-concept hexadecimalable = std::is_arithmetic_v<T>  || std::is_enum_v<T>;
+concept hexadecimalable = std::is_arithmetic_v<T> || std::is_enum_v<T>;
 
 template<arithmetic_hexadecimalable T>
 class hex
@@ -75,30 +75,47 @@ using byte_x = hex<byte_t>;
 using word_x = hex<word_t>;
 using addr_x = hex<addr_t>;
 
-template<hexadecimalable T>
-std::ostream& operator<<(std::ostream& os, hex<T> hex)
+} // namespace nese
+
+template<typename T>
+struct fmt::formatter<nese::hex<T>>
 {
-    if constexpr (sizeof(T) == 1)
+    constexpr auto parse(auto& ctx)
     {
-        os << format("{:02X}", hex.value());
-    }
-    else if constexpr (sizeof(T) == 2)
-    {
-        os << format("{:04X}", hex.value());
-    }
-    else if constexpr (sizeof(T) == 4)
-    {
-        os << format("{:08X}", hex.value());
-    }
-    else if constexpr (sizeof(T) == 8)
-    {
-        os << format("{:016X}", hex.value());
-    }
-    else
-    {
-        os << format("{:0X}", hex.value());
+        return ctx.begin();
     }
 
+    auto format(nese::hex<T> v, auto& ctx) const
+    {
+        if constexpr (sizeof(T) == 1)
+        {
+            return fmt::format_to(ctx.out(), "{:02X}", v.value());
+        }
+        else if constexpr (sizeof(T) == 2)
+        {
+            return fmt::format_to(ctx.out(), "{:04X}", v.value());
+        }
+        else if constexpr (sizeof(T) == 4)
+        {
+            return fmt::format_to(ctx.out(), "{:08X}", v.value());
+        }
+        else if constexpr (sizeof(T) == 8)
+        {
+            return fmt::format_to(ctx.out(), "{:016X}", v.value());
+        }
+        else
+        {
+            return fmt::format_to(ctx.out(), "{:0X}", v.value());
+        }
+    }
+};
+
+namespace nese {
+
+template<hexadecimalable T>
+std::ostream& operator<<(std::ostream& os, hex<T> v)
+{
+    os << format("{}", v);
     return os;
 }
 

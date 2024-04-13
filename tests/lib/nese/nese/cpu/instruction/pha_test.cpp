@@ -1,44 +1,43 @@
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators.hpp>
-#include <catch2/generators/catch_generators_range.hpp>
 
 #include <nese/cpu/instruction/fixture/execute_fixture.hpp>
 #include <nese/cpu/instruction/opcode.hpp>
-#include <nese/cpu/stack.hpp>
 
 namespace nese::cpu::instruction {
 
-TEST_CASE_METHOD(execute_fixture, "pha", "[cpu][instruction]")
+struct pha_fixture : execute_fixture
 {
-    constexpr cycle_t cycle_cost = cpu_cycle_t(3);
+    static constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(3);
 
-    SECTION("addressing")
-    {
-        const byte_t s = GENERATE(from_range(stack_offset_scenarios));
+    // clang-format off
+    inline static const std::array behavior_scenarios = std::to_array<scenario>({
+        {
+            .initial_changes = {set_register_s(0x00), set_register_a(0x00)},
+            .expected_changes = {set_register_s(0xFF), set_stack_value(0x00, 0x00)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_register_a(0xFF)},
+            .expected_changes = {set_register_s(0xFF), set_stack_value(0x00, 0xFF)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_register_a(0x80)},
+            .expected_changes = {set_register_s(0xFF), set_stack_value(0x00, 0x80)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_register_a(0x55)},
+            .expected_changes = {set_register_s(0xFF), set_stack_value(0x00, 0x55)},
+            .base_cycle_cost = cycle_cost
+        },
+    });
+    // clang-format on
+};
 
-        state().registers.s = s;
-        state().registers.a = 0;
-
-        expected_state().cycle = cycle_cost;
-        expected_state().registers.s = s - 1;
-        expected_memory().set_byte(stack_offset + s, 0);
-
-        execute_and_check(opcode::pha_implied);
-    }
-
-    SECTION("behavior")
-    {
-        const byte_t s = state().registers.s;
-        const byte_t a = GENERATE(as<byte_t>(), 0x00, 0xFF, 0x80, 0x55);
-
-        state().registers.a = a;
-
-        expected_state().cycle = cycle_cost;
-        expected_state().registers.s = s - 1;
-        expected_memory().set_byte(stack_offset + s, a);
-
-        execute_and_check(opcode::pha_implied);
-    }
+TEST_CASE_METHOD(pha_fixture, "pha", "[cpu][instruction]")
+{
+    test_implied(opcode::pha_implied, behavior_scenarios);
 }
 
 } // namespace nese::cpu::instruction

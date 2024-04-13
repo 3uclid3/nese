@@ -341,7 +341,6 @@ void execute_branch(execute_context ctx, bool condition)
 {
     const addr_t initial_pc = ctx.registers().pc;
     const s8_t byte = static_cast<s8_t>(decode_byte(ctx));
-    const addr_t target_pc = static_cast<addr_t>(ctx.registers().pc + byte);
 
     if (condition)
     {
@@ -350,12 +349,10 @@ void execute_branch(execute_context ctx, bool condition)
         ctx.registers().pc += byte;
 
         // if crossing to a new page ++
-        if (is_page_crossing(initial_pc, target_pc))
+        if (is_page_crossing(initial_pc, ctx.registers().pc))
         {
             ctx.step_cycle(cpu_cycle_t(1));
         }
-
-        ctx.registers().pc = target_pc;
     }
 
     ctx.step_cycle(cpu_cycle_t(2));

@@ -7,7 +7,7 @@ namespace nese::cpu::instruction {
 
 TEST_CASE_METHOD(increment_fixture, "iny", "[cpu][instruction]")
 {
-    test_implied(opcode::iny_implied, register_id::y);
+    test_implied(opcode::iny_implied, behavior_scenarios<register_id::y>);
 }
 
 } // namespace nese::cpu::instruction

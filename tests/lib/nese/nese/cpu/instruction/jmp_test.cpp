@@ -6,19 +6,61 @@
 
 namespace nese::cpu::instruction {
 
-TEST_CASE_METHOD(execute_fixture, "jmp", "[cpu][instruction]")
+struct jmp_fixture : execute_fixture
 {
-    constexpr cycle_t cycle_cost = cpu_cycle_t(3);
+    static constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(3);
 
-    const auto [addr, addr_to] = GENERATE(from_range(absolute_scenarios));
+    // clang-format off
+    inline static const std::array behavior_scenarios = std::to_array<scenario>({
+        {
+            .initial_changes = {set_register_pc(0x0200), set_memory_word_value(0x0200, 0x0100)},
+            .expected_changes = {set_register_pc(0x0100)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_pc(0x0200), set_memory_word_value(0x0200, 0x8000)},
+            .expected_changes = {set_register_pc(0x8000)},
+            .base_cycle_cost = cycle_cost
+        },
+        
+        {
+            .initial_changes = {set_register_pc(0x01FF), set_memory_word_value(0x01FF, 0x0000)},
+            .expected_changes = {set_register_pc(0x0000)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_pc(0x0200), set_memory_word_value(0x0200, 0xFFFF)},
+            .expected_changes = {set_register_pc(0xFFFF)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_pc(0xF000), set_memory_word_value(0xF000, 0x4000)},
+            .expected_changes = {set_register_pc(0x4000)},
+            .base_cycle_cost = cycle_cost
+        },
 
-    state().registers.pc = addr;
-    memory().set_word(addr, addr_to);
+        {
+            .initial_changes = {set_register_pc(0x0000), set_memory_word_value(0x0000, 0x0200)},
+            .expected_changes = {set_register_pc(0x0200)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_pc(0x8000), set_memory_word_value(0x8000, 0x0300)},
+            .expected_changes = {set_register_pc(0x0300)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_pc(0xFFFC), set_memory_word_value(0xFFFC, 0x0400)},
+            .expected_changes = {set_register_pc(0x0400)},
+            .base_cycle_cost = cycle_cost
+        }
+    });
+    // clang-format on
+};
 
-    expected_state().cycle = cycle_cost;
-    expected_state().registers.pc = addr_to;
-
-    execute_and_check(opcode::jmp_absolute);
+TEST_CASE_METHOD(jmp_fixture, "jmp", "[cpu][instruction]")
+{
+    test_unspecified(opcode::jmp_absolute, behavior_scenarios);
 }
 
 } // namespace nese::cpu::instruction

@@ -1,80 +1,67 @@
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators.hpp>
-#include <catch2/generators/catch_generators_range.hpp>
 
 #include <nese/cpu/instruction/fixture/execute_fixture.hpp>
 #include <nese/cpu/instruction/opcode.hpp>
-#include <nese/cpu/stack.hpp>
-#include <nese/utility/format.hpp>
 
 namespace nese::cpu::instruction {
 
-TEST_CASE_METHOD(execute_fixture, "php", "[cpu][instruction]")
+struct php_fixture : execute_fixture
 {
-    constexpr cycle_t cycle_cost = cpu_cycle_t(3);
-    constexpr status_flags mandatory_flags = static_cast<status_flags>(0x30);
+    static constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(3);
+    static constexpr status_flags mandatory_flags = static_cast<status_flags>(0x30);
 
-    // Clear all flags
-    state().registers.p = 0;
-
-    SECTION("addressing")
-    {
-        const byte_t s = GENERATE(from_range(stack_offset_scenarios));
-
-        state().registers.s = s;
-
-        expected_state().cycle = cycle_cost;
-        expected_state().registers.s = s - 1;
-        expected_memory().set_byte(stack_offset + s, static_cast<byte_t>(mandatory_flags));
-
-        execute_and_check(opcode::php_implied);
-    }
-
-    SECTION("flag set")
-    {
-        auto flag_set = GENERATE(
-            as<status_flag>(),
-            status_flag::carry,
-            status_flag::zero,
-            status_flag::interrupt,
-            status_flag::decimal,
-            status_flag::unused,
-            status_flag::overflow,
-            status_flag::negative);
-
-        const byte_t s = state().registers.s;
-
-        DYNAMIC_SECTION(format("{}", flag_set))
+    // clang-format off
+    inline static const std::array behavior_scenarios = std::to_array<scenario>({
+        // set flag
         {
-            state().registers.p = static_cast<byte_t>(flag_set);
-
-            expected_state().cycle = cycle_cost;
-            expected_state().registers.s = expected_state().registers.s - 1;
-            expected_memory().set_byte(stack_offset + s, static_cast<byte_t>(flag_set | mandatory_flags));
-
-            execute_and_check(opcode::php_implied);
-        }
-    }
-
-    SECTION("flag ignored")
-    {
-        auto flag_ignored = GENERATE(
-            as<status_flag>(),
-            status_flag::break_cmd);
-
-        const byte_t s = state().registers.s;
-
-        DYNAMIC_SECTION(format("{}", flag_ignored))
+            .initial_changes = {set_register_s(0x00), set_status_flags(status_flag::carry)},
+            .expected_changes = {set_register_s(0xFF), set_stack_value(0x00, static_cast<byte_t>(status_flag::carry | mandatory_flags))},
+            .base_cycle_cost = cycle_cost
+        },
         {
-            state().registers.p = static_cast<byte_t>(flag_ignored);
+            .initial_changes = {set_register_s(0x00), set_status_flags(status_flag::zero)},
+            .expected_changes = {set_register_s(0xFF), set_stack_value(0x00, static_cast<byte_t>(status_flag::zero | mandatory_flags))},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_status_flags(status_flag::interrupt)},
+            .expected_changes = {set_register_s(0xFF), set_stack_value(0x00, static_cast<byte_t>(status_flag::interrupt | mandatory_flags))},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_status_flags(status_flag::decimal)},
+            .expected_changes = {set_register_s(0xFF), set_stack_value(0x00, static_cast<byte_t>(status_flag::decimal | mandatory_flags))},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_status_flags(status_flag::unused)},
+            .expected_changes = {set_register_s(0xFF), set_stack_value(0x00, static_cast<byte_t>(status_flag::unused | mandatory_flags))},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_status_flags(status_flag::overflow)},
+            .expected_changes = {set_register_s(0xFF), set_stack_value(0x00, static_cast<byte_t>(status_flag::overflow | mandatory_flags))},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_status_flags(status_flag::negative)},
+            .expected_changes = {set_register_s(0xFF), set_stack_value(0x00, static_cast<byte_t>(status_flag::negative | mandatory_flags))},
+            .base_cycle_cost = cycle_cost
+        },
 
-            expected_state().cycle = cycle_cost;
-            expected_state().registers.s = expected_state().registers.s - 1;
-            expected_memory().set_byte(stack_offset + s, static_cast<byte_t>(mandatory_flags));
-
-            execute_and_check(opcode::php_implied);
+        // ignore flag
+        {
+            .initial_changes = {set_register_s(0x00), set_status_flags(status_flag::break_cmd)},
+            .expected_changes = {set_register_s(0xFF), set_stack_value(0x00, static_cast<byte_t>(mandatory_flags))},
+            .base_cycle_cost = cycle_cost
         }
-    }
+    });
+    // clang-format on
+};
+
+TEST_CASE_METHOD(php_fixture, "php", "[cpu][instruction]")
+{
+    test_implied(opcode::php_implied, behavior_scenarios);
 }
 
 } // namespace nese::cpu::instruction

@@ -6,9 +6,9 @@
 
 namespace nese::cpu::instruction {
 
-TEST_CASE_METHOD(branch_fixture, "bcc", "[cpu][instruction]")
+TEST_CASE_METHOD(branch_if_clear_fixture, "bcc", "[cpu][instruction]")
 {
-    test_relative(opcode::bcc_relative, status_flag::carry, branch_when::is_clear);
+    test_unspecified(opcode::bcc_relative, behavior_scenarios<status_flag::carry>);
 }
 
 } // namespace nese::cpu::instruction

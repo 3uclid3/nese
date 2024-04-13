@@ -7,156 +7,116 @@ namespace nese::cpu::instruction {
 
 struct bit_fixture : execute_fixture
 {
-    void test_zero_page(opcode opcode)
-    {
-        SECTION("zero_page")
+    // clang-format off
+    inline static const scenario addr_mode_scenario{
+        .initial_changes = {set_register_a(0xFF), set_operand_value(0x01)},
+        .expected_changes = {}
+    };
+    
+    inline static const std::array behavior_scenarios = std::to_array<scenario>({
+        // set zero
         {
-            constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(3);
+            .initial_changes = {set_register_a(0xFF), set_operand_value(0x00)},
+            .expected_changes = {set_status_flag_zero()},
+        },
+        {
+            .initial_changes = {set_register_a(0xF0), set_operand_value(0x0F)},
+            .expected_changes = {set_status_flag_zero()},
+        },
+        {
+            .initial_changes = {set_register_a(0x40), set_operand_value(0x3F)},
+            .expected_changes = {set_status_flag_zero()},
+        },
+        {
+            .initial_changes = {set_register_a(0x20), set_operand_value(0x1F)},
+            .expected_changes = {set_status_flag_zero()},
+        },
 
-            // Clear all flags
-            state().registers.p = 0;
-
-            SECTION("addressing")
-            {
-                const auto [pc, val_addr] = GENERATE(from_range(zero_page_scenarios));
-
-                state().registers.pc = pc;
-                state().registers.a = 0xFF;
-                memory().set_byte(pc, val_addr);
-                memory().set_byte(val_addr, 0x01);
-
-                expected_state().cycle = cycle_cost;
-                expected_state().registers.pc = pc + 1;
-
-                execute_and_check(opcode, false);
-            }
-
-            SECTION("value")
-            {
-                state().registers.pc = default_pc_addr;
-                memory().set_byte(default_pc_addr, zero_page_base_addr);
-
-                SECTION("zero")
-                {
-                    SECTION("set")
-                    {
-                        const auto [bit, a] = GENERATE(table<byte_t, byte_t>(
-                            {{0x00, 0xFF},
-                             {0x0F, 0xF0},
-                             {0x3F, 0x40},
-                             {0x1F, 0x20}}));
-
-                        memory().set_byte(zero_page_base_addr, bit);
-                        state().registers.a = a;
-
-                        expected_state().cycle = cycle_cost;
-                        expected_state().registers.pc = default_pc_addr + 1;
-                        expected_state().registers.set_flag(status_flag::zero);
-
-                        execute_and_check(opcode, false);
-                    }
-
-                    SECTION("not set")
-                    {
-                        const auto [bit, a] = GENERATE(table<byte_t, byte_t>(
-                            {{0x3F, 0xBF},
-                             {0x1F, 0x9F}}));
-
-                        memory().set_byte(zero_page_base_addr, bit);
-                        state().registers.a = a;
-
-                        expected_state().cycle = cycle_cost;
-                        expected_state().registers.pc = default_pc_addr + 1;
-                        expected_state().registers.clear_flag(status_flag::zero);
-
-                        execute_and_check(opcode, false);
-                    }
-                }
-
-                SECTION("overflow")
-                {
-                    SECTION("set")
-                    {
-                        const auto [bit, a] = GENERATE(table<byte_t, byte_t>(
-                            {{0x40, 0xFF},
-                             {0x41, 0xFF},
-                             {0x40, 0x7F},
-                             {0x42, 0xBF}}));
-
-                        memory().set_byte(zero_page_base_addr, bit);
-                        state().registers.a = a;
-
-                        expected_state().cycle = cycle_cost;
-                        expected_state().registers.pc = default_pc_addr + 1;
-                        expected_state().registers.set_flag(status_flag::overflow);
-
-                        execute_and_check(opcode, false);
-                    }
-
-                    SECTION("not set")
-                    {
-                        const auto [bit, a] = GENERATE(table<byte_t, byte_t>(
-                            {{0x01, 0x01},
-                             {0x02, 0x03},
-                             {0x08, 0x0C},
-                             {0x10, 0x10}}));
-
-                        memory().set_byte(zero_page_base_addr, bit);
-                        state().registers.a = a;
-
-                        expected_state().cycle = cycle_cost;
-                        expected_state().registers.pc = default_pc_addr + 1;
-                        expected_state().registers.clear_flag(status_flag::overflow);
-
-                        execute_and_check(opcode, false);
-                    }
-                }
-
-                SECTION("negative")
-                {
-                    SECTION("set")
-                    {
-                        const auto [bit, a] = GENERATE(table<byte_t, byte_t>(
-                            {{0x80, 0xFF},
-                             {0x81, 0xFF},
-                             {0x80, 0x80},
-                             {0x82, 0xBF}}));
-
-                        memory().set_byte(zero_page_base_addr, bit);
-                        state().registers.a = a;
-
-                        expected_state().cycle = cycle_cost;
-                        expected_state().registers.pc = default_pc_addr + 1;
-                        expected_state().registers.set_flag(status_flag::negative);
-
-                        execute_and_check(opcode, false);
-                    }
-
-                    SECTION("not set")
-                    {
-                        const auto [bit, a] = GENERATE(table<byte_t, byte_t>(
-                            {{0x3F, 0xFF},
-                             {0x20, 0xEF},
-                             {0x1F, 0xF7}}));
-
-                        memory().set_byte(zero_page_base_addr, bit);
-                        state().registers.a = a;
-
-                        expected_state().cycle = cycle_cost;
-                        expected_state().registers.pc = default_pc_addr + 1;
-                        expected_state().registers.clear_flag(status_flag::negative);
-
-                        execute_and_check(opcode, false);
-                    }
-                }
-            }
+        // not set zero
+        {
+            .initial_changes = {set_register_a(0xBF), set_operand_value(0x3F)},
+            .expected_changes = {clear_status_flag_zero()},
+        },
+        {
+            .initial_changes = {set_register_a(0x9F), set_operand_value(0x2F)},
+            .expected_changes = {clear_status_flag_zero()},
+        },
+        
+        // set overflow
+        {
+            .initial_changes = {set_register_a(0xFF), set_operand_value(0x40)},
+            .expected_changes = {set_status_flag_overflow()},
+        },
+        {
+            .initial_changes = {set_register_a(0xFF), set_operand_value(0x41)},
+            .expected_changes = {set_status_flag_overflow()},
+        },
+        {
+            .initial_changes = {set_register_a(0x7F), set_operand_value(0x40)},
+            .expected_changes = {set_status_flag_overflow()},
+        },
+        {
+            .initial_changes = {set_register_a(0xBF), set_operand_value(0x42)},
+            .expected_changes = {set_status_flag_overflow()},
+        },
+        
+        // not set overflow
+        {
+            .initial_changes = {set_register_a(0x01), set_operand_value(0x01)},
+            .expected_changes = {clear_status_flag_overflow()},
+        },
+        {
+            .initial_changes = {set_register_a(0x03), set_operand_value(0x02)},
+            .expected_changes = {clear_status_flag_overflow()},
+        },
+        {
+            .initial_changes = {set_register_a(0x0C), set_operand_value(0x08)},
+            .expected_changes = {clear_status_flag_overflow()},
+        },
+        {
+            .initial_changes = {set_register_a(0x10), set_operand_value(0x10)},
+            .expected_changes = {clear_status_flag_overflow()},
+        },
+        
+        // set negative
+        {
+            .initial_changes = {set_register_a(0xFF), set_operand_value(0x80)},
+            .expected_changes = {set_status_flag_negative()},
+        },
+        {
+            .initial_changes = {set_register_a(0xFF), set_operand_value(0x81)},
+            .expected_changes = {set_status_flag_negative()},
+        },
+        {
+            .initial_changes = {set_register_a(0x80), set_operand_value(0x80)},
+            .expected_changes = {set_status_flag_negative()},
+        },
+        {
+            .initial_changes = {set_register_a(0xBF), set_operand_value(0x82)},
+            .expected_changes = {set_status_flag_negative()},
+        },
+        
+        // not set negative
+        {
+            .initial_changes = {set_register_a(0xFF), set_operand_value(0x3F)},
+            .expected_changes = {clear_status_flag_negative()},
+        },
+        {
+            .initial_changes = {set_register_a(0xEF), set_operand_value(0x20)},
+            .expected_changes = {clear_status_flag_negative()},
+        },
+        {
+            .initial_changes = {set_register_a(0xF7), set_operand_value(0x1F)},
+            .expected_changes = {clear_status_flag_negative()},
         }
-    }
+    });
+    // clang-format on
 };
 
 TEST_CASE_METHOD(bit_fixture, "bit", "[cpu][instruction]")
 {
-    test_zero_page(opcode::bit_zero_page);
+    test_zero_page(opcode::bit_zero_page, addr_mode_scenario, behavior_scenarios);
+    test_absolute(opcode::bit_absolute, addr_mode_scenario, behavior_scenarios);
 }
 
 } // namespace nese::cpu::instruction

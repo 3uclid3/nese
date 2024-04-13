@@ -5,31 +5,23 @@ set(TEST_ROMS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/test_roms")
 configure_file("test_config.hpp.in" "${DIR}/test_config.hpp")
 
 set(INCLUDES
-    "${DIR}/cpu/instruction/fixture/bitwise_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/branch_fixture.hpp"
+    "${DIR}/cpu/instruction/fixture/clear_status_flag_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/compare_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/decrement_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/execute_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/increment_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/load_fixture.hpp"
-    "${DIR}/cpu/instruction/fixture/status_flag_fixture.hpp"
+    "${DIR}/cpu/instruction/fixture/set_status_flag_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/store_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/transfer_fixture.hpp"
+    "${DIR}/cpu/state_mock.hpp"
     "${DIR}/utility/hex.hpp"
     "${DIR}/test_config.hpp"
 )
 
 set(SOURCES
-    "${DIR}/cpu/instruction/fixture/bitwise_fixture.cpp"
-    "${DIR}/cpu/instruction/fixture/branch_fixture.cpp"
-    "${DIR}/cpu/instruction/fixture/compare_fixture.cpp"
-    "${DIR}/cpu/instruction/fixture/decrement_fixture.cpp"
     "${DIR}/cpu/instruction/fixture/execute_fixture.cpp"
-    "${DIR}/cpu/instruction/fixture/increment_fixture.cpp"
-    "${DIR}/cpu/instruction/fixture/load_fixture.cpp"
-    "${DIR}/cpu/instruction/fixture/status_flag_fixture.cpp"
-    "${DIR}/cpu/instruction/fixture/store_fixture.cpp"
-    "${DIR}/cpu/instruction/fixture/transfer_fixture.cpp"
     "${DIR}/cpu/instruction/adc_test.cpp"
     "${DIR}/cpu/instruction/and_test.cpp"
     "${DIR}/cpu/instruction/bcc_test.cpp"
@@ -81,6 +73,7 @@ set(SOURCES
     "${DIR}/cpu/instruction/txs_test.cpp"
     "${DIR}/cpu/instruction/tya_test.cpp"
     "${DIR}/cpu/instruction_rom_test.cpp"
+    "${DIR}/cpu/state_mock.cpp"
     "${DIR}/utility/format_test.cpp"
     "${DIR}/utility/crc32_test.cpp"
     "${DIR}/utility/name_of_test.cpp"

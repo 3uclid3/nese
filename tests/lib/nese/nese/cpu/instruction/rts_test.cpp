@@ -1,46 +1,39 @@
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators_range.hpp>
 
 #include <nese/cpu/instruction/fixture/execute_fixture.hpp>
 #include <nese/cpu/instruction/opcode.hpp>
-#include <nese/cpu/stack.hpp>
 
 namespace nese::cpu::instruction {
 
-TEST_CASE_METHOD(execute_fixture, "rts", "[cpu][instruction]")
+struct rts_fixture : execute_fixture
 {
-    constexpr cycle_t cycle_cost = cpu_cycle_t(6);
+    static constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(6);
 
-    auto [pc_addr, return_addr, s] = GENERATE(table<addr_t, addr_t, u8_t>(
-        {// Test with initial SP away from wrap-around, typical usage scenario
-         {0x8000, 0x4000, 0xFD},
+    // clang-format off
+    inline static const std::array behavior_scenarios = std::to_array<scenario>({
+        {
+            .initial_changes = {set_register_s(0xFD), set_stack_value(0xFE, 0x00), set_stack_value(0xFF, 0x40)},
+            .expected_changes = {set_register_pc(0x4001), set_register_s(0xFF)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0xFE), set_stack_value(0xFF, 0x34), set_stack_value(0x00, 0x12)},
+            .expected_changes = {set_register_pc(0x1235), set_register_s(0x00)},
+            .description = "SP at FE to simulate edge case of wrapping around from 0x01FF to 0x0100",
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0xFF), set_stack_value(0x00, 0x00), set_stack_value(0x01, 0x02)},
+            .expected_changes = {set_register_pc(0x0201), set_register_s(0x01)},
+            .base_cycle_cost = cycle_cost
+        }
+    });
+    // clang-format on
+};
 
-         // Test with initial SP at FE to simulate edge case of wrapping around from 0x01FF to 0x0100
-         {0xC000, 0x1234, 0xFE},
-
-         // Test with SP at FF, demonstrating a pop operation wrapping from 0x0100 back to 0x01FF
-         {0xFFFC, 0x0200, 0xFF},
-
-         // Edge case: Test with SP at the edge of the stack page, to ensure correct wrap-around behavior
-         {0xC000, 0x1234, 0x01},
-
-         // Typical case: Test with SP in the middle of the stack page, far from the wrap-around edges
-         {0xC000, 0x1234, 0x80}}));
-
-    state().registers.pc = pc_addr;
-    state().registers.s = s;
-
-    const byte_t s0 = s + 1;
-    const byte_t s1 = s + 2;
-
-    memory().set_byte(stack_offset + s0, return_addr & 0xFF);
-    memory().set_byte(stack_offset + s1, return_addr >> 8);
-
-    expected_state().cycle = cycle_cost;
-    expected_state().registers.pc = return_addr + 1;
-    expected_state().registers.s = s + 2;
-
-    execute_and_check(opcode::rts_implied);
+TEST_CASE_METHOD(rts_fixture, "rts", "[cpu][instruction]")
+{
+    test_implied(opcode::rts_implied, behavior_scenarios);
 }
 
 } // namespace nese::cpu::instruction

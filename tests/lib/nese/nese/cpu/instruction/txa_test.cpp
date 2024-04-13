@@ -7,7 +7,7 @@ namespace nese::cpu::instruction {
 
 TEST_CASE_METHOD(transfer_fixture, "txa", "[cpu][instruction]")
 {
-    test_implied(opcode::txa_implied, register_id::x, register_id::a);
+    test_implied(opcode::txa_implied, behavior_scenarios<register_id::x, register_id::a>);
 }
 
 } // namespace nese::cpu::instruction

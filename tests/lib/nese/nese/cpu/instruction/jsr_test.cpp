@@ -3,30 +3,64 @@
 
 #include <nese/cpu/instruction/fixture/execute_fixture.hpp>
 #include <nese/cpu/instruction/opcode.hpp>
-#include <nese/cpu/stack.hpp>
 
 namespace nese::cpu::instruction {
 
-TEST_CASE_METHOD(execute_fixture, "jsr", "[cpu][instruction]")
+struct jsr_fixture : execute_fixture
 {
-    constexpr cycle_t cycle_cost = cpu_cycle_t(6);
+    static constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(6);
 
-    const auto [addr, addr_to] = GENERATE(from_range(absolute_scenarios));
+    // clang-format off
+    inline static const std::array behavior_scenarios = std::to_array<scenario>({
+        {
+            .initial_changes = {set_register_pc(0x0200), set_memory_word_value(0x0200, 0x0100)},
+            .expected_changes = {set_register_pc(0x0100), push_word_stack(0x0201)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_pc(0x0200), set_memory_word_value(0x0200, 0x8000)},
+            .expected_changes = {set_register_pc(0x8000), push_word_stack(0x0201)},
+            .base_cycle_cost = cycle_cost
+        },
+        
+        {
+            .initial_changes = {set_register_pc(0x01FF), set_memory_word_value(0x01FF, 0x0000)},
+            .expected_changes = {set_register_pc(0x0000), push_word_stack(0x0200)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_pc(0x0200), set_memory_word_value(0x0200, 0xFFFF)},
+            .expected_changes = {set_register_pc(0xFFFF), push_word_stack(0x0201)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_pc(0xF000), set_memory_word_value(0xF000, 0x4000)},
+            .expected_changes = {set_register_pc(0x4000), push_word_stack(0xF001)},
+            .base_cycle_cost = cycle_cost
+        },
 
-    state().registers.pc = addr;
-    memory().set_word(addr, addr_to);
+        {
+            .initial_changes = {set_register_pc(0x0000), set_memory_word_value(0x0000, 0x0200)},
+            .expected_changes = {set_register_pc(0x0200), push_word_stack(0x0001)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_pc(0x8000), set_memory_word_value(0x8000, 0x0300)},
+            .expected_changes = {set_register_pc(0x0300), push_word_stack(0x8001)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_pc(0xFFFC), set_memory_word_value(0xFFFC, 0x0400)},
+            .expected_changes = {set_register_pc(0x0400), push_word_stack(0xFFFD)},
+            .base_cycle_cost = cycle_cost
+        }
+    });
+    // clang-format on
+};
 
-    expected_state().cycle = cycle_cost;
-    expected_state().registers.pc = addr_to;
-
-    // high-order bytes push first since the stack grow top->down and the machine is little-endian
-    expected_memory().set_byte(expected_state().registers.s + stack_offset, (addr + 1) >> 8);
-    expected_state().registers.s -= 1;
-
-    expected_memory().set_byte(expected_state().registers.s + stack_offset, (addr + 1) & 0xff);
-    expected_state().registers.s -= 1;
-
-    execute_and_check(opcode::jsr_absolute);
+TEST_CASE_METHOD(jsr_fixture, "jsr", "[cpu][instruction]")
+{
+    test_unspecified(opcode::jsr_absolute, behavior_scenarios);
 }
 
 } // namespace nese::cpu::instruction

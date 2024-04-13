@@ -1,77 +1,74 @@
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators.hpp>
-#include <catch2/generators/catch_generators_range.hpp>
 
 #include <nese/cpu/instruction/fixture/execute_fixture.hpp>
 #include <nese/cpu/instruction/opcode.hpp>
-#include <nese/cpu/stack.hpp>
 
 namespace nese::cpu::instruction {
 
-TEST_CASE_METHOD(execute_fixture, "pla", "[cpu][instruction]")
+struct pla_fixture : execute_fixture
 {
-    constexpr cycle_t cycle_cost = cpu_cycle_t(4);
+    static constexpr cpu_cycle_t cycle_cost = cpu_cycle_t(4);
 
-    SECTION("addressing")
-    {
-        const byte_t s = GENERATE(from_range(stack_offset_scenarios));
-        const byte_t next_s = s + 1;
-
-        state().registers.s = s;
-        memory().set_byte(stack_offset + next_s, 0x01);
-
-        expected_state().cycle = cycle_cost;
-        expected_state().registers.s = next_s;
-        expected_state().registers.a = 0x01;
-
-        execute_and_check(opcode::pla_implied);
-    }
-
-    SECTION("flags")
-    {
-        const byte_t next_s = state().registers.s + 1;
-
-        SECTION("push a zero")
+    // clang-format off
+    inline static const std::array behavior_scenarios = std::to_array<scenario>({
         {
-            memory().set_byte(stack_offset + next_s, 0x00);
-
-            expected_state().cycle = cycle_cost;
-            expected_state().registers.s = next_s;
-            expected_state().registers.a = 0x00;
-            expected_state().registers.set_flag(status_flag::zero, true);
-            expected_state().registers.set_flag(status_flag::negative, false);
-
-            execute_and_check(opcode::pla_implied);
-        }
-
-        SECTION("push a negative")
+            .initial_changes = {set_register_s(0x00), set_stack_value(0x01, 0x01)},
+            .expected_changes = {set_register_s(0x01), set_register_a(0x01)},
+            .base_cycle_cost = cycle_cost
+        },
         {
-            const byte_t value = GENERATE(from_range(negative_byte_values));
-            memory().set_byte(stack_offset + next_s, value);
+            .initial_changes = {set_register_s(0xFF), set_stack_value(0x00, 0x01)},
+            .expected_changes = {set_register_s(0x00), set_register_a(0x01)},
+            .base_cycle_cost = cycle_cost
+        },
 
-            expected_state().cycle = cycle_cost;
-            expected_state().registers.s = next_s;
-            expected_state().registers.a = value;
-            expected_state().registers.set_flag(status_flag::zero, false);
-            expected_state().registers.set_flag(status_flag::negative, true);
-
-            execute_and_check(opcode::pla_implied);
-        }
-
-        SECTION("push a positive")
+        // zero
         {
-            const byte_t value = GENERATE(from_range(positive_byte_values));
-            memory().set_byte(stack_offset + next_s, value);
+            .initial_changes = {set_register_s(0xFF), set_stack_value(0x00, 0x00)},
+            .expected_changes = {set_register_s(0x00), set_register_a(0x00), set_status_flag_zero()},
+            .base_cycle_cost = cycle_cost
+        },
 
-            expected_state().cycle = cycle_cost;
-            expected_state().registers.s = next_s;
-            expected_state().registers.a = value;
-            expected_state().registers.set_flag(status_flag::zero, false);
-            expected_state().registers.set_flag(status_flag::negative, false);
+        // negative
+        {
+            .initial_changes = {set_register_s(0x00), set_stack_value(0x01, 0x80)},
+            .expected_changes = {set_register_s(0x01), set_register_a(0x80), set_status_flag_negative()},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_stack_value(0x01, 0xC0)},
+            .expected_changes = {set_register_s(0x01), set_register_a(0xC0), set_status_flag_negative()},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_stack_value(0x01, 0xFF)},
+            .expected_changes = {set_register_s(0x01), set_register_a(0xFF), set_status_flag_negative()},
+            .base_cycle_cost = cycle_cost
+        },
 
-            execute_and_check(opcode::pla_implied);
+        // positive
+        {
+            .initial_changes = {set_register_s(0x00), set_stack_value(0x01, 0x10)},
+            .expected_changes = {set_register_s(0x01), set_register_a(0x10)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_stack_value(0x01, 0x40)},
+            .expected_changes = {set_register_s(0x01), set_register_a(0x40)},
+            .base_cycle_cost = cycle_cost
+        },
+        {
+            .initial_changes = {set_register_s(0x00), set_stack_value(0x01, 0x7F)},
+            .expected_changes = {set_register_s(0x01), set_register_a(0x7F)},
+            .base_cycle_cost = cycle_cost
         }
-    }
+    });
+    // clang-format on
+};
+
+TEST_CASE_METHOD(pla_fixture, "pla", "[cpu][instruction]")
+{
+    test_implied(opcode::pla_implied, behavior_scenarios);
 }
 
 } // namespace nese::cpu::instruction

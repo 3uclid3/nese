@@ -1,9 +1,6 @@
 #pragma once
 
-#include <nese/basic_types.hpp>
 #include <nese/cpu/instruction/fixture/execute_fixture.hpp>
-#include <nese/cpu/status_flag.hpp>
-#include <nese/utility/hex.hpp>
 
 namespace nese::cpu::instruction {
 
@@ -11,26 +8,58 @@ enum class opcode;
 
 struct compare_fixture : execute_fixture
 {
-    static constexpr std::array scenarios = std::to_array<std::tuple<byte_x, byte_x, enum_hex<status_flags>>>(
-        {
-            {0x00, 0x00, status_flag::zero | status_flag::carry},     // Equal, carry and zero set
-            {0x01, 0x00, status_flag::carry},                         // A > M, carry set
-            {0x00, 0x01, status_flag::negative},                      // A < M, negative set due to borrow, interpreting as "negative" result
-            {0x7F, 0x80, status_flag::negative},                      // A < M, negative set, as the subtraction result's MSB is set
-            {0x80, 0x7F, status_flag::carry},                         // A > M, carry set
-            {0x80, 0x00, status_flag::carry | status_flag::negative}, // A > M, carry and negative set
-            {0x00, 0x80, status_flag::negative},                      // A < M, negative set
-            {0xFF, 0xFE, status_flag::carry},                         // A > M, carry set
-            {0xFE, 0xFF, status_flag::negative},                      // A < M, negative set
-            {0x7F, 0x7F, status_flag::zero | status_flag::carry},     // Equal, zero and carry set
-            {0x80, 0x80, status_flag::zero | status_flag::carry}      // Equal, zero and carry set
-        });
+    // clang-format off
+    template<register_id RegisterT>
+    inline static const scenario addr_mode_scenario{
+        .initial_changes = {set_register<RegisterT>(0), set_operand_value(0)},
+        .expected_changes = {set_status_flag_carry(), set_status_flag_zero()}
+    };
 
-    void test_immediate(opcode opcode, register_id cmp_register);
-    void test_zero_page(opcode opcode, register_id cmp_register);
-    void test_zero_page_indexed(opcode opcode, register_id cmp_register, register_id index_register);
-    void test_absolute(opcode opcode, register_id cmp_register);
-    void test_absolute_indexed(opcode opcode, register_id cmp_register, register_id index_register);
+    template<register_id RegisterT>
+    inline static const std::array behavior_scenarios = std::to_array<scenario>({
+        {
+            .initial_changes = {set_register<RegisterT>(0x01), set_operand_value(0x00)},
+            .expected_changes = {set_status_flag_carry()},
+        },
+        {
+            .initial_changes = {set_register<RegisterT>(0x00), set_operand_value(0x01)},
+            .expected_changes = {set_status_flag_negative()},
+        },
+        {
+            .initial_changes = {set_register<RegisterT>(0x7F), set_operand_value(0x80)},
+            .expected_changes = {set_status_flag_negative()},
+        },
+        {
+            .initial_changes = {set_register<RegisterT>(0x80), set_operand_value(0x7F)},
+            .expected_changes = {set_status_flag_carry()},
+        },
+        {
+            .initial_changes = {set_register<RegisterT>(0x80), set_operand_value(0x00)},
+            .expected_changes = {set_status_flag_carry(), set_status_flag_negative()},
+        },
+        {
+            .initial_changes = {set_register<RegisterT>(0x00), set_operand_value(0x80)},
+            .expected_changes = {set_status_flag_negative()},
+        },
+        {
+            .initial_changes = {set_register<RegisterT>(0xFF), set_operand_value(0xFE)},
+            .expected_changes = {set_status_flag_carry()},
+        },
+        {
+            .initial_changes = {set_register<RegisterT>(0xFE), set_operand_value(0xFF)},
+            .expected_changes = {set_status_flag_negative()},
+        },
+        {
+            .initial_changes = {set_register<RegisterT>(0x7F), set_operand_value(0x7F)},
+            .expected_changes = {set_status_flag_carry(), set_status_flag_zero()},
+        },
+        {
+            .initial_changes = {set_register<RegisterT>(0x80), set_operand_value(0x80)},
+            .expected_changes = {set_status_flag_carry(), set_status_flag_zero()},
+        },
+
+    });
+    // clang-format on
 };
 
 } // namespace nese::cpu::instruction
