@@ -242,7 +242,7 @@ void append_operand(auto& out, const cpu::state& cpu_state, const memory::mapper
             const addr_t addr = memory_mapper.get_byte(pc);
             const addr_t final_addr = static_cast<nese::word_t>(memory_mapper.get_byte((addr + cpu_state.registers.x) & 0xff)) + static_cast<nese::word_t>(static_cast<nese::word_t>(memory_mapper.get_byte((addr + cpu_state.registers.x + 1) & 0xff)) << 8);
 
-            out = fmt::format_to(out, "(${:02X},X) @ {:02X} = {:04X} = {:02X}", addr, addr + cpu_state.registers.x, final_addr, memory_mapper.get_byte(final_addr));
+            out = fmt::format_to(out, "(${:02X},X) @ {:02X} = {:04X} = {:02X}", addr, (addr + cpu_state.registers.x) & 0xFF, final_addr, memory_mapper.get_byte(final_addr));
             current_length += 24;
         }
         break;
