@@ -433,6 +433,9 @@ struct execute_fixture
     static constexpr addr_x default_pc_addr = 0x0200;
 
     // Small offset
+    static constexpr byte_x default_base_addr = 0x10;
+
+    // Small offset
     static constexpr byte_x indexed_offset = 0x20;
 
     // Well within the zero page
@@ -448,6 +451,7 @@ struct execute_fixture
     void test_zero_page_indexed(opcode opcode, register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
     void test_absolute(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
     void test_absolute_indexed(opcode opcode, register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
+    void test_indexed_indirect(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
 
     void test_unspecified(opcode opcode, std::span<const scenario> behavior_scenarios);
 

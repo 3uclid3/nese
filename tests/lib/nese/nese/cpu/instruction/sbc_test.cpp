@@ -1,6 +1,4 @@
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators.hpp>
-#include <catch2/generators/catch_generators_range.hpp>
 
 #include <nese/cpu/instruction/fixture/execute_fixture.hpp>
 #include <nese/cpu/instruction/opcode.hpp>
@@ -87,6 +85,7 @@ TEST_CASE_METHOD(sbc_fixture, "sbc", "[cpu][instruction]")
     test_absolute(opcode::sbc_absolute, addr_mode_scenario, behavior_scenarios);
     test_absolute_indexed(opcode::sbc_absolute_x, register_id::x, addr_mode_scenario, behavior_scenarios);
     test_absolute_indexed(opcode::sbc_absolute_y, register_id::y, addr_mode_scenario, behavior_scenarios);
+    test_indexed_indirect(opcode::sbc_indexed_indirect, addr_mode_scenario, behavior_scenarios);
 }
 
 } // namespace nese::cpu::instruction

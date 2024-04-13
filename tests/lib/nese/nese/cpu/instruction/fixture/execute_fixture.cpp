@@ -70,6 +70,17 @@ static constexpr std::array absolute_indexed_scenarios = std::to_array<std::tupl
         {0xFFFC, 0x0400, 0x40}  /* PC at end, absolute address in common code area with a byte offset */
     });
 
+static constexpr std::array indexed_indirect_scenarios = std::to_array<std::tuple<addr_x, byte_x, byte_x, byte_x>>(
+    {
+        // TODO Meaningful values
+        // [pc_addr, base_addr, x, value_addr]
+        {0x0200, 0x01, 0x01, 0x11},
+        {0x0200, 0x80, 0x80, 0x10},
+        {0x0000, 0x10, 0x2, 0x30}, 
+        {0x8000, 0x03, 0x3, 0x40}, 
+        {0xFFF9, 0x04, 0x4, 0x50}  
+    });
+
 string execute_fixture::scenario::to_string() const
 {
     auto append_change_strings = [](auto& string, const auto& changes) {
@@ -382,6 +393,55 @@ void execute_fixture::test_absolute_indexed(opcode opcode, register_id index_reg
             INFO(scenario.description);
 
             test(default_pc_addr, absolute_base_addr, indexed_offset, scenario);
+        }
+    }
+}
+
+void execute_fixture::test_indexed_indirect(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios)
+{
+    auto test = [this, opcode](addr_x pc_addr, byte_x base_addr, byte_x x, byte_x value_addr, const scenario& scenario) {
+        CAPTURE(pc_addr);
+        CAPTURE(base_addr);
+        CAPTURE(x);
+        CAPTURE(scenario);
+
+        state.registers.pc = pc_addr;
+        state.registers.x = x;
+        memory.set_byte(pc_addr, base_addr);
+        memory.set_byte((base_addr + x) & 0xFF, value_addr & 0xFF);
+        memory.set_byte((base_addr + x + 1) & 0xFF, static_cast<byte_t>(value_addr >> 8));
+
+        change_context context{value_addr, addr_modes[opcode], state, memory};
+        apply_changes(scenario.initial_changes, context);
+
+        expected_state = state;
+        expected_memory = memory;
+
+        expected_state.cycle = cpu_cycle_t(6) + scenario.base_cycle_cost;
+        expected_state.registers.pc = pc_addr + 1;
+
+        change_context expected_context{value_addr, addr_modes[opcode], expected_state, expected_memory};
+        apply_changes(scenario.expected_changes, expected_context);
+
+        execute_and_check(opcode);
+    };
+
+    SECTION("indexed_indirect")
+    {
+        SECTION("addressing")
+        {
+            const auto [pc_addr, base_addr, value_addr, x] = GENERATE(from_range(indexed_indirect_scenarios));
+
+            test(pc_addr, base_addr, x, value_addr, addressing_scenario);
+        }
+
+        SECTION("behavior")
+        {
+            const scenario& scenario = GENERATE_COPY(from_range(behavior_scenarios));
+
+            INFO(scenario.description);
+
+            test(default_pc_addr, default_base_addr, indexed_offset, 0xC0, scenario);
         }
     }
 }
