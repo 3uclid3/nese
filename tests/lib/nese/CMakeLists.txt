@@ -51,6 +51,7 @@ set(SOURCES
     "${DIR}/cpu/instruction/lda_test.cpp"
     "${DIR}/cpu/instruction/ldx_test.cpp"
     "${DIR}/cpu/instruction/ldy_test.cpp"
+    "${DIR}/cpu/instruction/lsr_test.cpp"
     "${DIR}/cpu/instruction/nop_test.cpp"
     "${DIR}/cpu/instruction/opcode_test.cpp"
     "${DIR}/cpu/instruction/ora_test.cpp"
