@@ -61,6 +61,7 @@ struct execute_fixture
     struct change_context
     {
         addr_t operand_addr;
+        addr_mode addr_mode;
         cpu::state_mock& state;
         memory::mapper& memory;
     };
@@ -72,7 +73,16 @@ struct execute_fixture
 
         void apply(change_context& ctx) const
         {
-            ctx.memory.set_byte(ctx.operand_addr, operand_value);
+            switch (ctx.addr_mode)
+            {
+            case addr_mode::accumulator:
+                ctx.state.registers.a = operand_value;
+                break;
+
+            default:
+                ctx.memory.set_byte(ctx.operand_addr, operand_value);
+                break;
+            }
         }
 
         string_view to_string() const
@@ -431,6 +441,7 @@ struct execute_fixture
     // Well within the absolute
     static constexpr addr_x absolute_base_addr = 0x0300;
 
+    void test_acculumator(opcode opcode, std::span<const scenario> behavior_scenarios);
     void test_implied(opcode opcode, std::span<const scenario> behavior_scenarios);
     void test_immediate(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);
     void test_zero_page(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios);

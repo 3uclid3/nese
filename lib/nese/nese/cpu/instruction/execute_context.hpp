@@ -18,8 +18,8 @@ public:
         : _state(state)
         , _memory(memory) {}
 
-    [[nodiscard]] constexpr registers& registers() const { return _state.get().registers; }
-    [[nodiscard]] constexpr memory::mapper& memory() const { return _memory; }
+    [[nodiscard]] registers& registers() { return _state.get().registers; }
+    [[nodiscard]] memory::mapper& memory() { return _memory; }
 
     constexpr void step_cycle(cpu_cycle_t cycle) const { _state.get().cycle += cycle; }
 

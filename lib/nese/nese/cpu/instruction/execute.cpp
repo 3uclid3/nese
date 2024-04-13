@@ -318,7 +318,7 @@ void execute_and(execute_context ctx)
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
 }
 
-// ASL (Arithmetic Shift Left):
+// ASL ():
 // Shifts all bits of the accumulator or a memory location one bit to the left, setting the carry flag with the last bit's value and affecting the zero and negative flags.
 template<addr_mode AddrModeT>
 void execute_asl(execute_context ctx)
@@ -326,12 +326,12 @@ void execute_asl(execute_context ctx)
     bool page_crossing{false};
     const word_t operand = decode_operand<AddrModeT>(ctx, page_crossing);
     const byte_t value = read_operand<AddrModeT>(ctx, operand);
-    const byte_t new_value = value << 1;
+    const byte_t new_value = static_cast<byte_t>(value << 1);
 
-    write_operand<AddrModeT>(ctx, value, new_value);
+    write_operand<AddrModeT>(ctx, operand, new_value);
 
     ctx.registers().set_flag(status_flag::carry, value & 0x80);
-    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().a));
+    ctx.registers().set_flag(status_flag::zero, is_zero(new_value));
     ctx.registers().set_flag(status_flag::negative, is_negative(new_value));
 
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
