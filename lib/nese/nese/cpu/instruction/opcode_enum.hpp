@@ -191,35 +191,89 @@ enum class opcode
     tya_implied = 0x98,
 
 #if NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
-    // Unofficial instructions
-    nop_immediate_unofficial_80 = 0x80,
+    dcp_absolute_unofficial_CF = 0xCF,
+    dcp_absolute_x_unofficial_DF = 0xDF,
+    dcp_absolute_y_unofficial_DB = 0xDB,
+    dcp_indexed_indirect_unofficial_C3 = 0xC3,
+    dcp_indirect_indexed_unofficial_D3 = 0xD3,
+    dcp_zero_page_unofficial_C7 = 0xC7,
+    dcp_zero_page_x_unofficial_D7 = 0xD7,
 
+    isc_absolute_unofficial_EF = 0xEF,
+    isc_absolute_x_unofficial_FF = 0xFF,
+    isc_absolute_y_unofficial_FB = 0xFB,
+    isc_indexed_indirect_unofficial_E3 = 0xE3,
+    isc_indirect_indexed_unofficial_F3 = 0xF3,
+    isc_zero_page_unofficial_E7 = 0xE7,
+    isc_zero_page_x_unofficial_F7 = 0xF7,
+
+    lax_absolute_unofficial_AF = 0xAF,
+    lax_absolute_y_unofficial_BF = 0xBF,
+    lax_indexed_indirect_unofficial_A3 = 0xA3,
+    lax_indirect_indexed_unofficial_B3 = 0xB3,
+    lax_zero_page_unofficial_A7 = 0xA7,
+    lax_zero_page_y_unofficial_B7 = 0xB7,
+
+    nop_immediate_unofficial_80 = 0x80,
     nop_implied_unofficial_1A = 0x1A,
     nop_implied_unofficial_3A = 0x3A,
     nop_implied_unofficial_5A = 0x5A,
     nop_implied_unofficial_7A = 0x7A,
     nop_implied_unofficial_DA = 0xDA,
     nop_implied_unofficial_FA = 0xFA,
-
     nop_zero_page_unofficial_04 = 0x04,
     nop_zero_page_unofficial_44 = 0x44,
     nop_zero_page_unofficial_64 = 0x64,
-
-    nop_absolute_unofficial_0C = 0x0C,
-
     nop_zero_page_x_unofficial_14 = 0x14,
     nop_zero_page_x_unofficial_34 = 0x34,
     nop_zero_page_x_unofficial_54 = 0x54,
     nop_zero_page_x_unofficial_74 = 0x74,
     nop_zero_page_x_unofficial_D4 = 0xD4,
     nop_zero_page_x_unofficial_F4 = 0xF4,
-
+    nop_absolute_unofficial_0C = 0x0C,
     nop_absolute_x_unofficial_1C = 0x1C,
     nop_absolute_x_unofficial_3C = 0x3C,
     nop_absolute_x_unofficial_5C = 0x5C,
     nop_absolute_x_unofficial_7C = 0x7C,
     nop_absolute_x_unofficial_DC = 0xDC,
     nop_absolute_x_unofficial_FC = 0xFC,
+
+    rla_zero_page_unofficial_27 = 0x27,
+    rla_zero_page_x_unofficial_37 = 0x37,
+    rla_absolute_unofficial_2F = 0x2F,
+    rla_absolute_x_unofficial_3F = 0x3F,
+    rla_absolute_y_unofficial_3B = 0x3B,
+    rla_indexed_indirect_unofficial_23 = 0x23,
+    rla_indirect_indexed_unofficial_33 = 0x33,
+
+    rra_zero_page_unofficial_67 = 0x67,
+    rra_zero_page_x_unofficial_77 = 0x77,
+    rra_absolute_unofficial_6F = 0x6F,
+    rra_absolute_x_unofficial_7F = 0x7F,
+    rra_absolute_y_unofficial_7B = 0x7B,
+    rra_indexed_indirect_unofficial_63 = 0x63,
+    rra_indirect_indexed_unofficial_73 = 0x73,
+
+    sax_zero_page_unofficial_87 = 0x87,
+    sax_zero_page_y_unofficial_97 = 0x97,
+    sax_absolute_unofficial_8F = 0x8F,
+    sax_indexed_indirect_unofficial_83 = 0x83,
+
+    slo_zero_page_unofficial_07 = 0x07,
+    slo_zero_page_x_unofficial_17 = 0x17,
+    slo_absolute_unofficial_0F = 0x0F,
+    slo_absolute_x_unofficial_1F = 0x1F,
+    slo_absolute_y_unofficial_1B = 0x1B,
+    slo_indexed_indirect_unofficial_03 = 0x03,
+    slo_indirect_indexed_unofficial_13 = 0x13,
+
+    sre_zero_page_unofficial_47 = 0x47,
+    sre_zero_page_x_unofficial_57 = 0x57,
+    sre_absolute_unofficial_4F = 0x4F,
+    sre_absolute_x_unofficial_5F = 0x5F,
+    sre_absolute_y_unofficial_5B = 0x5B,
+    sre_indexed_indirect_unofficial_43 = 0x43,
+    sre_indirect_indexed_unofficial_53 = 0x53,
 
 #endif // NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
 };
