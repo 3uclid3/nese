@@ -1120,6 +1120,48 @@ void execute_lax(execute_context ctx)
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
 }
 
+// RLA (Rotate Left then AND):
+// Rotates a memory location or the accumulator left, then ANDs the result with the accumulator, affecting the carry, zero, and negative flags.
+template<addr_mode AddrModeT>
+void execute_rla(execute_context ctx)
+{
+    bool page_crossing{false};
+    const word_t operand = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t value = read_operand<AddrModeT>(ctx, operand);
+    const byte_t carry_mask = ctx.registers().is_flag_set(status_flag::carry) ? 0x01 : 0x00;
+    const byte_t new_value = value << 1 | carry_mask;
+
+    write_operand<AddrModeT>(ctx, operand, new_value);
+
+    ctx.registers().a &= new_value;
+
+    ctx.registers().set_flag(status_flag::carry, (value & 0x80) != 0);
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().a));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().a));
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing) + cpu_cycle_t(2));
+}
+
+// RRA (Rotate Right then Add):
+// Rotates a memory location or the accumulator right, then adds the result to the accumulator with carry, affecting the carry, zero, and negative flags.
+template<addr_mode AddrModeT>
+void execute_rra(execute_context ctx)
+{
+    bool page_crossing{false};
+    const word_t operand = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t value = read_operand<AddrModeT>(ctx, operand);
+    const byte_t carry_mask = ctx.registers().is_flag_set(status_flag::carry) ? 0x80 : 0x00;
+    const byte_t new_value = value >> 1 | carry_mask;
+
+    write_operand<AddrModeT>(ctx, operand, new_value);
+
+    ctx.registers().set_flag(status_flag::carry, value & 0x1);
+
+    execute_adc_impl<AddrModeT>(ctx, new_value);
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing) + cpu_cycle_t(2));
+}
+
 // SAX (Store Accumulator and X):
 // Stores the bitwise AND of the accumulator and the X register to memory, without affecting any flags.
 template<addr_mode AddrModeT>
@@ -1148,6 +1190,27 @@ void execute_slo(execute_context ctx)
     ctx.registers().a |= new_value;
 
     ctx.registers().set_flag(status_flag::carry, is_negative(value));
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().a));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().a));
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing) + cpu_cycle_t(2));
+}
+
+// SRE (Shift Right then Exclusive OR):
+// Shifts a memory location or the accumulator right, then XORs the result with the accumulator, affecting the carry, zero, and negative flags.
+template<addr_mode AddrModeT>
+void execute_sre(execute_context ctx)
+{
+    bool page_crossing{false};
+    const addr_t addr = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t value = read_operand<AddrModeT>(ctx, addr);
+    const byte_t new_value = static_cast<byte_t>(value >> 1);
+
+    write_operand<AddrModeT>(ctx, addr, new_value);
+
+    ctx.registers().a ^= new_value;
+
+    ctx.registers().set_flag(status_flag::carry, value & 0x1);
     ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().a));
     ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().a));
 
@@ -1389,6 +1452,22 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::nop_absolute_x_unofficial_DC] = &execute_nop<addr_mode::absolute_x>;
     table[opcode::nop_absolute_x_unofficial_FC] = &execute_nop<addr_mode::absolute_x>;
 
+    table[opcode::rla_zero_page_unofficial] = &execute_rla<addr_mode::zero_page>;
+    table[opcode::rla_zero_page_x_unofficial] = &execute_rla<addr_mode::zero_page_x>;
+    table[opcode::rla_absolute_unofficial] = &execute_rla<addr_mode::absolute>;
+    table[opcode::rla_absolute_x_unofficial] = &execute_rla<addr_mode::absolute_x>;
+    table[opcode::rla_absolute_y_unofficial] = &execute_rla<addr_mode::absolute_y>;
+    table[opcode::rla_indexed_indirect_unofficial] = &execute_rla<addr_mode::indexed_indirect>;
+    table[opcode::rla_indirect_indexed_unofficial] = &execute_rla<addr_mode::indirect_indexed>;
+
+    table[opcode::rra_zero_page_unofficial] = &execute_rra<addr_mode::zero_page>;
+    table[opcode::rra_zero_page_x_unofficial] = &execute_rra<addr_mode::zero_page_x>;
+    table[opcode::rra_absolute_unofficial] = &execute_rra<addr_mode::absolute>;
+    table[opcode::rra_absolute_x_unofficial] = &execute_rra<addr_mode::absolute_x>;
+    table[opcode::rra_absolute_y_unofficial] = &execute_rra<addr_mode::absolute_y>;
+    table[opcode::rra_indexed_indirect_unofficial] = &execute_rra<addr_mode::indexed_indirect>;
+    table[opcode::rra_indirect_indexed_unofficial] = &execute_rra<addr_mode::indirect_indexed>;
+
     table[opcode::sbc_immediate_unofficial] = &execute_sbc<addr_mode::immediate>;
 
     table[opcode::sax_zero_page_unofficial] = &execute_sax<addr_mode::zero_page>;
@@ -1404,6 +1483,13 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::slo_indexed_indirect_unofficial] = &execute_slo<addr_mode::indexed_indirect>;
     table[opcode::slo_indirect_indexed_unofficial] = &execute_slo<addr_mode::indirect_indexed>;
 
+    table[opcode::sre_zero_page_unofficial] = &execute_sre<addr_mode::zero_page>;
+    table[opcode::sre_zero_page_x_unofficial] = &execute_sre<addr_mode::zero_page_x>;
+    table[opcode::sre_absolute_unofficial] = &execute_sre<addr_mode::absolute>;
+    table[opcode::sre_absolute_x_unofficial] = &execute_sre<addr_mode::absolute_x>;
+    table[opcode::sre_absolute_y_unofficial] = &execute_sre<addr_mode::absolute_y>;
+    table[opcode::sre_indexed_indirect_unofficial] = &execute_sre<addr_mode::indexed_indirect>;
+    table[opcode::sre_indirect_indexed_unofficial] = &execute_sre<addr_mode::indirect_indexed>;
 #endif // NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
 
     return table;
