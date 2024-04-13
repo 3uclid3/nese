@@ -122,6 +122,8 @@ void append_opcode(auto& out, const cpu::state& cpu_state [[maybe_unused]], cons
     const cpu::instruction::opcode opcode = static_cast<cpu::instruction::opcode>(memory_mapper.get_byte(cpu_state.registers.pc));
     const string_view mnemonic = cpu::instruction::mnemonics[opcode];
 
+    append_char(out, cpu::instruction::is_officials[opcode] ? ' ' : '*');
+
     for (const char c : mnemonic)
     {
         append_char(out, to_upper(c));
@@ -172,13 +174,13 @@ void append_operand(auto& out, const cpu::state& cpu_state, const memory::mapper
 
             if (addr_mode == cpu::addr_mode::zero_page_x)
             {
-                addr += cpu_state.registers.x;
+                addr = addr + cpu_state.registers.x & 0xFF;
                 out = fmt::format_to(out, ",X @ {:02X}", addr);
                 current_length += 7;
             }
             else if (addr_mode == cpu::addr_mode::zero_page_y)
             {
-                addr += cpu_state.registers.y;
+                addr = addr + cpu_state.registers.y & 0xFF;
                 out = fmt::format_to(out, ",Y @ {:02X}", addr);
                 current_length += 7;
             }
@@ -297,7 +299,7 @@ const char* format(const cpu::state& cpu_state, const memory::mapper& memory_map
     append_space(out);
 
     append_instruction_bytes(out, cpu_state, memory_mapper);
-    append_space(out, 2);
+    append_space(out);
 
     append_opcode(out, cpu_state, memory_mapper);
     append_space(out);
