@@ -327,7 +327,7 @@ void execute_and(execute_context ctx)
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
 }
 
-// ASL ():
+// ASL (Arithmetic Shift Left):
 // Shifts all bits of the accumulator or a memory location one bit to the left, setting the carry flag with the last bit's value and affecting the zero and negative flags.
 template<addr_mode AddrModeT>
 void execute_asl(execute_context ctx)
@@ -1132,6 +1132,27 @@ void execute_sax(execute_context ctx)
 
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
 }
+
+// SLO (Shift Left then Logical OR):
+// Shifts the value in memory one bit to the left (ASL) and then performs an OR operation with the accumulator, affecting the zero, negative, and carry flags.
+template<addr_mode AddrModeT>
+void execute_slo(execute_context ctx)
+{
+    bool page_crossing{false};
+    const addr_t addr = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t value = read_operand<AddrModeT>(ctx, addr);
+    const byte_t new_value = static_cast<byte_t>(value << 1);
+
+    write_operand<AddrModeT>(ctx, addr, new_value);
+
+    ctx.registers().a |= new_value;
+
+    ctx.registers().set_flag(status_flag::carry, is_negative(value));
+    ctx.registers().set_flag(status_flag::zero, is_zero(ctx.registers().a));
+    ctx.registers().set_flag(status_flag::negative, is_negative(ctx.registers().a));
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing) + cpu_cycle_t(2));
+}
 #endif // NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
 
 consteval execute_callback_table create_execute_callback_table()
@@ -1374,6 +1395,14 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::sax_zero_page_y_unofficial] = &execute_sax<addr_mode::zero_page_y>;
     table[opcode::sax_absolute_unofficial] = &execute_sax<addr_mode::absolute>;
     table[opcode::sax_indexed_indirect_unofficial] = &execute_sax<addr_mode::indexed_indirect>;
+
+    table[opcode::slo_zero_page_unofficial] = &execute_slo<addr_mode::zero_page>;
+    table[opcode::slo_zero_page_x_unofficial] = &execute_slo<addr_mode::zero_page_x>;
+    table[opcode::slo_absolute_unofficial] = &execute_slo<addr_mode::absolute>;
+    table[opcode::slo_absolute_x_unofficial] = &execute_slo<addr_mode::absolute_x>;
+    table[opcode::slo_absolute_y_unofficial] = &execute_slo<addr_mode::absolute_y>;
+    table[opcode::slo_indexed_indirect_unofficial] = &execute_slo<addr_mode::indexed_indirect>;
+    table[opcode::slo_indirect_indexed_unofficial] = &execute_slo<addr_mode::indirect_indexed>;
 
 #endif // NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
 
