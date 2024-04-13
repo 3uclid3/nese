@@ -259,6 +259,8 @@ enum class opcode
     sax_absolute_unofficial = 0x8F,
     sax_indexed_indirect_unofficial = 0x83,
 
+    sbc_immediate_unofficial = 0xEB,
+
     slo_zero_page_unofficial = 0x07,
     slo_zero_page_x_unofficial = 0x17,
     slo_absolute_unofficial = 0x0F,

@@ -1065,7 +1065,7 @@ void execute_tya(execute_context ctx)
 
 #if NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
 // LAX (Load Accumulator and X):
-// Loads both the accumulator (A) and the X register with the same memory content, updating the zero and negative flags based on the value loaded.
+// Loads both the accumulator and the X register with the same memory content, updating the zero and negative flags based on the value loaded.
 template<addr_mode AddrModeT>
 void execute_lax(execute_context ctx)
 {
@@ -1078,6 +1078,19 @@ void execute_lax(execute_context ctx)
 
     ctx.registers().set_flag(status_flag::zero, is_zero(value));
     ctx.registers().set_flag(status_flag::negative, is_negative(value));
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+}
+
+// SAX (Store Accumulator and X):
+// Stores the bitwise AND of the accumulator and the X register to memory, without affecting any flags.
+template<addr_mode AddrModeT>
+void execute_sax(execute_context ctx)
+{
+    bool page_crossing{false};
+    const addr_t addr = decode_operand<AddrModeT>(ctx, page_crossing);
+
+    write_operand<AddrModeT>(ctx, addr, static_cast<byte_t>(ctx.registers().a & ctx.registers().x));
 
     ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
 }
@@ -1270,6 +1283,13 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::tya_implied] = &execute_tya<addr_mode::implied>;
 
 #if NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
+    table[opcode::lax_zero_page_unofficial] = &execute_lax<addr_mode::zero_page>;
+    table[opcode::lax_zero_page_y_unofficial] = &execute_lax<addr_mode::zero_page_y>;
+    table[opcode::lax_absolute_unofficial] = &execute_lax<addr_mode::absolute>;
+    table[opcode::lax_absolute_y_unofficial] = &execute_lax<addr_mode::absolute_y>;
+    table[opcode::lax_indexed_indirect_unofficial] = &execute_lax<addr_mode::indexed_indirect>;
+    table[opcode::lax_indirect_indexed_unofficial] = &execute_lax<addr_mode::indirect_indexed>;
+
     table[opcode::nop_immediate_unofficial_80] = &execute_nop<addr_mode::immediate>;
     table[opcode::nop_implied_unofficial_1A] = &execute_nop<addr_mode::implied>;
     table[opcode::nop_implied_unofficial_3A] = &execute_nop<addr_mode::implied>;
@@ -1294,12 +1314,13 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::nop_absolute_x_unofficial_DC] = &execute_nop<addr_mode::absolute_x>;
     table[opcode::nop_absolute_x_unofficial_FC] = &execute_nop<addr_mode::absolute_x>;
 
-    table[opcode::lax_zero_page_unofficial] = &execute_lax<addr_mode::zero_page>;
-    table[opcode::lax_zero_page_y_unofficial] = &execute_lax<addr_mode::zero_page_y>;
-    table[opcode::lax_absolute_unofficial] = &execute_lax<addr_mode::absolute>;
-    table[opcode::lax_absolute_y_unofficial] = &execute_lax<addr_mode::absolute_y>;
-    table[opcode::lax_indexed_indirect_unofficial] = &execute_lax<addr_mode::indexed_indirect>;
-    table[opcode::lax_indirect_indexed_unofficial] = &execute_lax<addr_mode::indirect_indexed>;
+    table[opcode::sbc_immediate_unofficial] = &execute_sbc<addr_mode::immediate>;
+
+    table[opcode::sax_zero_page_unofficial] = &execute_sax<addr_mode::zero_page>;
+    table[opcode::sax_zero_page_y_unofficial] = &execute_sax<addr_mode::zero_page_y>;
+    table[opcode::sax_absolute_unofficial] = &execute_sax<addr_mode::absolute>;
+    table[opcode::sax_indexed_indirect_unofficial] = &execute_sax<addr_mode::indexed_indirect>;
+
 #endif // NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
 
     return table;
