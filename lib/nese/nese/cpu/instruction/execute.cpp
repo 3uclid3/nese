@@ -759,6 +759,47 @@ void execute_rts(execute_context ctx)
     ctx.step_cycle(cpu_cycle_t(6));
 }
 
+
+// ROL (Rotate Left):
+// Rotates all bits of the accumulator or a memory location one bit to the left, including the carry flag, affecting the carry, zero, and negative flags.template<addr_mode AddrModeT>
+template<addr_mode AddrModeT>
+void execute_rol(execute_context ctx)
+{
+    bool page_crossing{false};
+    const word_t operand = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t value = read_operand<AddrModeT>(ctx, operand);
+    const byte_t carry_mask = ctx.registers().is_flag_set(status_flag::carry) ? 0x01 : 0x00;
+    const byte_t new_value = value << 1 | carry_mask;
+
+    write_operand<AddrModeT>(ctx, operand, new_value);
+
+    ctx.registers().set_flag(status_flag::carry, value & 0x80);
+    ctx.registers().set_flag(status_flag::zero, is_zero(new_value));
+    ctx.registers().set_flag(status_flag::negative, is_negative(new_value));
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+}
+
+// ROR (Rotate Right):
+// Rotates all bits of the accumulator or a memory location one bit to the right, including the carry flag, affecting the carry, zero, and negative flags.
+template<addr_mode AddrModeT>
+void execute_ror(execute_context ctx)
+{
+    bool page_crossing{false};
+    const word_t operand = decode_operand<AddrModeT>(ctx, page_crossing);
+    const byte_t value = read_operand<AddrModeT>(ctx, operand);
+    const byte_t carry_mask = ctx.registers().is_flag_set(status_flag::carry) ? 0x80 : 0x00;
+    const byte_t new_value = value >> 1 | carry_mask;
+
+    write_operand<AddrModeT>(ctx, operand, new_value);
+
+    ctx.registers().set_flag(status_flag::carry, value & 0x1);
+    ctx.registers().set_flag(status_flag::zero, is_zero(new_value));
+    ctx.registers().set_flag(status_flag::negative, is_negative(new_value));
+
+    ctx.step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+}
+
 // SBC (Subtract with Carry):
 // Subtracts a memory value and the carry flag from the accumulator, affecting flags for carry, zero, overflow, and negative.
 template<addr_mode AddrModeT>
@@ -1043,6 +1084,18 @@ consteval execute_callback_table create_execute_callback_table()
 
     table[opcode::rti_implied] = &execute_rti<addr_mode::implied>;
     table[opcode::rts_implied] = &execute_rts<addr_mode::implied>;
+
+    table[opcode::rol_accumulator] = &execute_rol<addr_mode::accumulator>;
+    table[opcode::rol_zero_page] = &execute_rol<addr_mode::zero_page>;
+    table[opcode::rol_zero_page_x] = &execute_rol<addr_mode::zero_page_x>;
+    table[opcode::rol_absolute] = &execute_rol<addr_mode::absolute>;
+    table[opcode::rol_absolute_x] = &execute_rol<addr_mode::absolute_x>;
+
+    table[opcode::ror_accumulator] = &execute_ror<addr_mode::accumulator>;
+    table[opcode::ror_zero_page] = &execute_ror<addr_mode::zero_page>;
+    table[opcode::ror_zero_page_x] = &execute_ror<addr_mode::zero_page_x>;
+    table[opcode::ror_absolute] = &execute_ror<addr_mode::absolute>;
+    table[opcode::ror_absolute_x] = &execute_ror<addr_mode::absolute_x>;
 
     table[opcode::sbc_immediate] = &execute_sbc<addr_mode::immediate>;
     table[opcode::sbc_zero_page] = &execute_sbc<addr_mode::zero_page>;

@@ -59,6 +59,8 @@ set(SOURCES
     "${DIR}/cpu/instruction/php_test.cpp"
     "${DIR}/cpu/instruction/pla_test.cpp"
     "${DIR}/cpu/instruction/plp_test.cpp"
+    "${DIR}/cpu/instruction/rol_test.cpp"
+    "${DIR}/cpu/instruction/ror_test.cpp"
     "${DIR}/cpu/instruction/rti_test.cpp"
     "${DIR}/cpu/instruction/rts_test.cpp"
     "${DIR}/cpu/instruction/sbc_test.cpp"
