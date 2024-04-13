@@ -17,6 +17,7 @@ TEST_CASE_METHOD(load_fixture, "lda", "[cpu][instruction]")
     test_absolute_indexed(opcode::lda_absolute_x, register_id::x, addr_mode_scenario, behavior_scenarios);
     test_absolute_indexed(opcode::lda_absolute_y, register_id::y, addr_mode_scenario, behavior_scenarios);
     test_indexed_indirect(opcode::lda_indexed_indirect, addr_mode_scenario, behavior_scenarios);
+    test_indirect_indexed(opcode::lda_indirect_indexed, addr_mode_scenario, behavior_scenarios);
 }
 
 } // namespace nese::cpu::instruction

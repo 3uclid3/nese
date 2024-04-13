@@ -452,6 +452,7 @@ struct execute_fixture
     void test_absolute(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(4));
     void test_absolute_indexed(opcode opcode, register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(4));
     void test_indexed_indirect(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(6));
+    void test_indirect_indexed(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(5));
 
     void test_unspecified(opcode opcode, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(0));
 

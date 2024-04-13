@@ -1,5 +1,3 @@
-#include "fixture/execute_fixture.hpp"
-
 #include <catch2/catch_test_macros.hpp>
 
 #include <nese/cpu/instruction/fixture/execute_fixture.hpp>

@@ -86,6 +86,7 @@ TEST_CASE_METHOD(sbc_fixture, "sbc", "[cpu][instruction]")
     test_absolute_indexed(opcode::sbc_absolute_x, register_id::x, addr_mode_scenario, behavior_scenarios);
     test_absolute_indexed(opcode::sbc_absolute_y, register_id::y, addr_mode_scenario, behavior_scenarios);
     test_indexed_indirect(opcode::sbc_indexed_indirect, addr_mode_scenario, behavior_scenarios);
+    test_indirect_indexed(opcode::sbc_indirect_indexed, addr_mode_scenario, behavior_scenarios);
 }
 
 } // namespace nese::cpu::instruction

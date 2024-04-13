@@ -201,9 +201,12 @@ addr_t decode_operand_addr<addr_mode::indexed_indirect>(execute_context ctx, boo
 template<>
 addr_t decode_operand_addr<addr_mode::indirect_indexed>(execute_context ctx, bool& page_crossing)
 {
-    const byte_t addr_arg = decode_byte(ctx);
-    const addr_t addr = static_cast<addr_t>(ctx.memory().get_byte(addr_arg)) + static_cast<addr_t>(static_cast<uint16_t>((ctx.memory().get_byte(addr_arg + 1) & 0xff)) << 8);
-    const addr_t new_addr = addr + ctx.registers().y;
+    const byte_t addr = decode_byte(ctx);
+
+    const byte_t lo = ctx.memory().get_byte(addr);
+    const byte_t hi = ctx.memory().get_byte((addr + 1) & 0xFF);
+
+    const addr_t new_addr = static_cast<addr_t>(lo) + static_cast<addr_t>(static_cast<addr_t>(hi) << 8) + ctx.registers().y;
 
     page_crossing = is_page_crossing(addr, new_addr);
 
@@ -1042,7 +1045,7 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::adc_absolute_x] = &execute_adc<addr_mode::absolute_x>;
     table[opcode::adc_absolute_y] = &execute_adc<addr_mode::absolute_y>;
     table[opcode::adc_indexed_indirect] = &execute_adc<addr_mode::indexed_indirect>;
-    // table[opcode::adc_indirect_indexed] = &execute_adc<addr_mode::indirect_indexed>;
+    table[opcode::adc_indirect_indexed] = &execute_adc<addr_mode::indirect_indexed>;
 
     table[opcode::and_immediate] = &execute_and<addr_mode::immediate>;
     table[opcode::and_zero_page] = &execute_and<addr_mode::zero_page>;
@@ -1051,7 +1054,7 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::and_absolute_x] = &execute_and<addr_mode::absolute_x>;
     table[opcode::and_absolute_y] = &execute_and<addr_mode::absolute_y>;
     table[opcode::and_indexed_indirect] = &execute_and<addr_mode::indexed_indirect>;
-    // table[opcode::and_indirect_indexed] = &execute_and<addr_mode::indirect_indexed>;
+    table[opcode::and_indirect_indexed] = &execute_and<addr_mode::indirect_indexed>;
 
     table[opcode::asl_accumulator] = &execute_asl<addr_mode::accumulator>;
     table[opcode::asl_zero_page] = &execute_asl<addr_mode::zero_page>;
@@ -1083,7 +1086,7 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::cmp_absolute_x] = &execute_cmp<addr_mode::absolute_x>;
     table[opcode::cmp_absolute_y] = &execute_cmp<addr_mode::absolute_y>;
     table[opcode::cmp_indexed_indirect] = &execute_cmp<addr_mode::indexed_indirect>;
-    // table[opcode::cmp_indirect_indexed] = &execute_cmp<addr_mode::indirect_indexed>;
+    table[opcode::cmp_indirect_indexed] = &execute_cmp<addr_mode::indirect_indexed>;
 
     table[opcode::cpx_immediate] = &execute_cpx<addr_mode::immediate>;
     table[opcode::cpx_zero_page] = &execute_cpx<addr_mode::zero_page>;
@@ -1108,7 +1111,7 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::eor_absolute_x] = &execute_eor<addr_mode::absolute_x>;
     table[opcode::eor_absolute_y] = &execute_eor<addr_mode::absolute_y>;
     table[opcode::eor_indexed_indirect] = &execute_eor<addr_mode::indexed_indirect>;
-    // table[opcode::eor_indirect_indexed] = &execute_eor<addr_mode::indirect_indexed>;
+    table[opcode::eor_indirect_indexed] = &execute_eor<addr_mode::indirect_indexed>;
 
     table[opcode::inc_zero_page] = &execute_inc<addr_mode::zero_page>;
     table[opcode::inc_zero_page_x] = &execute_inc<addr_mode::zero_page_x>;
@@ -1128,7 +1131,7 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::lda_absolute_x] = &execute_lda<addr_mode::absolute_x>;
     table[opcode::lda_absolute_y] = &execute_lda<addr_mode::absolute_y>;
     table[opcode::lda_indexed_indirect] = &execute_lda<addr_mode::indexed_indirect>;
-    // table[opcode::lda_indirect_indexed] = &execute_lda<addr_mode::indirect_indexed>;
+    table[opcode::lda_indirect_indexed] = &execute_lda<addr_mode::indirect_indexed>;
 
     table[opcode::ldx_immediate] = &execute_ldx<addr_mode::immediate>;
     table[opcode::ldx_zero_page] = &execute_ldx<addr_mode::zero_page>;
@@ -1157,7 +1160,7 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::ora_absolute_x] = &execute_ora<addr_mode::absolute_x>;
     table[opcode::ora_absolute_y] = &execute_ora<addr_mode::absolute_y>;
     table[opcode::ora_indexed_indirect] = &execute_ora<addr_mode::indexed_indirect>;
-    // table[opcode::ora_indirect_indexed] = &execute_ora<addr_mode::indirect_indexed>;
+    table[opcode::ora_indirect_indexed] = &execute_ora<addr_mode::indirect_indexed>;
 
     table[opcode::pha_implied] = &execute_pha<addr_mode::implied>;
     table[opcode::php_implied] = &execute_php<addr_mode::implied>;
@@ -1187,7 +1190,7 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::sbc_absolute_x] = &execute_sbc<addr_mode::absolute_x>;
     table[opcode::sbc_absolute_y] = &execute_sbc<addr_mode::absolute_y>;
     table[opcode::sbc_indexed_indirect] = &execute_sbc<addr_mode::indexed_indirect>;
-    // table[opcode::sbc_indirect_indexed] = &execute_sbc<addr_mode::indirect_indexed>;
+    table[opcode::sbc_indirect_indexed] = &execute_sbc<addr_mode::indirect_indexed>;
 
     table[opcode::sec_implied] = &execute_sec<addr_mode::implied>;
     table[opcode::sed_implied] = &execute_sed<addr_mode::implied>;
@@ -1199,7 +1202,7 @@ consteval execute_callback_table create_execute_callback_table()
     table[opcode::sta_absolute_x] = &execute_sta<addr_mode::absolute_x>;
     table[opcode::sta_absolute_y] = &execute_sta<addr_mode::absolute_y>;
     table[opcode::sta_indexed_indirect] = &execute_sta<addr_mode::indexed_indirect>;
-    // table[opcode::sta_indirect_indexed] = &execute_sta<addr_mode::indirect_indexed>;
+    table[opcode::sta_indirect_indexed] = &execute_sta<addr_mode::indirect_indexed>;
 
     table[opcode::stx_zero_page] = &execute_stx<addr_mode::zero_page>;
     table[opcode::stx_zero_page_y] = &execute_stx<addr_mode::zero_page_y>;

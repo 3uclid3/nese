@@ -71,15 +71,22 @@ static constexpr std::array absolute_indexed_scenarios = std::to_array<std::tupl
     });
 
 static constexpr std::array indexed_indirect_scenarios = std::to_array<std::tuple<addr_x, byte_x, byte_x, byte_x>>(
-    {
-        // TODO Meaningful values
-        // [pc_addr, base_addr, x, value_addr]
-        {0x0200, 0x01, 0x01, 0x11},
-        {0x0200, 0x80, 0x80, 0x10},
-        {0x0000, 0x10, 0x2, 0x30}, 
-        {0x8000, 0x03, 0x3, 0x40}, 
-        {0xFFF9, 0x04, 0x4, 0x50}  
-    });
+    {// TODO Meaningful values
+     // [pc_addr, base_addr, x, value_addr]
+     {0x0200, 0x01, 0x01, 0x11},
+     {0x0200, 0x80, 0x80, 0x10},
+     {0x0000, 0x10, 0x2, 0x30},
+     {0x8000, 0x03, 0x3, 0x40},
+     {0xFFF9, 0x04, 0x4, 0x50}});
+
+static constexpr std::array indirect_indexed_scenarios = std::to_array<std::tuple<addr_x, byte_x, byte_x, byte_x>>(
+    {// TODO Meaningful values
+     // [pc_addr, base_addr, x, value_addr]
+     {0x0200, 0x01, 0x01, 0x11},
+     {0x0200, 0x80, 0x80, 0x10},
+     {0x0000, 0x10, 0x2, 0x30},
+     {0x8000, 0x03, 0x3, 0x40},
+     {0xFFF9, 0x04, 0x4, 0x50}});
 
 string execute_fixture::scenario::to_string() const
 {
@@ -431,6 +438,55 @@ void execute_fixture::test_indexed_indirect(opcode opcode, const scenario& addre
         SECTION("addressing")
         {
             const auto [pc_addr, base_addr, value_addr, x] = GENERATE(from_range(indexed_indirect_scenarios));
+
+            test(pc_addr, base_addr, x, value_addr, addressing_scenario);
+        }
+
+        SECTION("behavior")
+        {
+            const scenario& scenario = GENERATE_COPY(from_range(behavior_scenarios));
+
+            INFO(scenario.description);
+
+            test(default_pc_addr, default_base_addr, indexed_offset, 0xC0, scenario);
+        }
+    }
+}
+
+void execute_fixture::test_indirect_indexed(opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost)
+{
+    auto test = [this, opcode, base_cycle_cost](addr_x pc_addr, byte_x base_addr, byte_x y, byte_x value_addr, const scenario& scenario) {
+        CAPTURE(pc_addr);
+        CAPTURE(base_addr);
+        CAPTURE(y);
+        CAPTURE(scenario);
+
+        state.registers.pc = pc_addr;
+        state.registers.y = y;
+        memory.set_byte(pc_addr, base_addr);
+        memory.set_byte(base_addr, value_addr & 0xFF);
+        memory.set_byte((base_addr + 1) & 0xFF, static_cast<byte_t>(value_addr >> 8));
+
+        change_context context{static_cast<addr_t>(value_addr + y), addr_modes[opcode], state, memory};
+        apply_changes(scenario.initial_changes, context);
+
+        expected_state = state;
+        expected_memory = memory;
+
+        expected_state.cycle = base_cycle_cost + scenario.base_cycle_cost;
+        expected_state.registers.pc = pc_addr + 1;
+
+        change_context expected_context{static_cast<addr_t>(value_addr + y), addr_modes[opcode], expected_state, expected_memory};
+        apply_changes(scenario.expected_changes, expected_context);
+
+        execute_and_check(opcode, false);
+    };
+
+    SECTION("indirect_indexed")
+    {
+        SECTION("addressing")
+        {
+            const auto [pc_addr, base_addr, value_addr, x] = GENERATE(from_range(indirect_indexed_scenarios));
 
             test(pc_addr, base_addr, x, value_addr, addressing_scenario);
         }
