@@ -1,6 +1,5 @@
 #pragma once
 
-#include <catch2/catch_message.hpp>
 #include <magic_enum.hpp>
 
 #include <nese/basic_types.hpp>
