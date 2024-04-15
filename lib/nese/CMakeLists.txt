@@ -21,6 +21,7 @@ set(INCLUDES
     "${DIR}/utility/log.hpp"
     "${DIR}/utility/name_of.hpp"
     "${DIR}/utility/nintendulator.hpp"
+    "${DIR}/utility/passkey.hpp"
     "${DIR}/basic_types.hpp"
     "${DIR}/cycle.hpp"
     "${DIR}/emulator.hpp"
