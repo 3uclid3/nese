@@ -11,6 +11,8 @@ set(INCLUDES
     "${DIR}/cpu/stack.hpp"
     "${DIR}/cpu/state.hpp"
     "${DIR}/cpu/status_flag.hpp"
+    "${DIR}/ppu/control.hpp"
+    "${DIR}/ppu/state.hpp"
     "${DIR}/memory/mapper.hpp"
     "${DIR}/memory/ram.hpp"
     "${DIR}/memory/rom.hpp"
@@ -23,6 +25,9 @@ set(INCLUDES
     "${DIR}/utility/nintendulator.hpp"
     "${DIR}/utility/passkey.hpp"
     "${DIR}/basic_types.hpp"
+    "${DIR}/bus.hpp"
+    "${DIR}/cpu.hpp"
+    "${DIR}/cpu.inl"
     "${DIR}/cycle.hpp"
     "${DIR}/emulator.hpp"
 )
@@ -30,14 +35,17 @@ set(INCLUDES
 set(SOURCES
     "${DIR}/cpu/instruction/execute.cpp"
     "${DIR}/memory/mapper.cpp"
-    "${DIR}/memory/ram.cpp"
     "${DIR}/memory/rom.cpp"
     "${DIR}/utility/format.cpp"
     "${DIR}/utility/nintendulator.cpp"
     "${DIR}/emulator.cpp"
 )
 
-add_library(nese ${INCLUDES} ${SOURCES})
+set(VISUALIZERS
+    "nese.natvis"
+)
+
+add_library(nese ${INCLUDES} ${SOURCES} ${VISUALIZERS})
 
 target_link_libraries(
     nese

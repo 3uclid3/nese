@@ -43,6 +43,11 @@ struct fixture
             previous_state = state;
             previous_memory = memory;
 
+            //if (state.registers.pc == 0xC689)
+            //{
+            //    __debugbreak();    
+            //}
+
             nintendulator::format_flags format_flags = nintendulator::format_flag::all;
             format_flags = format_flags & ~nintendulator::format_flag::ppu;
             format_flags = format_flags & ~nintendulator::format_flag::cycle;

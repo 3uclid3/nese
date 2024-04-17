@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <Type Name="nese::v2::cpu_registers">
+        <Expand>
+            <Item Name="[a]">a,X</Item>
+            <Item Name="[x]">x,X</Item>
+            <Item Name="[y]">y,X</Item>
+            <Item Name="[pc]">pc,X</Item>
+            <Item Name="[stack_pointer]">sp,X</Item>
+            <Synthetic Name="[status]">
+                <DisplayString>{status,X}</DisplayString>
+                <Expand>
+                    <Item Name="[carry]" Condition="(status &amp; (1 &lt;&lt; 0)) != 0">true</Item>
+                    <Item Name="[carry]" Condition="(status &amp; (1 &lt;&lt; 0)) == 0">false</Item>
+
+                    <Item Name="[zero]" Condition="(status &amp; (1 &lt;&lt; 1)) != 0">true</Item>
+                    <Item Name="[zero]" Condition="(status &amp; (1 &lt;&lt; 1)) == 0">false</Item>
+
+                    <Item Name="[interrupt]" Condition="(status &amp; (1 &lt;&lt; 2)) != 0">true</Item>
+                    <Item Name="[interrupt]" Condition="(status &amp; (1 &lt;&lt; 2)) == 0">false</Item>
+
+                    <Item Name="[decimal]" Condition="(status &amp; (1 &lt;&lt; 3)) != 0">true</Item>
+                    <Item Name="[decimal]" Condition="(status &amp; (1 &lt;&lt; 3)) == 0">false</Item>
+
+                    <Item Name="[break_cmd]" Condition="(status &amp; (1 &lt;&lt; 4)) != 0">true</Item>
+                    <Item Name="[break_cmd]" Condition="(status &amp; (1 &lt;&lt; 4)) == 0">false</Item>
+
+                    <Item Name="[unused]" Condition="(status &amp; (1 &lt;&lt; 5)) != 0">true</Item>
+                    <Item Name="[unused]" Condition="(status &amp; (1 &lt;&lt; 5)) == 0">false</Item>
+
+                    <Item Name="[overflow]" Condition="(status &amp; (1 &lt;&lt; 6)) != 0">true</Item>
+                    <Item Name="[overflow]" Condition="(status &amp; (1 &lt;&lt; 6)) == 0">false</Item>
+
+                    <Item Name="[negative]" Condition="(status &amp; (1 &lt;&lt; 7)) != 0">true</Item>
+                    <Item Name="[negative]" Condition="(status &amp; (1 &lt;&lt; 7)) == 0">false</Item>
+                </Expand>
+            </Synthetic>
+        </Expand>
+    </Type>
+    <Type Name="nese::v2::cpu&lt;*&gt;">
+        <Expand>
+            <Item Name="[registers]">_state.registers</Item>
+            <Item Name="[cycle]">_state.cycle</Item>
+        </Expand>
+    </Type>
+</AutoVisualizer>

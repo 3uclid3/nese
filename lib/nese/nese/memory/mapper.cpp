@@ -91,4 +91,9 @@ addr_t mapper::redirect_addr(addr_t addr)
     return addr;
 }
 
+//bool mapper::is_io_registers(addr_t addr)
+//{
+//    return (addr & 0xFFF8) == 0x2000 || (addr & 0xFFE0) == 0x4000;
+//}
+
 } // namespace nese::memory

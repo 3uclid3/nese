@@ -26,6 +26,7 @@ public:
 
 private:
     [[nodiscard]] static addr_t redirect_addr(addr_t addr);
+    //[[nodiscard]] static bool is_io_registers(addr_t addr);
 
 private:
     std::array<byte_t, capacity> _data{};

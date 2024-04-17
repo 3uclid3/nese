@@ -16,7 +16,10 @@ set(INCLUDES
     "${DIR}/cpu/instruction/fixture/store_fixture.hpp"
     "${DIR}/cpu/instruction/fixture/transfer_fixture.hpp"
     "${DIR}/cpu/state_mock.hpp"
+    "${DIR}/utility/concat.hpp"
     "${DIR}/utility/hex.hpp"
+    "${DIR}/cpu_bus_mock.hpp"
+    "${DIR}/cpu_fixture.hpp"
     "${DIR}/test_config.hpp"
 )
 
@@ -88,6 +91,8 @@ set(SOURCES
     "${DIR}/utility/format_test.cpp"
     "${DIR}/utility/crc32_test.cpp"
     "${DIR}/utility/name_of_test.cpp"
+    "${DIR}/cpu_fixture.cpp"
+    "${DIR}/cpu_test.cpp"
 )
 
 add_executable(nese_test ${INCLUDES} ${SOURCES})

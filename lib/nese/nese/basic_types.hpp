@@ -36,3 +36,5 @@ using addr_t = word_t;
 constexpr addr_t null_addr = addr_t{0};
 
 } // namespace nese
+
+#include <nese/cycle.hpp>
