@@ -1791,13 +1791,13 @@ TEST_CASE_METHOD(cpu_fixture, "rti", "[cpu][instruction]")
             .cycle_cost = cycle_cost
         },
         {
-            .initial = {set_pc(0x0210), set_sp(0xFD), set_stack(0xFE, 0x00), set_stackw(0xFF, 0x1234)},
+            .initial = {set_sp(0xFD), set_stack(0xFE, 0x00), set_stackw(0xFF, 0x1234)},
             .expected = {set_pc(0x1234), set_sp(0x00), set_status_unused()},
             .description = "SP at FE to simulate edge case of wrapping around from 0x01FF to 0x0100",
             .cycle_cost = cycle_cost
         },
         {
-            .initial = {set_pc(0x0210), set_sp(0xFE), set_stack(0xFF, 0x00), set_stackw(0x00, 0x0200)},
+            .initial = {set_sp(0xFE), set_stack(0xFF, 0x00), set_stackw(0x00, 0x0200)},
             .expected = {set_pc(0x0200), set_sp(0x01), set_status_unused()},
             .cycle_cost = cycle_cost
         },
@@ -1858,12 +1858,12 @@ TEST_CASE_METHOD(cpu_fixture, "rts", "[cpu][instruction]")
     // clang-format off
     static const std::array behavior_scenarios = std::to_array<scenario>({
         {
-            .initial = {set_pc(0x0210), set_sp(0xFD), set_stack(0xFE, 0x00), set_stack(0xFF, 0x40)},
+            .initial = {set_sp(0xFD), set_stack(0xFE, 0x00), set_stack(0xFF, 0x40)},
             .expected = {set_pc(0x4001), set_sp(0xFF)},
             .cycle_cost = cycle_cost
         },
         {
-            .initial = {set_pc(0x0210), set_sp(0xFE), set_stack(0xFF, 0x34), set_stack(0x00, 0x12)},
+            .initial = {set_sp(0xFE), set_stack(0xFF, 0x34), set_stack(0x00, 0x12)},
             .expected = {set_pc(0x1235), set_sp(0x00)},
             .description = "SP at FE to simulate edge case of wrapping around from 0x01FF to 0x0100",
             .cycle_cost = cycle_cost

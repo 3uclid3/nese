@@ -17,7 +17,7 @@ concept cpu_memval = std::same_as<ValueT, byte_t> || std::same_as<ValueT, word_t
 struct cpu_fixture
 {
     // Standard PC address
-    static constexpr addr_x default_pc_addr = 0x0200;
+    static constexpr addr_x default_pc_addr = 0x0201;
 
     // Small offset
     static constexpr byte_x default_base_addr = 0x10;
@@ -29,7 +29,7 @@ struct cpu_fixture
     static constexpr byte_x zero_page_base_addr = 0x20;
 
     // Well within the absolute
-    static constexpr addr_x absolute_base_addr = 0x0300;
+    static constexpr addr_x absolute_base_addr = 0x0301;
 
     struct operation_context
     {
