@@ -260,12 +260,12 @@ private:
     void step_cycle(cpu_cycle_t cycle);
 
     // status
-    [[nodiscard]] bool is_status_set(cpu_status flag) const;
-    [[nodiscard]] bool is_status_clear(cpu_status flag) const;
+    [[nodiscard]] bool is_status_set(cpu_status status) const;
+    [[nodiscard]] bool is_status_clear(cpu_status status) const;
 
-    void set_status(cpu_status flag, bool value);
-    void set_status(cpu_status flag);
-    void clear_status(cpu_status flag);
+    void set_status(cpu_status status, bool value);
+    void set_status(cpu_status status);
+    void clear_status(cpu_status status);
 
     // memory
     [[nodiscard]] byte_t read(addr_t addr);
