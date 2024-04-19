@@ -3,72 +3,13 @@
 #include <array>
 
 #include <nese/basic_types.hpp>
+#include <nese/cpu/cpu_addr_mode.hpp>
+#include <nese/cpu/cpu_opcode.hpp>
+#include <nese/cpu/cpu_state.hpp>
 #include <nese/utility/assert.hpp>
 #include <nese/utility/passkey.hpp>
 
 namespace nese::v2 {
-
-constexpr addr_t cpu_stack_offset = 0x100;
-
-enum class cpu_status : byte_t
-{
-    none = 0,
-    carry = 1 << 0,     // Carry Flag
-    zero = 1 << 1,      // Zero Flag
-    interrupt = 1 << 2, // Interrupt Disable
-    decimal = 1 << 3,   // Decimal Mode (not used in NES)
-    break_cmd = 1 << 4, // Break Command
-    unused = 1 << 5,    // Unused bit, always set to 1
-    overflow = 1 << 6,  // Overflow Flag
-    negative = 1 << 7   // Negative Flag
-};
-
-struct cpu_registers
-{
-    [[nodiscard]] constexpr bool is_status_set(cpu_status flag) const;
-    [[nodiscard]] constexpr bool is_status_clear(cpu_status flag) const;
-
-    constexpr void set_status(cpu_status flag, bool value);
-    constexpr void set_status(cpu_status flag);
-    constexpr void clear_status(cpu_status flag);
-
-    byte_t a;
-    byte_t x;
-    byte_t y;
-    word_t pc;
-    byte_t sp;
-    byte_t status;
-};
-
-struct cpu_state
-{
-    cpu_registers registers;
-    cpu_cycle_t cycle;
-};
-
-enum class cpu_addr_mode : byte_t
-{
-    implied,          // Implied addressing mode (no operand)
-    accumulator,      // Accumulator addressing mode (operand is the accumulator register)
-    immediate,        // Immediate addressing mode (operand is a constant value)
-    zero_page,        // Zero Page addressing mode (operand is in the first 256 bytes of memory)
-    zero_page_x,      // Zero Page,X addressing mode (operand is in the zero page, indexed by the X register)
-    zero_page_y,      // Zero Page,Y addressing mode (operand is in the zero page, indexed by the Y register)
-    absolute,         // Absolute addressing mode (operand is a 16-bit memory address)
-    absolute_x,       // Absolute,X addressing mode (operand is a 16-bit memory address, indexed by the X register)
-    absolute_y,       // Absolute,Y addressing mode (operand is a 16-bit memory address, indexed by the Y register)
-    relative,         // Relative addressing mode (operand is a signed 8-bit offset from the program counter)
-    indirect,         // Indirect addressing mode (operand is a 16-bit memory address that points to the actual address)
-    indexed_indirect, // Indexed Indirect addressing mode (operand is a zero page address, indexed by the X register)
-    indirect_indexed, // Indirect Indexed addressing mode (operand is a zero page address, indexed indirectly by the Y register)
-
-    count [[maybe_unused]]
-};
-
-enum class cpu_opcode : byte_t
-{
-    nop_implied = 0xEA,
-};
 
 template<typename BusT>
 class cpu
@@ -87,36 +28,258 @@ public:
     [[nodiscard]] cpu_state& get_state(passkey<BusT>);
 
 private:
-    using instruction = void (cpu::*)();
+    using instruction_callback = void (cpu::*)();
 
-    struct instruction_table
+    struct instruction_callback_table : public cpu_opcode_table<instruction_callback>
     {
-        [[nodiscard]] constexpr const instruction& operator[](cpu_opcode op) const;
-        [[nodiscard]] constexpr instruction& operator[](cpu_opcode op);
-
-        std::array<instruction, 256> instructions{};
+        static consteval instruction_callback_table create();
     };
 
-    static consteval instruction_table create_instruction_table();
+    friend struct instruction_callback_table;
 
 private:
+    // instructions helper
+    template<cpu_addr_mode AddrModeT>
+    void add_with_carry(byte_t value);
+
+    void branch(bool condition);
+
+    template<cpu_addr_mode AddrModeT>
+    void compare(byte_t to);
+
+    template<cpu_addr_mode AddrModeT>
+    void load(byte_t& value);
+
+    template<cpu_addr_mode AddrModeT>
+    void store(byte_t value);
+
     // instructions
     template<cpu_addr_mode AddrModeT>
+    void instruction_adc();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_and();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_asl();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_bcc();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_bcs();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_beq();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_bit();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_bmi();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_bne();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_bpl();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_bvc();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_bvs();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_clc();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_cld();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_cli();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_clv();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_cmp();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_cpx();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_cpy();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_dec();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_dex();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_dey();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_eor();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_inc();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_inx();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_iny();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_jmp();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_jsr();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_lda();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_ldx();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_ldy();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_lsr();
+
+    template<cpu_addr_mode AddrModeT>
     void instruction_nop();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_ora();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_pha();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_php();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_pla();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_plp();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_rti();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_rts();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_rol();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_ror();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_sbc();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_sec();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_sed();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_sei();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_sta();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_stx();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_sty();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_tax();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_tay();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_tsx();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_txa();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_txs();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_tya();
+
+#if NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
+    template<cpu_addr_mode AddrModeT>
+    void instruction_dcp();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_isb();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_lax();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_rla();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_rra();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_sax();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_slo();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_sre();
+#endif
+
+    // registers
+    byte_t& a();
+    byte_t& x();
+    byte_t& y();
+
+    byte_t& sp();
+
+    word_t& pc();
+
+    byte_t& status();
+
+    void step_cycle(u64_t cycle);
+    void step_cycle(cpu_cycle_t cycle);
+
+    // status
+    [[nodiscard]] bool is_status_set(cpu_status flag) const;
+    [[nodiscard]] bool is_status_clear(cpu_status flag) const;
+
+    void set_status(cpu_status flag, bool value);
+    void set_status(cpu_status flag);
+    void clear_status(cpu_status flag);
 
     // memory
     [[nodiscard]] byte_t read(addr_t addr);
     [[nodiscard]] word_t readw(addr_t addr);
 
-    void write(addr_t addr, byte_t byte);
-    void writew(addr_t addr, word_t word);
+    void write(addr_t addr, byte_t value);
+    void writew(addr_t addr, word_t value);
 
     // stack
-    [[nodiscard]] byte_t pop(addr_t addr);
-    [[nodiscard]] word_t popw(addr_t addr);
+    [[nodiscard]] byte_t pop();
+    [[nodiscard]] word_t popw();
 
-    void push(addr_t addr, byte_t byte);
-    void pushw(addr_t addr, word_t word);
+    void push(byte_t value);
+    void pushw(word_t value);
 
     // decoding
     [[nodiscard]] byte_t decode();
@@ -127,7 +290,13 @@ private:
     [[nodiscard]] word_t decode_operand();
 
     template<cpu_addr_mode AddrModeT>
+    [[nodiscard]] word_t decode_operand(bool& page_crossing);
+
+    template<cpu_addr_mode AddrModeT>
     [[nodiscard]] addr_t decode_operand_addr();
+
+    template<cpu_addr_mode AddrModeT>
+    [[nodiscard]] addr_t decode_operand_addr(bool& page_crossing);
 
     template<cpu_addr_mode AddrModeT>
     [[nodiscard]] byte_t read_operand(word_t operand);
@@ -140,7 +309,7 @@ private:
     [[nodiscard]] constexpr cpu_cycle_t get_addr_mode_cycle_cost(bool page_crossing = false);
 
 private:
-    static constexpr instruction_table _instruction_table{create_instruction_table()};
+    static constexpr instruction_callback_table _instructions{instruction_callback_table::create()};
 
     ref_wrap<BusT> _bus;
     cpu_state _state{};

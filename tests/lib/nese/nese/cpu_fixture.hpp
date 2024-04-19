@@ -86,7 +86,7 @@ struct cpu_fixture
             hex<ValueT> value;
         };
 
-        template<cpu_register_id RegisterIdT, cpu_memval ValueT>
+        template<cpu_register_id RegisterIdT, cpu_memval ValueT = byte_t>
         struct set_register
         {
             set_register(ValueT v);
@@ -174,19 +174,20 @@ struct cpu_fixture
         std::vector<operation> expected;
         string description{};
         cpu_cycle_t cycle_cost{0};
+        bool debug_break{false};
     };
 
     static op::set_operand<byte_t> set_operand(byte_t value);
-    static op::set_operand<word_t> set_operand(word_t value);
+    static op::set_operand<word_t> set_operandw(word_t value);
 
     static op::set_memory<byte_t> set_memory(addr_t addr, byte_t value);
-    static op::set_memory<word_t> set_memory(addr_t addr, word_t value);
+    static op::set_memory<word_t> set_memoryw(addr_t addr, word_t value);
 
     static op::set_stack<byte_t> set_stack(byte_t sp, byte_t value);
-    static op::set_stack<word_t> set_stack(byte_t sp, word_t value);
+    static op::set_stack<word_t> set_stackw(byte_t sp, word_t value);
 
     static op::push_stack<byte_t> push_stack(byte_t value);
-    static op::push_stack<word_t> push_stack(word_t value);
+    static op::push_stack<word_t> push_stackw(word_t value);
 
     static op::set_register<cpu_register_id::a, byte_t> set_a(byte_t value);
     static op::set_register<cpu_register_id::x, byte_t> set_x(byte_t value);
@@ -194,6 +195,7 @@ struct cpu_fixture
     static op::set_register<cpu_register_id::sp, byte_t> set_sp(byte_t value);
     static op::set_register<cpu_register_id::pc, word_t> set_pc(word_t value);
     static op::set_register<cpu_register_id::status, byte_t> set_status(byte_t value);
+    static op::set_register<cpu_register_id::status, byte_t> set_status(cpu_status value);
 
     static op::set_register_status<cpu_status::carry> set_status_carry();
     static op::set_register_status<cpu_status::break_cmd> set_status_break_cmd();
@@ -213,17 +215,21 @@ struct cpu_fixture
     static op::clear_register_status<cpu_status::unused> clear_status_unused();
     static op::clear_register_status<cpu_status::zero> clear_status_zero();
 
+    static op::conditional<basic_operation> conditional(basic_operation operation, bool condition);
+
     void execute_operations(auto& operations, operation_context& context);
 
-    void test_implied(cpu_opcode opcode, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(0));
-    void test_immediate(cpu_opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(2));
-    void test_acculumator(cpu_opcode opcode, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(2));
-    void test_zero_page(cpu_opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(3));
-    void test_zero_page_indexed(cpu_opcode opcode, cpu_register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(4));
-    void test_absolute(cpu_opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(4));
-    void test_absolute_indexed(cpu_opcode opcode, cpu_register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(4));
-    void test_indexed_indirect(cpu_opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(6));
-    void test_indirect_indexed(cpu_opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t base_cycle_cost = cpu_cycle_t(5));
+    void test_implied(cpu_opcode opcode, std::span<const scenario> behavior_scenarios, cpu_cycle_t cycle_cost = cpu_cycle_t(0));
+    void test_immediate(cpu_opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t cycle_cost = cpu_cycle_t(2));
+    void test_acculumator(cpu_opcode opcode, std::span<const scenario> behavior_scenarios, cpu_cycle_t cycle_cost = cpu_cycle_t(2));
+    void test_zero_page(cpu_opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t cycle_cost = cpu_cycle_t(3));
+    void test_zero_page_indexed(cpu_opcode opcode, cpu_register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t cycle_cost = cpu_cycle_t(4));
+    void test_absolute(cpu_opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t cycle_cost = cpu_cycle_t(4));
+    void test_absolute_indexed(cpu_opcode opcode, cpu_register_id index_register, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t cycle_cost = cpu_cycle_t(4));
+    void test_indexed_indirect(cpu_opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t cycle_cost = cpu_cycle_t(6));
+    void test_indirect_indexed(cpu_opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t cycle_cost = cpu_cycle_t(5));
+    void test_relative(cpu_opcode opcode, std::span<const scenario> behavior_scenarios, cpu_cycle_t cycle_cost = cpu_cycle_t(0));
+    void test_unspecified(cpu_opcode opcode, std::span<const scenario> behavior_scenarios, cpu_cycle_t cycle_cost = cpu_cycle_t(0));
 
     void execute_and_check(cpu_opcode opcode, bool should_check_cycle = true);
     void check_registers() const;
@@ -233,5 +239,11 @@ struct cpu_fixture
     cpu_bus_mock bus;
     cpu_bus_mock expected_bus;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const cpu_fixture::scenario& scenario)
+{
+    os << scenario.to_string();
+    return os;
+}
 
 } // namespace nese::v2
