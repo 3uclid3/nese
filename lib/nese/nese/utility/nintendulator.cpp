@@ -5,7 +5,6 @@
 #include <fmt/format.h>
 
 #include <nese/bus.hpp>
-#include <nese/cycle.hpp>
 #include <nese/utility/assert.hpp>
 
 namespace nese::nintendulator {
@@ -302,7 +301,7 @@ void append_registers(auto& out, const bus& bus)
     out = fmt::format_to(out, "A:{:02X} X:{:02X} Y:{:02X} P:{:02X} SP:{:02X}", a, x, y, p, s);
 }
 
-void append_ppu(auto& out, const bus& bus[[maybe_unused]])
+void append_ppu(auto& out, const bus& bus [[maybe_unused]])
 {
     out = fmt::format_to(out, "PPU:{}", "  0,  0");
 }

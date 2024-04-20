@@ -26,7 +26,6 @@ set(INCLUDES
     "${DIR}/cartridge.hpp"
     "${DIR}/cpu.hpp"
     "${DIR}/cpu.inl"
-    "${DIR}/cycle.hpp"
     "${DIR}/emulator.hpp"
 )
 

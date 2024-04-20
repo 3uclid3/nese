@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nese/cycle.hpp>
+#include <nese/basic_types.hpp>
 #include <nese/bus.hpp>
 
 namespace nese {
