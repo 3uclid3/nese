@@ -1,9 +1,7 @@
 #pragma once
 
-#include <vector>
-
 #include <nese/basic_types.hpp>
-#include <nese/cartridge_mapper/cartridge_mapper.hpp>
+#include <nese/cartridge/cartridge_mapper.hpp>
 
 namespace nese {
 

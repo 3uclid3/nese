@@ -30,5 +30,4 @@ inline void bus::write_word(addr_t addr, word_t value)
     write(addr + 1, static_cast<byte_t>(value >> 8));
 }
 
-
 } // namespace nese

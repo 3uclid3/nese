@@ -1,6 +1,6 @@
-#include <nese/cartridge_mapper/cartridge_mapper_factory.hpp>
+#include <nese/cartridge/cartridge_mapper_factory.hpp>
 
-#include <nese/cartridge_mapper/nrom_cartridge_mapper.hpp>
+#include <nese/cartridge/nrom_cartridge_mapper.hpp>
 #include <nese/utility/assert.hpp>
 
 namespace nese {

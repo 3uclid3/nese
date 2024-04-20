@@ -56,21 +56,6 @@ using ppu_cycle_t = std::chrono::duration<s64_t, std::ratio<1, 1>>;
 static inline constexpr cycle_t clock_hz{21477272ll / 4};
 static inline constexpr ppu_cycle_t ppu_scanline_cycle(341);
 
-constexpr cycle_t to_cycle(cpu_cycle_t cpu_cycle)
-{
-    return std::chrono::duration_cast<cycle_t>(cpu_cycle);
-}
-
-constexpr cpu_cycle_t to_cpu_cycle(ppu_cycle_t cpu_cycle)
-{
-    return std::chrono::duration_cast<cpu_cycle_t>(cpu_cycle);
-}
-
-constexpr ppu_cycle_t to_ppu_cycle(cpu_cycle_t cpu_cycle)
-{
-    return std::chrono::duration_cast<ppu_cycle_t>(cpu_cycle);
-}
-
 static constexpr cycle_t ms_to_cycle(s64_t ms)
 {
     return {clock_hz / 1000 * ms};

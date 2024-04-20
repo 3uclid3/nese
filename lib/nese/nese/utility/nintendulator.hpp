@@ -54,6 +54,6 @@ using format_flags = format_flag;
 
 const char* format(const bus& bus, format_flags flags = format_flag::all);
 
-}
+} // namespace nintendulator
 
 } // namespace nese

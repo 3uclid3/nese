@@ -1,9 +1,9 @@
 set(DIR "${CMAKE_CURRENT_SOURCE_DIR}/nese")
 
 set(INCLUDES
-    "${DIR}/cartridge_mapper/cartridge_mapper.hpp"
-    "${DIR}/cartridge_mapper/cartridge_mapper_factory.hpp"
-    "${DIR}/cartridge_mapper/nrom_cartridge_mapper.hpp"
+    "${DIR}/cartridge/cartridge_mapper.hpp"
+    "${DIR}/cartridge/cartridge_mapper_factory.hpp"
+    "${DIR}/cartridge/nrom_cartridge_mapper.hpp"
     "${DIR}/cpu/cpu_addr_mode.hpp"
     "${DIR}/cpu/cpu_opcode.hpp"
     "${DIR}/cpu/cpu_opcode_enum.hpp"
@@ -11,8 +11,6 @@ set(INCLUDES
     "${DIR}/cpu/cpu_stack_offset.hpp"
     "${DIR}/cpu/cpu_state.hpp"
     "${DIR}/cpu/cpu_status.hpp"
-    "${DIR}/ppu/control.hpp"
-    "${DIR}/ppu/state.hpp"
     "${DIR}/utility/details/crc32_table.hpp"
     "${DIR}/utility/assert.hpp"
     "${DIR}/utility/crc32.hpp"
@@ -30,8 +28,8 @@ set(INCLUDES
 )
 
 set(SOURCES
-    "${DIR}/cartridge_mapper/cartridge_mapper_factory.cpp"
-    "${DIR}/cartridge_mapper/nrom_cartridge_mapper.cpp"
+    "${DIR}/cartridge/cartridge_mapper_factory.cpp"
+    "${DIR}/cartridge/nrom_cartridge_mapper.cpp"
     "${DIR}/utility/format.cpp"
     "${DIR}/utility/nintendulator.cpp"
     "${DIR}/bus.cpp"

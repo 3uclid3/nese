@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+#include <nese/cartridge/cartridge_mapper_factory.hpp>
 #include <nese/utility/assert.hpp>
 #include <nese/utility/log.hpp>
 

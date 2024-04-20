@@ -1,4 +1,4 @@
-#include <nese/cartridge_mapper/nrom_cartridge_mapper.hpp>
+#include <nese/cartridge/nrom_cartridge_mapper.hpp>
 
 #include <nese/utility/assert.hpp>
 
