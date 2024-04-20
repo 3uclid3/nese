@@ -1,7 +1,7 @@
 #pragma once
 
 #include <nese/basic_types.hpp>
-#include <nese/cpu/addr_mode.hpp>
+#include <nese/cpu/cpu_addr_mode.hpp>
 #include <nese/cpu/cpu_opcode_enum.hpp>
 
 namespace nese {

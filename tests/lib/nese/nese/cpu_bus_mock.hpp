@@ -7,7 +7,7 @@
 #include <nese/basic_types.hpp>
 #include <nese/cpu.hpp>
 
-namespace nese::v2 {
+namespace nese {
 
 enum class cpu_register_id : u8_t
 {
@@ -138,4 +138,4 @@ struct cpu_bus_mock
     cpu_t cpu{*this};
 };
 
-} // namespace nese::v2
+} // namespace nese

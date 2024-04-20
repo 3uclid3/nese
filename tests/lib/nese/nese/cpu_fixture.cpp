@@ -10,7 +10,7 @@
 #include <nese/cpu/cpu_stack_offset.hpp>
 #include <nese/utility/hex.hpp>
 
-namespace nese::v2 {
+namespace nese {
 
 static constexpr std::array zero_page_scenarios = std::to_array<std::tuple<addr_x, byte_x>>(
     {
@@ -1034,4 +1034,4 @@ void cpu_fixture::check_cycle() const
     CHECK(cycle == expected_cycle);
 }
 
-} // namespace nese::v2
+} // namespace nese

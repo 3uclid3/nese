@@ -4,7 +4,7 @@
 #include <nese/cartridge.hpp>
 #include <nese/cpu.hpp>
 
-namespace nese::v2 {
+namespace nese {
 
 struct bus
 {

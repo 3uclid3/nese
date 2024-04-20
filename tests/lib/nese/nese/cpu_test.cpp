@@ -3,7 +3,7 @@
 #include <nese/cpu.hpp>
 #include <nese/cpu_fixture.hpp>
 
-namespace nese::v2 {
+namespace nese {
 
 struct cpu_branch_fixture : cpu_fixture
 {
@@ -2438,4 +2438,4 @@ TEST_CASE_METHOD(cpu_fixture, "slo", "[cpu][instruction]")
 
 #endif
 
-} // namespace nese::v2
+} // namespace nese

@@ -9,7 +9,7 @@
 #include <nese/utility/concat.hpp>
 #include <nese/utility/hex.hpp>
 
-namespace nese::v2 {
+namespace nese {
 
 template<typename ValueT>
 concept cpu_memval = std::same_as<ValueT, byte_t> || std::same_as<ValueT, word_t>;
@@ -246,4 +246,4 @@ inline std::ostream& operator<<(std::ostream& os, const cpu_fixture::scenario& s
     return os;
 }
 
-} // namespace nese::v2
+} // namespace nese

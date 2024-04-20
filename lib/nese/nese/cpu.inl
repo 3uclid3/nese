@@ -1,7 +1,7 @@
 #include <nese/cpu/cpu_stack_offset.hpp>
 #include <nese/utility/assert.hpp>
 
-namespace nese::v2 {
+namespace nese {
 
 constexpr bool is_page_crossing(addr_t addr, addr_t new_addr)
 {
@@ -1695,4 +1695,4 @@ constexpr cpu_cycle_t cpu<BusT>::get_addr_mode_cycle_cost(bool page_crossing)
     }
 }
 
-} // namespace nese::v2
+} // namespace nese

@@ -7,9 +7,8 @@
 #include <nese/cpu/cpu_opcode.hpp>
 #include <nese/cpu/cpu_state.hpp>
 #include <nese/utility/assert.hpp>
-#include <nese/utility/passkey.hpp>
 
-namespace nese::v2 {
+namespace nese {
 
 template<typename BusT>
 class cpu
@@ -320,6 +319,6 @@ private:
     cpu_state _state{};
 };
 
-} // namespace nese::v2
+} // namespace nese
 
 #include <nese/cpu.inl>

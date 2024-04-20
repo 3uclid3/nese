@@ -1,6 +1,6 @@
 #include <nese/bus.hpp>
 
-namespace nese::v2 {
+namespace nese {
 
 namespace {
 
@@ -57,4 +57,4 @@ void bus::write(addr_t addr, byte_t value)
     }
 }
 
-} // namespace nese::v2
+} // namespace nese

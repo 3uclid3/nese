@@ -9,7 +9,7 @@
 #include <nese/utility/log.hpp>
 #include <nese/utility/nintendulator.hpp>
 
-namespace nese::v2 {
+namespace nese {
 
 TEST_CASE("nestest", "[cpu][instruction][!mayfail]")
 {
@@ -45,4 +45,4 @@ TEST_CASE("nestest", "[cpu][instruction][!mayfail]")
     CHECK(bus.read(0x3) == 0);
 }
 
-} // namespace nese::v2
+} // namespace nese

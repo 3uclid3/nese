@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
-    <Type Name="nese::v2::cpu_registers">
+    <Type Name="nese::cpu_registers">
         <Expand>
             <Item Name="[a]">a,X</Item>
             <Item Name="[x]">x,X</Item>
@@ -37,7 +37,7 @@
             </Synthetic>
         </Expand>
     </Type>
-    <Type Name="nese::v2::cpu&lt;*&gt;">
+    <Type Name="nese::cpu&lt;*&gt;">
         <Expand>
             <Item Name="[registers]">_state.registers</Item>
             <Item Name="[cycle]">_state.cycle</Item>
