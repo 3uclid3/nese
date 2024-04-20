@@ -17,7 +17,6 @@ target_link_libraries(
     PUBLIC
         nesesan
     PRIVATE
-        nese.snapshot
         nese_project_options
         nese_project_warnings
 )

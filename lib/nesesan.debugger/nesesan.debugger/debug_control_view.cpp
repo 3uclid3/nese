@@ -3,7 +3,7 @@
 #include <magic_enum.hpp>
 
 #include <nese/emulator.hpp>
-#include <nese/memory/rom.hpp>
+#include <nese/cartridge.hpp>
 #include <nesesan/imgui.hpp>
 #include <nesesan/view/view_draw_context.hpp>
 
@@ -12,7 +12,9 @@ namespace nese::san {
 void debug_control_view::draw(view_draw_context& context)
 {
     // TODO implement file explorer
-    static memory::rom loaded_rom = memory::rom::from_file(R"(X:\nese\tests\lib\nese\test_roms\nestest.nes)");
+    auto load_cartridge = [] {
+        return cartridge::from_file(R"(X:\nese\tests\lib\nese\test_roms\nestest.nes)");
+    };
 
     emulator& emulator = context.get_emulator();
 
@@ -21,7 +23,7 @@ void debug_control_view::draw(view_draw_context& context)
         if (imgui::button("Power ON"))
         {
             emulator.power_on();
-            emulator.load_rom(loaded_rom);
+            emulator.load_cartridge(load_cartridge());
 
             // power on paused for debugging
             emulator.pause();
@@ -41,7 +43,7 @@ void debug_control_view::draw(view_draw_context& context)
     if (imgui::button("Reset"))
     {
         emulator.reset();
-        emulator.load_rom(loaded_rom);
+        emulator.load_cartridge(load_cartridge());
     }
 
     imgui::disabled_scope error_disabled(emulator.get_state() == emulator::state::error);
