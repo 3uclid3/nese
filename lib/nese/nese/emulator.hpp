@@ -1,14 +1,11 @@
 #pragma once
 
-#include <nese/cpu/state.hpp>
-#include <nese/cycle.hpp>
-#include <nese/memory/mapper.hpp>
+#include <nese/basic_types.hpp>
+#include <nese/bus.hpp>
 
 namespace nese {
 
-namespace memory {
-class rom;
-}
+class cartridge;
 
 class emulator
 {
@@ -27,7 +24,7 @@ public:
     void power_on();
     void power_off();
 
-    void load_rom(const memory::rom& rom);
+    void load_cartridge(cartridge&& cartridge);
 
     void reset();
 
@@ -38,26 +35,19 @@ public:
     void pause();
     void unpause();
 
-    [[nodiscard]] const cpu::state& get_cpu_state() const;
-    [[nodiscard]] const memory::mapper& get_memory() const;
+    [[nodiscard]] const bus& get_bus() const;
     [[nodiscard]] state get_state() const;
 
 private:
-    cpu::state _cpu_state;
-    memory::mapper _memory;
+    bus _bus;
     state _state{state::off};
     cycle_t _cycle{0};
     addr_t _step_to_addr{0};
 };
 
-inline const cpu::state& emulator::get_cpu_state() const
+inline const bus& emulator::get_bus() const
 {
-    return _cpu_state;
-}
-
-inline const memory::mapper& emulator::get_memory() const
-{
-    return _memory;
+    return _bus;
 }
 
 inline emulator::state emulator::get_state() const

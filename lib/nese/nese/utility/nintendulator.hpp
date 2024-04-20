@@ -4,13 +4,7 @@
 
 namespace nese {
 
-namespace cpu {
-struct state;
-}
-
-namespace memory {
-class mapper;
-}
+struct bus;
 
 namespace nintendulator {
 
@@ -58,8 +52,8 @@ using format_flags = format_flag;
     return static_cast<format_flag>(static_cast<u8_t>(~static_cast<unsigned int>(w)));
 }
 
-const char* format(const cpu::state& cpu_state, const memory::mapper& memory_mapper, format_flags flags = format_flag::all);
+const char* format(const bus& bus, format_flags flags = format_flag::all);
 
-}
+} // namespace nintendulator
 
 } // namespace nese

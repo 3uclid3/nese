@@ -1,8 +1,5 @@
 #include <nese/emulator.hpp>
 
-#include <nese/cpu/instruction/execute.hpp>
-#include <nese/cpu/instruction/execute_context.hpp>
-#include <nese/memory/rom.hpp>
 #include <nese/utility/log.hpp>
 #include <nese/utility/nintendulator.hpp>
 
@@ -15,10 +12,10 @@ void emulator::power_on()
 
     _state = state::on;
     _cycle = cycle_t{0};
-    _memory.set_zero();
-    _cpu_state = {};
+    _bus.cpu.reset();
+    _bus.ram.fill(0);
 
-    NESE_TRACE("{}", nintendulator::format(_cpu_state, _memory));
+    NESE_TRACE("{}", nintendulator::format(_bus));
 }
 
 void emulator::power_off()
@@ -29,20 +26,12 @@ void emulator::power_off()
     _state = state::off;
 }
 
-void emulator::load_rom(const memory::rom& rom)
+void emulator::load_cartridge(cartridge&& cartridge)
 {
-    NESE_TRACE("[emulator] load rom {}", rom);
+    NESE_TRACE("[emulator] load cartridge {}", cartridge);
 
-    // TODO Mapper
-    _cpu_state.registers.pc = rom.get_prg().size() == 0x4000 ? 0xc000 : 0x8000;
-
-    _memory.set_bytes(0x8000, rom.get_prg().data(), rom.get_prg().size());
-
-    if (rom.get_prg().size() == 0x4000)
-    {
-        // "map" 0xC000 to 0x8000
-        _memory.set_bytes(0xc000, rom.get_prg().data(), rom.get_prg().size());
-    }
+    _bus.cartridge = std::move(cartridge);
+    _bus.cpu.get_state().registers.pc = _bus.cartridge.get_prg().size() == 0x4000 ? 0xc000 : 0x8000;
 }
 
 void emulator::reset()
@@ -52,10 +41,10 @@ void emulator::reset()
 
     _state = state::on;
     _cycle = cycle_t{0};
-    _memory.set_zero();
-    _cpu_state = {};
+    _bus.cpu.reset();
+    _bus.ram.fill(0);
 
-    NESE_TRACE("{}", nintendulator::format(_cpu_state, _memory));
+    NESE_TRACE("{}", nintendulator::format(_bus));
 }
 
 void emulator::update(f32_t dt [[maybe_unused]])
@@ -65,12 +54,11 @@ void emulator::update(f32_t dt [[maybe_unused]])
         return;
     }
 
-    cpu::instruction::execute_context context(_cpu_state, _memory);
-    if (cpu::instruction::execute(context))
+    if (_bus.cpu.step())
     {
-        NESE_TRACE("{}", nintendulator::format(_cpu_state, _memory));
+        NESE_TRACE("{}", nintendulator::format(_bus));
 
-        if (_state == state::step || (_state == state::step_to && _step_to_addr == _cpu_state.registers.pc))
+        if (_state == state::step || (_state == state::step_to && _step_to_addr == _bus.cpu.get_state().registers.pc))
         {
             _state = state::pause;
         }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -7,6 +9,9 @@
 #include <string_view>
 
 namespace nese {
+
+template<typename T, std::size_t SizeT>
+using array = std::array<T, SizeT>;
 
 template<typename T>
 using ref_wrap = std::reference_wrapper<T>;
@@ -34,5 +39,26 @@ using word_t = u16_t;
 using addr_t = word_t;
 
 constexpr addr_t null_addr = addr_t{0};
+
+//
+// Given that 1 CPU cycle = 3 PPU cycle, we'll count in terms of PPU cycle
+// 1 nes_cycle_t = 1 PPU cycle = 1/3 CPU cycle
+// 3 nes_cycle_t = 3 PPU cycle = 1 CPU cycle
+//
+using cycle_t = std::chrono::duration<s64_t, std::ratio<1, 1>>;
+using cpu_cycle_t = std::chrono::duration<s64_t, std::ratio<3, 1>>;
+using ppu_cycle_t = std::chrono::duration<s64_t, std::ratio<1, 1>>;
+
+//
+// NES 6502 CPU 21.477272 / 12 MHz
+// NES PPU 21.477272 / 4 MHz
+//
+static inline constexpr cycle_t clock_hz{21477272ll / 4};
+static inline constexpr ppu_cycle_t ppu_scanline_cycle(341);
+
+static constexpr cycle_t ms_to_cycle(s64_t ms)
+{
+    return {clock_hz / 1000 * ms};
+}
 
 } // namespace nese
