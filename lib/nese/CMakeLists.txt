@@ -25,6 +25,8 @@ set(INCLUDES
     "${DIR}/cpu.hpp"
     "${DIR}/cpu.inl"
     "${DIR}/emulator.hpp"
+    "${DIR}/ppu.hpp"
+    "${DIR}/ppu.inl"
 )
 
 set(SOURCES

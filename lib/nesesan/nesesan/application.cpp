@@ -88,7 +88,7 @@ void application::begin_docking()
 
     // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
     // and handle the pass-thru hole, so we ask Begin() to not render a background.
-    constexpr ImGuiDockNodeFlags dock_space_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+    constexpr ImGuiDockNodeFlags dock_space_flags = ImGuiDockNodeFlags_NoDockingOverCentralNode; // ImGuiDockNodeFlags_PassthruCentralNode;
 
     ImGui::DockSpace(ImGui::GetID("MainDockSpace"), ImVec2(0.0f, 0.0f), dock_space_flags);
 }

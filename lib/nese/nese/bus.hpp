@@ -3,6 +3,7 @@
 #include <nese/basic_types.hpp>
 #include <nese/cartridge.hpp>
 #include <nese/cpu.hpp>
+#include <nese/ppu.hpp>
 
 namespace nese {
 
@@ -17,6 +18,7 @@ struct bus
     array<byte_t, 2048> ram{};
     cartridge cartridge{};
     cpu<bus> cpu{*this};
+    ppu<bus> ppu{*this};
 };
 
 inline word_t bus::read_word(addr_t addr) const

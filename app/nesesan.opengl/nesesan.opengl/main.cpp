@@ -25,6 +25,7 @@
 #include <nesesan/application.hpp>
 #include <nesesan/icons.hpp>
 #include <nesesan/view/window_view.hpp>
+#include <nesesan/view/game_view.hpp>
 #include <nesesan/texture.hpp>
 
 namespace {
@@ -85,6 +86,7 @@ void create_views(nese::san::application& application)
 
     create_window(tag<debug_control_view>(), "Debug Control", "View/Debug/Control", window_view_flag::disable_resize | window_view_flag::auto_resize);
     create_window(tag<cpu_state_view>(), "CPU State", "View/Debug/CPU State", window_view_flag::disable_resize | window_view_flag::auto_resize);
+    create_window(tag<game_view>(), "Game", "View/Game");
 }
 
 } // namespace
