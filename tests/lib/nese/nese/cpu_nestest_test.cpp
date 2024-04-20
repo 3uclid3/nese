@@ -17,7 +17,7 @@ TEST_CASE("nestest", "[cpu][instruction]")
 
     bus bus;
 
-    std::shared_ptr<spdlog::logger> nintendulator_logger = spdlog::basic_logger_st("nintendulator_v2", "cpu_nintendulator_nestest_v2.log", true);
+    std::shared_ptr<spdlog::logger> nintendulator_logger = spdlog::basic_logger_st("nintendulator", "cpu_nintendulator_nestest.log", true);
     nintendulator_logger->set_level(spdlog::level::trace);
     nintendulator_logger->set_pattern("%v");
 
