@@ -48,11 +48,11 @@ struct cpu_bus_mock
         return memory;
     }()};
 
-    const auto& cpu_state() const { return cpu.get_state(); }
-    auto& cpu_state() { return cpu.get_state({}); }
+    [[nodiscard]] const auto& cpu_state() const { return cpu.get_state(); }
+    [[nodiscard]] auto& cpu_state() { return cpu.get_state(); }
 
-    const auto& cpu_registers() const { return cpu_state().registers; }
-    auto& cpu_registers() { return cpu_state().registers; }
+    [[nodiscard]] const auto& cpu_registers() const { return cpu_state().registers; }
+    [[nodiscard]] auto& cpu_registers() { return cpu_state().registers; }
 
     cpu_bus_mock()
     {
@@ -62,17 +62,17 @@ struct cpu_bus_mock
         cpu_state().registers.status = 0x0;
     }
 
-    [[nodiscard]] constexpr byte_t read_byte(addr_t addr) const
+    [[nodiscard]] constexpr byte_t read(addr_t addr) const
     {
         return memory[addr];
     }
 
     [[nodiscard]] constexpr word_t read_word(addr_t addr) const
     {
-        return read_byte(addr) + static_cast<word_t>(static_cast<word_t>(read_byte(addr + 1)) << 8);
+        return read(addr) + static_cast<word_t>(static_cast<word_t>(read(addr + 1)) << 8);
     }
 
-    constexpr void write_byte(addr_t addr, byte_t value)
+    constexpr void write(addr_t addr, byte_t value)
     {
         memory[addr] = value;
     }
@@ -83,12 +83,12 @@ struct cpu_bus_mock
         write(addr + 1, static_cast<byte_t>(value >> 8));
     }
 
-    constexpr void write(addr_t addr, byte_t value)
+    constexpr void write_any(addr_t addr, byte_t value)
     {
-        write_byte(addr, value);
+        write(addr, value);
     }
 
-    constexpr void write(addr_t addr, word_t value)
+    constexpr void write_any(addr_t addr, word_t value)
     {
         write_word(addr, value);
     }
@@ -135,7 +135,7 @@ struct cpu_bus_mock
     }
 
     memory_t memory{default_memory};
-    cpu_t cpu{{}, *this};
+    cpu_t cpu{*this};
 };
 
 } // namespace nese::v2

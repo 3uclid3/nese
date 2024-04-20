@@ -15,7 +15,7 @@ template<typename BusT>
 class cpu
 {
 public:
-    cpu(passkey<BusT>, BusT& bus);
+    explicit cpu(BusT& bus);
 
 public:
     void reset();
@@ -25,7 +25,7 @@ public:
 
 public:
     [[nodiscard]] const cpu_state& get_state() const;
-    [[nodiscard]] cpu_state& get_state(passkey<BusT>);
+    [[nodiscard]] cpu_state& get_state();
 
 private:
     using instruction_callback = void (cpu::*)();
@@ -38,7 +38,7 @@ private:
     friend struct instruction_callback_table;
 
 private:
-    // instructions helper
+#pragma region Instruction Helpers
     template<cpu_addr_mode AddrModeT>
     void add_with_carry(byte_t value);
 
@@ -52,8 +52,9 @@ private:
 
     template<cpu_addr_mode AddrModeT>
     void store(byte_t value);
+#pragma endregion
 
-    // instructions
+#pragma region Instructions
     template<cpu_addr_mode AddrModeT>
     void instruction_adc();
 
@@ -83,6 +84,9 @@ private:
 
     template<cpu_addr_mode AddrModeT>
     void instruction_bpl();
+
+    template<cpu_addr_mode AddrModeT>
+    void instruction_brk();
 
     template<cpu_addr_mode AddrModeT>
     void instruction_bvc();
@@ -244,6 +248,7 @@ private:
     template<cpu_addr_mode AddrModeT>
     void instruction_sre();
 #endif
+#pragma endregion
 
     // registers
     byte_t& a();

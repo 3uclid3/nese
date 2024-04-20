@@ -1,6 +1,9 @@
 set(DIR "${CMAKE_CURRENT_SOURCE_DIR}/nese")
 
 set(INCLUDES
+    "${DIR}/cartridge_mapper/cartridge_mapper.hpp"
+    "${DIR}/cartridge_mapper/cartridge_mapper_factory.hpp"
+    "${DIR}/cartridge_mapper/nrom_cartridge_mapper.hpp"
     "${DIR}/cpu/instruction/execute.hpp"
     "${DIR}/cpu/instruction/execute_context.hpp"
     "${DIR}/cpu/instruction/opcode.hpp"
@@ -33,6 +36,7 @@ set(INCLUDES
     "${DIR}/utility/passkey.hpp"
     "${DIR}/basic_types.hpp"
     "${DIR}/bus.hpp"
+    "${DIR}/cartridge.hpp"
     "${DIR}/cpu.hpp"
     "${DIR}/cpu.inl"
     "${DIR}/cycle.hpp"
@@ -40,11 +44,15 @@ set(INCLUDES
 )
 
 set(SOURCES
+    "${DIR}/cartridge_mapper/cartridge_mapper_factory.cpp"
+    "${DIR}/cartridge_mapper/nrom_cartridge_mapper.cpp"
     "${DIR}/cpu/instruction/execute.cpp"
     "${DIR}/memory/mapper.cpp"
     "${DIR}/memory/rom.cpp"
     "${DIR}/utility/format.cpp"
     "${DIR}/utility/nintendulator.cpp"
+    "${DIR}/bus.cpp"
+    "${DIR}/cartridge.cpp"
     "${DIR}/emulator.cpp"
 )
 

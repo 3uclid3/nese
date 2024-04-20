@@ -14,12 +14,12 @@ struct cpu_registers
     constexpr void set_status(cpu_status flag);
     constexpr void clear_status(cpu_status flag);
 
-    byte_t a;
-    byte_t x;
-    byte_t y;
-    word_t pc;
-    byte_t sp;
-    byte_t status;
+    byte_t a{0};
+    byte_t x{0};
+    byte_t y{0};
+    word_t pc{0};
+    byte_t sp{0xFD};
+    byte_t status{0x24};
 };
 
 constexpr bool cpu_registers::is_status_set(cpu_status flag) const

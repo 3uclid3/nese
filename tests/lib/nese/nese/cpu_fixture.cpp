@@ -107,7 +107,7 @@ void cpu_fixture::op::set_operand<ValueT>::execute(operation_context& ctx) const
         break;
 
     default:
-        ctx.bus.write(ctx.operand_addr, value);
+        ctx.bus.write_any(ctx.operand_addr, value);
         break;
     }
 }
@@ -130,11 +130,11 @@ void cpu_fixture::op::set_memory<ValueT>::execute(operation_context& ctx) const
 {
     if constexpr (std::is_same_v<ValueT, byte_t>)
     {
-        ctx.bus.write(addr, value);
+        ctx.bus.write_any(addr, value);
     }
     else if constexpr (std::is_same_v<ValueT, word_t>)
     {
-        ctx.bus.write(addr, value);
+        ctx.bus.write_any(addr, value);
     }
 }
 
@@ -163,8 +163,8 @@ void cpu_fixture::op::set_stack<ValueT>::execute(operation_context& ctx) const
         const byte_t sp0 = sp;
         const byte_t sp1 = sp + 1;
 
-        ctx.bus.write_byte(cpu_stack_offset + sp0, value & 0xFF);
-        ctx.bus.write_byte(cpu_stack_offset + sp1, value >> 8);
+        ctx.bus.write(cpu_stack_offset + sp0, value & 0xFF);
+        ctx.bus.write(cpu_stack_offset + sp1, value >> 8);
     }
 }
 
@@ -192,10 +192,10 @@ void cpu_fixture::op::push_stack<ValueT>::execute(operation_context& ctx) const
     }
     else if constexpr (std::is_same_v<ValueT, word_t>)
     {
-        ctx.bus.write_byte(registers.sp + cpu_stack_offset, value & 0xFF);
+        ctx.bus.write(registers.sp + cpu_stack_offset, value & 0xFF);
         --registers.sp;
 
-        ctx.bus.write_byte(registers.sp + cpu_stack_offset, value >> 8);
+        ctx.bus.write(registers.sp + cpu_stack_offset, value >> 8);
         --registers.sp;
     }
 }
@@ -591,7 +591,7 @@ void cpu_fixture::test_zero_page(cpu_opcode opcode, const scenario& addressing_s
         }
 
         bus.cpu_state().registers.pc = pc_addr;
-        bus.write_byte(pc_addr, base_addr);
+        bus.write(pc_addr, base_addr);
 
         operation_context context{base_addr, cpu_addr_mode::zero_page, bus};
         execute_operations(scenario.initial, context);
@@ -644,7 +644,7 @@ void cpu_fixture::test_zero_page_indexed(cpu_opcode opcode, cpu_register_id inde
         const cpu_addr_mode addr_mode = cpu_opcode_addr_modes[opcode];
 
         bus.cpu_state().registers.pc = pc_addr;
-        bus.write_byte(pc_addr, base_addr);
+        bus.write(pc_addr, base_addr);
         bus.set_register(index_register, index);
 
         operation_context context{indexed_addr, addr_mode, bus};
@@ -803,9 +803,9 @@ void cpu_fixture::test_indexed_indirect(cpu_opcode opcode, const scenario& addre
 
         bus.cpu_state().registers.pc = pc_addr;
         bus.cpu_state().registers.x = x;
-        bus.write_byte(pc_addr, base_addr);
-        bus.write_byte((base_addr + x) & 0xFF, value_addr & 0xFF);
-        bus.write_byte((base_addr + x + 1) & 0xFF, static_cast<byte_t>(value_addr >> 8));
+        bus.write(pc_addr, base_addr);
+        bus.write((base_addr + x) & 0xFF, value_addr & 0xFF);
+        bus.write((base_addr + x + 1) & 0xFF, static_cast<byte_t>(value_addr >> 8));
 
         operation_context context{value_addr, cpu_addr_mode::indexed_indirect, bus};
         execute_operations(scenario.initial, context);
@@ -857,9 +857,9 @@ void cpu_fixture::test_indirect_indexed(cpu_opcode opcode, const scenario& addre
 
         bus.cpu_state().registers.pc = pc_addr;
         bus.cpu_state().registers.y = y;
-        bus.write_byte(pc_addr, base_addr);
-        bus.write_byte(base_addr, value_addr & 0xFF);
-        bus.write_byte((base_addr + 1) & 0xFF, static_cast<byte_t>(value_addr >> 8));
+        bus.write(pc_addr, base_addr);
+        bus.write(base_addr, value_addr & 0xFF);
+        bus.write((base_addr + 1) & 0xFF, static_cast<byte_t>(value_addr >> 8));
 
         operation_context context{static_cast<addr_t>(value_addr + y), cpu_addr_mode::indirect_indexed, bus};
         execute_operations(scenario.initial, context);

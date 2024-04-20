@@ -20,7 +20,7 @@
 
 #define NESE_ASSERT(condition) \
     do { \
-        const bool result = (condition); \
+        const bool result = static_cast<bool>(condition); \
         if (!result) \
         { \
             SPDLOG_CRITICAL("[assert] condition: {}", #condition); \
@@ -30,7 +30,7 @@
 
 #define NESE_ASSERT_LOG(condition, ...) \
     do { \
-        const bool result = (condition); \
+        const bool result = static_cast<bool>(condition); \
         if (!result) \
         { \
             SPDLOG_CRITICAL("[assert] condition: {}", #condition); \

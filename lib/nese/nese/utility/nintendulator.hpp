@@ -4,6 +4,10 @@
 
 namespace nese {
 
+namespace v2 {
+struct bus;
+}
+
 namespace cpu {
 struct state;
 }
@@ -59,6 +63,7 @@ using format_flags = format_flag;
 }
 
 const char* format(const cpu::state& cpu_state, const memory::mapper& memory_mapper, format_flags flags = format_flag::all);
+const char* format(const v2::bus& bus, format_flags flags = format_flag::all);
 
 }
 

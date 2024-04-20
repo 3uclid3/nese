@@ -60,17 +60,19 @@ consteval typename cpu<BusT>::instruction_callback_table cpu<BusT>::instruction_
     table[cpu_opcode::asl_absolute] = &cpu::instruction_asl<cpu_addr_mode::absolute>;
     table[cpu_opcode::asl_absolute_x] = &cpu::instruction_asl<cpu_addr_mode::absolute_x>;
 
-    table[cpu_opcode::bvs_relative] = &cpu::instruction_bvs<cpu_addr_mode::relative>;
-    table[cpu_opcode::bvc_relative] = &cpu::instruction_bvc<cpu_addr_mode::relative>;
-    table[cpu_opcode::bpl_relative] = &cpu::instruction_bpl<cpu_addr_mode::relative>;
-    table[cpu_opcode::bne_relative] = &cpu::instruction_bne<cpu_addr_mode::relative>;
-    table[cpu_opcode::bmi_relative] = &cpu::instruction_bmi<cpu_addr_mode::relative>;
-    table[cpu_opcode::beq_relative] = &cpu::instruction_beq<cpu_addr_mode::relative>;
-    table[cpu_opcode::bcs_relative] = &cpu::instruction_bcs<cpu_addr_mode::relative>;
     table[cpu_opcode::bcc_relative] = &cpu::instruction_bcc<cpu_addr_mode::relative>;
+    table[cpu_opcode::bcs_relative] = &cpu::instruction_bcs<cpu_addr_mode::relative>;
+    table[cpu_opcode::beq_relative] = &cpu::instruction_beq<cpu_addr_mode::relative>;
+    table[cpu_opcode::bmi_relative] = &cpu::instruction_bmi<cpu_addr_mode::relative>;
+    table[cpu_opcode::bne_relative] = &cpu::instruction_bne<cpu_addr_mode::relative>;
+    table[cpu_opcode::bpl_relative] = &cpu::instruction_bpl<cpu_addr_mode::relative>;
+    table[cpu_opcode::bvc_relative] = &cpu::instruction_bvc<cpu_addr_mode::relative>;
+    table[cpu_opcode::bvs_relative] = &cpu::instruction_bvs<cpu_addr_mode::relative>;
 
     table[cpu_opcode::bit_zero_page] = &cpu::instruction_bit<cpu_addr_mode::zero_page>;
     table[cpu_opcode::bit_absolute] = &cpu::instruction_bit<cpu_addr_mode::absolute>;
+
+    table[cpu_opcode::brk_implied] = &cpu::instruction_brk<cpu_addr_mode::implied>;
 
     table[cpu_opcode::clc_implied] = &cpu::instruction_clc<cpu_addr_mode::implied>;
     table[cpu_opcode::cld_implied] = &cpu::instruction_cld<cpu_addr_mode::implied>;
@@ -310,7 +312,7 @@ consteval typename cpu<BusT>::instruction_callback_table cpu<BusT>::instruction_
 }
 
 template<typename BusT>
-cpu<BusT>::cpu(passkey<BusT>, BusT& bus)
+cpu<BusT>::cpu(BusT& bus)
     : _bus(bus)
 {
 }
@@ -354,7 +356,7 @@ const cpu_state& cpu<BusT>::get_state() const
 }
 
 template<typename BusT>
-cpu_state& cpu<BusT>::get_state(passkey<BusT>)
+cpu_state& cpu<BusT>::get_state()
 {
     return _state;
 }
@@ -406,14 +408,14 @@ void cpu<BusT>::branch(bool condition)
 
 template<typename BusT>
 template<cpu_addr_mode AddrModeT>
-void cpu<BusT>::compare(byte_t to_byte)
+void cpu<BusT>::compare(byte_t to)
 {
     bool page_crossing = false;
     const word_t operand = decode_operand<AddrModeT>(page_crossing);
     const byte_t byte = read_operand<AddrModeT>(operand);
-    const byte_t diff = to_byte - byte;
+    const byte_t diff = to - byte;
 
-    set_status(cpu_status::carry, to_byte >= byte);
+    set_status(cpu_status::carry, to >= byte);
     set_status(cpu_status::zero, is_zero(diff));
     set_status(cpu_status::negative, is_negative(diff));
 
@@ -567,6 +569,15 @@ template<cpu_addr_mode AddrModeT>
 void cpu<BusT>::instruction_bpl()
 {
     branch(is_status_clear(cpu_status::negative));
+}
+
+// BRK (Branch if Positive):
+// If the negative flag is clear, it adds the relative displacement to the program counter to branch to a new location.
+template<typename BusT>
+template<cpu_addr_mode AddrModeT>
+void cpu<BusT>::instruction_brk()
+{
+    step_cycle(7);
 }
 
 // BVC (Branch if Overflow Clear):
@@ -1456,7 +1467,7 @@ void cpu<BusT>::clear_status(cpu_status status)
 template<typename BusT>
 byte_t cpu<BusT>::read(addr_t addr)
 {
-    return _bus.get().read_byte(addr);
+    return _bus.get().read(addr);
 }
 
 template<typename BusT>
@@ -1468,13 +1479,13 @@ word_t cpu<BusT>::readw(addr_t addr)
 template<typename BusT>
 void cpu<BusT>::write(addr_t addr, byte_t value)
 {
-    return _bus.get().write_byte(addr, value);
+    _bus.get().write(addr, value);
 }
 
 template<typename BusT>
 void cpu<BusT>::writew(addr_t addr, word_t value)
 {
-    return _bus.get().write_word(addr, value);
+    _bus.get().write_word(addr, value);
 }
 
 template<typename BusT>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -7,6 +8,9 @@
 #include <string_view>
 
 namespace nese {
+
+template<typename T, std::size_t SizeT>
+using array = std::array<T, SizeT>;
 
 template<typename T>
 using ref_wrap = std::reference_wrapper<T>;
