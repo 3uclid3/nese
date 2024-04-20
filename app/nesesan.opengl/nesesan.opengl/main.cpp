@@ -25,6 +25,7 @@
 #include <nesesan/application.hpp>
 #include <nesesan/icons.hpp>
 #include <nesesan/view/window_view.hpp>
+#include <nesesan/texture.hpp>
 
 namespace {
 
@@ -32,6 +33,40 @@ void glfw_error_callback(int error, const char* description)
 {
     NESE_ERROR("[GLFW] {}: {}", error, description);
 }
+
+class opengl_texture_broker : public nese::san::texture::broker
+{
+public:
+    nese::san::texture::id create(nese::u32_t width, nese::u32_t height, std::span<const nese::u32_t> data) override
+    {
+        GLuint id = 0;
+        glGenTextures(1, &id);
+
+        glBindTexture(GL_TEXTURE_2D, id);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data.data());
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        return static_cast<nese::san::texture::id>(id);
+
+    }
+
+    void update(nese::san::texture::id id, nese::u32_t width, nese::u32_t height, std::span<const nese::u32_t> data) override
+    {
+        glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(id));
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, data.data());
+    }
+
+    void destroy(nese::san::texture::id id) override
+    {
+        GLuint gl_id = static_cast<GLuint>(id);
+        glDeleteTextures(1, &gl_id);
+    }
+};
 
 template<typename T>
 struct tag
@@ -67,6 +102,8 @@ int main(int, char**)
         NESE_ERROR("[GLFW] Init failed");
         return -1;
     }
+
+    texture::set_broker(std::make_unique<opengl_texture_broker>());
 
     // GL 3.0 + GLSL 130
     const char* glsl_version = "#version 130";

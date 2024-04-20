@@ -13,6 +13,7 @@ set(INCLUDES
     "${DIR}/application.hpp"
     "${DIR}/icons.hpp"
     "${DIR}/imgui.hpp"
+    "${DIR}/texture.hpp"
 )
 
 set(SOURCES
@@ -24,6 +25,7 @@ set(SOURCES
     "${DIR}/view/view_registry.cpp"
     "${DIR}/view/window_view.cpp"
     "${DIR}/application.cpp"
+    "${DIR}/texture.cpp"
 )
 
 add_library(nesesan ${INCLUDES} ${SOURCES})
