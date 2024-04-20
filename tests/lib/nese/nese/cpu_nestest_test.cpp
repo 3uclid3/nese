@@ -11,7 +11,7 @@
 
 namespace nese {
 
-TEST_CASE("nestest", "[cpu][instruction][!mayfail]")
+TEST_CASE("nestest", "[cpu][instruction]")
 {
     constexpr addr_x end_pc = 0x0005;
 
