@@ -43,6 +43,16 @@ struct style_var_scope
     ~style_var_scope();
 };
 
+inline bool begin_child(const char* str_id, vec2 size = {0,0})
+{
+    return ImGui::BeginChild(str_id, size);
+}
+
+inline void end_child()
+{
+    ImGui::EndChild();
+}
+
 inline void begin_group()
 {
     ImGui::BeginGroup();
@@ -70,6 +80,21 @@ inline void separator()
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-security"
+
+inline bool checkbox(const char* text, bool& is_checked)
+{
+    return ImGui::Checkbox(text, &is_checked);
+}
+
+inline void text(const char* text)
+{
+    ImGui::Text(text);
+}
+
+inline void text_colored(const color& color, const char* text)
+{
+    ImGui::TextColored(color, text);
+}
 
 template<typename... T>
 bool button(fmt::format_string<T...> format, T&&... args)
