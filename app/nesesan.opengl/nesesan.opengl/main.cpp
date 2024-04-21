@@ -20,13 +20,14 @@
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
 #include <nese/utility/log.hpp>
+#include <nesesan.debugger/disassembly_view.hpp>
 #include <nesesan.debugger/cpu_state_view.hpp>
 #include <nesesan.debugger/debug_control_view.hpp>
 #include <nesesan/application.hpp>
 #include <nesesan/icons.hpp>
-#include <nesesan/view/window_view.hpp>
-#include <nesesan/view/game_view.hpp>
 #include <nesesan/texture.hpp>
+#include <nesesan/view/game_view.hpp>
+#include <nesesan/view/window_view.hpp>
 
 namespace {
 
@@ -53,7 +54,6 @@ public:
         glBindTexture(GL_TEXTURE_2D, 0);
 
         return static_cast<nese::san::texture::id>(id);
-
     }
 
     void update(nese::san::texture::id id, nese::u32_t width, nese::u32_t height, std::span<const nese::u32_t> data) override
@@ -86,6 +86,7 @@ void create_views(nese::san::application& application)
 
     create_window(tag<debug_control_view>(), "Debug Control", "View/Debug/Control", window_view_flag::disable_resize | window_view_flag::auto_resize);
     create_window(tag<cpu_state_view>(), "CPU State", "View/Debug/CPU State", window_view_flag::disable_resize | window_view_flag::auto_resize);
+    create_window(tag<disassembly_view>(), "Program Code", "View/Debug/Program Code");
     create_window(tag<game_view>(), "Game", "View/Game");
 }
 
@@ -212,13 +213,12 @@ int main(int, char**)
             application.exit();
         }
 
-
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // 
+        //
         application.update(ImGui::GetIO().DeltaTime);
 
         application.draw();

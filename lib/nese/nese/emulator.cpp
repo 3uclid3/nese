@@ -12,6 +12,7 @@ void emulator::power_on()
 
     _state = state::on;
     _cycle = cycle_t{0};
+    _bus.ppu.reset();
     _bus.cpu.reset();
     _bus.ram.fill(0);
 
@@ -38,7 +39,7 @@ void emulator::reset()
     NESE_ASSERT(_state != state::off);
     NESE_TRACE("[emulator] reset");
 
-    _state = state::on;
+    _state = state::off;
     _cycle = cycle_t{0};
     _bus.cpu.reset();
     _bus.ram.fill(0);
@@ -53,7 +54,11 @@ void emulator::update(f32_t dt [[maybe_unused]])
         return;
     }
 
-    if (_bus.cpu.step())
+    ++_cycle;
+
+    _bus.ppu.step(_cycle);
+
+    if (_bus.cpu.step(_cycle))
     {
         NESE_TRACE("{}", nintendulator::format(_bus));
 

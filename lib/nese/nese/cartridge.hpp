@@ -22,6 +22,8 @@ public:
     [[nodiscard]] byte_t read(addr_t addr) const;
     void write(addr_t addr, byte_t value);
 
+    [[nodiscard]] bool is_valid() const;
+
 private:
     std::unique_ptr<cartridge_mapper> _mapper;
 };
@@ -34,6 +36,11 @@ inline const std::vector<byte_t>& cartridge::get_prg() const
 inline const std::vector<byte_t>& cartridge::get_chr() const
 {
     return _mapper->get_chr();
+}
+
+inline bool cartridge::is_valid() const
+{
+    return _mapper != nullptr;
 }
 
 } // namespace nese

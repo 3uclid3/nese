@@ -22,8 +22,8 @@ void debug_control_view::draw(view_draw_context& context)
     {
         if (imgui::button("Power ON"))
         {
-            emulator.power_on();
             emulator.load_cartridge(load_cartridge());
+            emulator.power_on();
 
             // power on paused for debugging
             emulator.pause();
@@ -42,8 +42,8 @@ void debug_control_view::draw(view_draw_context& context)
     imgui::same_line();
     if (imgui::button("Reset"))
     {
-        emulator.reset();
         emulator.load_cartridge(load_cartridge());
+        emulator.reset();
     }
 
     imgui::disabled_scope error_disabled(emulator.get_state() == emulator::state::error);

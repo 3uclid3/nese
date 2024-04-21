@@ -24,6 +24,7 @@ set(INCLUDES
     "${DIR}/cartridge.hpp"
     "${DIR}/cpu.hpp"
     "${DIR}/cpu.inl"
+    "${DIR}/disassembly.hpp"
     "${DIR}/emulator.hpp"
     "${DIR}/ppu.hpp"
     "${DIR}/ppu.inl"
@@ -36,6 +37,7 @@ set(SOURCES
     "${DIR}/utility/nintendulator.cpp"
     "${DIR}/bus.cpp"
     "${DIR}/cartridge.cpp"
+    "${DIR}/disassembly.cpp"
     "${DIR}/emulator.cpp"
 )
 

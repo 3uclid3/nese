@@ -1,11 +1,13 @@
 set(DIR "${CMAKE_CURRENT_SOURCE_DIR}/nesesan.debugger")
 
 set(INCLUDES
+    "${DIR}/disassembly_view.hpp"
     "${DIR}/cpu_state_view.hpp"
     "${DIR}/debug_control_view.hpp"
 )
  
 set(SOURCES
+    "${DIR}/disassembly_view.cpp"
     "${DIR}/cpu_state_view.cpp"
     "${DIR}/debug_control_view.cpp"
 )
