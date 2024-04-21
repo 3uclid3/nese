@@ -39,6 +39,7 @@
         } \
     } while (false)
 
+#define NESE_ASSERT_CODE(...) __VA_ARGS__
 
 #define NESE_ASSUME(condition) \
     NESE_ASSERT(condition); \
@@ -80,6 +81,8 @@ inline void debug_trigger_assert()
 
 #define NESE_ASSERT(...)
 #define NESE_ASSERT_LOG(...)
+
+#define NESE_ASSERT_CODE(...)
 
 #define NESE_ASSUME(condition) NESE_ASSUME_IMPL(condition)
 #define NESE_ASSUME_LOG(condition, ...) NESE_ASSUME_IMPL(condition)
