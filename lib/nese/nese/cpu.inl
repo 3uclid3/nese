@@ -320,16 +320,17 @@ cpu<BusT>::cpu(BusT& bus)
 template<typename BusT>
 void cpu<BusT>::reset()
 {
-}
+    _state.registers.pc = readw(0xFFFC);
 
-template<typename BusT>
-void cpu<BusT>::irq()
-{
-}
+    _state.registers.a = 0x00;
+    _state.registers.x = 0x00;
+    _state.registers.y = 0x00;
 
-template<typename BusT>
-void cpu<BusT>::nmi()
-{
+    _state.registers.sp = 0xFD;
+
+    _state.registers.status = static_cast<byte_t>(cpu_status::unused);
+
+    _state.cycle = cpu_cycle_t(7);
 }
 
 template<typename BusT>
@@ -347,6 +348,40 @@ bool cpu<BusT>::step()
     ((*this).*instruction)();
 
     return true;
+}
+
+template<typename BusT>
+bool cpu<BusT>::step(cpu_cycle_t to_cycle)
+{
+    while (_state.cycle < to_cycle)
+    {
+        NESE_ASSERT_CODE(const cpu_cycle_t pre_step_cycle = _state.cycle);
+
+        if (!step()) [[unlikely]]
+        {
+            return false;
+        }
+
+        NESE_ASSERT(_state.cycle > pre_step_cycle);
+    }
+
+    return true;
+}
+
+template<typename BusT>
+bool cpu<BusT>::step(cycle_t to_cycle)
+{
+    return step(std::chrono::duration_cast<cpu_cycle_t>(to_cycle));
+}
+
+template<typename BusT>
+void cpu<BusT>::irq()
+{
+}
+
+template<typename BusT>
+void cpu<BusT>::nmi()
+{
 }
 
 template<typename BusT>

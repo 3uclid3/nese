@@ -16,9 +16,12 @@ public:
 
 public:
     void reset();
+    bool step();
+    bool step(cpu_cycle_t to_cycle);
+    bool step(cycle_t to_cycle);
+
     void irq();
     void nmi();
-    bool step();
 
 public:
     [[nodiscard]] const cpu_state& get_state() const;
