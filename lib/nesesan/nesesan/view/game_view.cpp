@@ -33,23 +33,23 @@ void game_view::draw(const view_draw_context& context)
         _previous_frame_buffer = &frame_buffer;
     }
 
-    const auto regionAvail = ImGui::GetContentRegionAvail();
+    const auto region_avail = ImGui::GetContentRegionAvail();
 
     float factor = 1.f;
 
-    if (regionAvail.x > regionAvail.y)
+    if (region_avail.x > region_avail.y)
     {
-        factor = regionAvail.y / screen_height;
+        factor = region_avail.y / screen_height;
     }
     else
     {
-        factor = regionAvail.x / screen_width;
+        factor = region_avail.x / screen_width;
     }
 
     factor = std::max(1.f, factor);
 
     const auto size = ImVec2(screen_width * factor, screen_height * factor);
-    const auto diff_x = std::abs(regionAvail.x - size.x);
+    const auto diff_x = std::abs(region_avail.x - size.x);
 
     ImGui::SetCursorPosX(diff_x / 2.f);
 
