@@ -31,7 +31,6 @@ void emulator::load_cartridge(cartridge&& cartridge)
     NESE_TRACE("[emulator] load cartridge {}", cartridge);
 
     _bus.cartridge = std::move(cartridge);
-    _bus.cpu.get_state().registers.pc = _bus.cartridge.get_prg().size() == 0x4000 ? 0xc000 : 0x8000;
 }
 
 void emulator::reset()
