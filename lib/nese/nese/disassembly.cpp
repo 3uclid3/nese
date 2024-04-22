@@ -27,7 +27,7 @@ const char* disassembly::line::to_string() const
             return format("${:02X}, Y", std::get<byte_t>(operand));
 
         case cpu_addr_mode::relative:
-            return format("${:02X} [${:04X}]", std::get<byte_t>(operand), addr - static_cast<s8_t>(std::get<byte_t>(operand)));
+            return format("${:02X} [${:04X}]", std::get<byte_t>(operand), static_cast<word_t>(addr + static_cast<s8_t>(std::get<byte_t>(operand)) + 2));
 
         case cpu_addr_mode::indexed_indirect:
             return format("(${:02X}), X)", std::get<byte_t>(operand));
@@ -67,7 +67,7 @@ disassembly disassembly::disassemble(const bus& bus, addr_t start_addr, addr_t e
     {
         line line;
         line.addr = static_cast<addr_t>(i);
-        line.opcode = static_cast<cpu_opcode>(bus.read(static_cast<addr_t>(i)));
+        line.opcode = static_cast<cpu_opcode>(bus.readonly(static_cast<addr_t>(i)));
         i += 1;
 
         switch (cpu_opcode_addr_modes[line.opcode])
@@ -84,7 +84,7 @@ disassembly disassembly::disassemble(const bus& bus, addr_t start_addr, addr_t e
         case cpu_addr_mode::indexed_indirect:
         case cpu_addr_mode::indirect_indexed:
         case cpu_addr_mode::relative:
-            line.operand = bus.read(static_cast<addr_t>(i));
+            line.operand = bus.readonly(static_cast<addr_t>(i));
             i += 1;
             break;
 
@@ -92,7 +92,7 @@ disassembly disassembly::disassemble(const bus& bus, addr_t start_addr, addr_t e
         case cpu_addr_mode::absolute_x:
         case cpu_addr_mode::absolute_y:
         case cpu_addr_mode::indirect:
-            line.operand = bus.read_word(static_cast<addr_t>(i));
+            line.operand = bus.readonly_word(static_cast<addr_t>(i));
             i += 2;
             break;
         }

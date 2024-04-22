@@ -125,7 +125,7 @@ void append_instruction_bytes(auto& out, const bus& bus)
     constexpr byte_t max_count = 3;
     constexpr byte_t opcode_count = 1;
 
-    const cpu_opcode opcode = static_cast<cpu_opcode>(bus.read(bus.cpu.get_state().registers.pc));
+    const cpu_opcode opcode = static_cast<cpu_opcode>(bus.readonly(bus.cpu.get_state().registers.pc));
     const string_view mnemonic = cpu_opcode_mnemonics[opcode];
     const byte_t count = mnemonic.empty() ? opcode_count : opcode_count + get_operand_size(cpu_opcode_addr_modes[opcode]);
 
@@ -133,7 +133,7 @@ void append_instruction_bytes(auto& out, const bus& bus)
 
     for (byte_t i = 0; i < count; ++i)
     {
-        out = fmt::format_to(out, " {:02X}", bus.read(bus.cpu.get_state().registers.pc + i));
+        out = fmt::format_to(out, " {:02X}", bus.readonly(bus.cpu.get_state().registers.pc + i));
     }
 
     constexpr byte_t space_per_byte = 3;
@@ -142,7 +142,7 @@ void append_instruction_bytes(auto& out, const bus& bus)
 
 void append_opcode(auto& out, const bus& bus)
 {
-    const cpu_opcode opcode = static_cast<cpu_opcode>(bus.read(bus.cpu.get_state().registers.pc));
+    const cpu_opcode opcode = static_cast<cpu_opcode>(bus.readonly(bus.cpu.get_state().registers.pc));
     const string_view mnemonic = cpu_opcode_mnemonics[opcode];
 
     append_char(out, cpu_opcode_is_officials[opcode] ? ' ' : '*');
@@ -158,7 +158,7 @@ void append_operand(auto& out, const bus& bus)
     constexpr std::size_t operand_length = 27;
     std::size_t current_length = 0;
 
-    const cpu_opcode opcode = static_cast<cpu_opcode>(bus.read(bus.cpu.get_state().registers.pc));
+    const cpu_opcode opcode = static_cast<cpu_opcode>(bus.readonly(bus.cpu.get_state().registers.pc));
     const string_view mnemonic = cpu_opcode_mnemonics[opcode];
 
     if (!mnemonic.empty())
@@ -177,13 +177,13 @@ void append_operand(auto& out, const bus& bus)
             break;
 
         case cpu_addr_mode::immediate:
-            out = fmt::format_to(out, "#${:02X}", bus.read(pc));
+            out = fmt::format_to(out, "#${:02X}", bus.readonly(pc));
             current_length += 4;
             break;
 
         case cpu_addr_mode::relative:
         {
-            const s8_t byte = static_cast<s8_t>(bus.read(pc));
+            const s8_t byte = static_cast<s8_t>(bus.readonly(pc));
             out = fmt::format_to(out, "${:04X}", static_cast<word_t>(pc + byte + 1));
             current_length += 5;
         }
@@ -193,7 +193,7 @@ void append_operand(auto& out, const bus& bus)
         case cpu_addr_mode::zero_page_x:
         case cpu_addr_mode::zero_page_y:
         {
-            addr_t addr = bus.read(pc);
+            addr_t addr = bus.readonly(pc);
 
             out = fmt::format_to(out, "${:02X}", addr);
             current_length += 3;
@@ -211,7 +211,7 @@ void append_operand(auto& out, const bus& bus)
                 current_length += 7;
             }
 
-            out = fmt::format_to(out, " = {:02X}", bus.read(addr));
+            out = fmt::format_to(out, " = {:02X}", bus.readonly(addr));
             current_length += 5;
         }
         break;
@@ -220,7 +220,7 @@ void append_operand(auto& out, const bus& bus)
         case cpu_addr_mode::absolute_x:
         case cpu_addr_mode::absolute_y:
         {
-            addr_t addr = bus.read_word(pc);
+            addr_t addr = bus.readonly_word(pc);
 
             out = fmt::format_to(out, "${:04X}", addr);
             current_length += 5;
@@ -240,7 +240,7 @@ void append_operand(auto& out, const bus& bus)
                     current_length += 9;
                 }
 
-                out = fmt::format_to(out, " = {:02X}", bus.read(addr));
+                out = fmt::format_to(out, " = {:02X}", bus.readonly(addr));
                 current_length += 5;
             }
         }
@@ -248,18 +248,18 @@ void append_operand(auto& out, const bus& bus)
 
         case cpu_addr_mode::indirect:
         {
-            const addr_t addr = bus.read_word(pc);
+            const addr_t addr = bus.readonly_word(pc);
 
             if (mnemonic != "jmp" || (addr & 0xff) != 0xff)
             {
-                out = fmt::format_to(out, "(${:04X}) = {:04X}", addr, bus.read_word(addr));
+                out = fmt::format_to(out, "(${:04X}) = {:04X}", addr, bus.readonly_word(addr));
                 current_length += 14;
             }
             else
             {
                 // Account for JMP hardware bug
                 // http://wiki.nesdev.com/w/index.php/Errata
-                out = fmt::format_to(out, "(${:04X}) = {:04X}", addr, static_cast<word_t>(bus.read(addr) + (static_cast<word_t>(bus.read(addr & 0xff00)) << 8)));
+                out = fmt::format_to(out, "(${:04X}) = {:04X}", addr, static_cast<word_t>(bus.readonly(addr) + (static_cast<word_t>(bus.readonly(addr & 0xff00)) << 8)));
                 current_length += 14;
             }
         }
@@ -267,21 +267,21 @@ void append_operand(auto& out, const bus& bus)
 
         case cpu_addr_mode::indexed_indirect:
         {
-            const addr_t addr = bus.read(pc);
-            const addr_t final_addr = static_cast<nese::word_t>(bus.read((addr + bus.cpu.get_state().registers.x) & 0xff)) + static_cast<nese::word_t>(static_cast<nese::word_t>(bus.read((addr + bus.cpu.get_state().registers.x + 1) & 0xff)) << 8);
+            const addr_t addr = bus.readonly(pc);
+            const addr_t final_addr = static_cast<nese::word_t>(bus.readonly((addr + bus.cpu.get_state().registers.x) & 0xff)) + static_cast<nese::word_t>(static_cast<nese::word_t>(bus.readonly((addr + bus.cpu.get_state().registers.x + 1) & 0xff)) << 8);
 
-            out = fmt::format_to(out, "(${:02X},X) @ {:02X} = {:04X} = {:02X}", addr, (addr + bus.cpu.get_state().registers.x) & 0xFF, final_addr, bus.read(final_addr));
+            out = fmt::format_to(out, "(${:02X},X) @ {:02X} = {:04X} = {:02X}", addr, (addr + bus.cpu.get_state().registers.x) & 0xFF, final_addr, bus.readonly(final_addr));
             current_length += 24;
         }
         break;
 
         case cpu_addr_mode::indirect_indexed:
         {
-            const addr_t addr = bus.read(pc);
-            const addr_t inter_addr = static_cast<nese::word_t>(bus.read(addr)) + static_cast<nese::word_t>(static_cast<word_t>(bus.read((addr + 1) & 0xff)) << 8);
+            const addr_t addr = bus.readonly(pc);
+            const addr_t inter_addr = static_cast<nese::word_t>(bus.readonly(addr)) + static_cast<nese::word_t>(static_cast<word_t>(bus.readonly((addr + 1) & 0xff)) << 8);
             const addr_t final_addr = inter_addr + static_cast<word_t>(bus.cpu.get_state().registers.y);
 
-            out = fmt::format_to(out, "(${:02X}),Y = {:04X} @ {:04X} = {:02X}", addr, inter_addr, final_addr, bus.read(final_addr));
+            out = fmt::format_to(out, "(${:02X}),Y = {:04X} @ {:04X} = {:02X}", addr, inter_addr, final_addr, bus.readonly(final_addr));
             current_length += 26;
         }
         break;

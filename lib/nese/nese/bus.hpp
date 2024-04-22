@@ -9,10 +9,12 @@ namespace nese {
 
 struct bus
 {
-    [[nodiscard]] byte_t read(addr_t addr) const;
+    [[nodiscard]] byte_t readonly(addr_t addr) const;
+    [[nodiscard]] byte_t read(addr_t addr);
     void write(addr_t addr, byte_t value);
 
-    [[nodiscard]] word_t read_word(addr_t addr) const;
+    [[nodiscard]] word_t readonly_word(addr_t addr) const;
+    [[nodiscard]] word_t read_word(addr_t addr);
     void write_word(addr_t addr, word_t value);
 
     array<byte_t, 2048> ram{};
@@ -21,7 +23,12 @@ struct bus
     ppu<bus> ppu{*this};
 };
 
-inline word_t bus::read_word(addr_t addr) const
+inline word_t bus::readonly_word(addr_t addr) const
+{
+    return readonly(addr) + static_cast<word_t>(static_cast<word_t>(readonly(addr + 1)) << 8);
+}
+
+inline word_t bus::read_word(addr_t addr)
 {
     return read(addr) + static_cast<word_t>(static_cast<word_t>(read(addr + 1)) << 8);
 }
