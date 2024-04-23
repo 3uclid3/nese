@@ -11,6 +11,7 @@ set(INCLUDES
     "${DIR}/cpu/cpu_stack_offset.hpp"
     "${DIR}/cpu/cpu_state.hpp"
     "${DIR}/cpu/cpu_status.hpp"
+    "${DIR}/graphic/color.hpp"
     "${DIR}/utility/details/crc32_table.hpp"
     "${DIR}/utility/assert.hpp"
     "${DIR}/utility/crc32.hpp"

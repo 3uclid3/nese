@@ -40,6 +40,12 @@ using addr_t = word_t;
 
 constexpr addr_t null_addr = addr_t{0};
 
+template<typename T>
+constexpr T clamp(const T& v, const T& min, const T& max)
+{
+    return std::max<T>(min, std::min<T>(max, v));
+}
+
 //
 // Given that 1 CPU cycle = 3 PPU cycle, we'll count in terms of PPU cycle
 // 1 nes_cycle_t = 1 PPU cycle = 1/3 CPU cycle
