@@ -426,6 +426,29 @@ struct cpu_set_status_fixture : cpu_fixture
     // clang-format on
 };
 
+struct cpu_shift_fixture : cpu_fixture
+{
+    void test_zero_page(cpu_opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t cycle_cost = cpu_cycle_t(5))
+    {
+        cpu_fixture::test_zero_page(opcode, addressing_scenario, behavior_scenarios, cycle_cost);
+    }
+
+    void test_zero_page_indexed(cpu_opcode opcode, cpu_register_id register_id, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t cycle_cost = cpu_cycle_t(6))
+    {
+        cpu_fixture::test_zero_page_indexed(opcode, register_id, addressing_scenario, behavior_scenarios, cycle_cost);
+    }
+
+    void test_absolute(cpu_opcode opcode, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t cycle_cost = cpu_cycle_t(6))
+    {
+        cpu_fixture::test_absolute(opcode, addressing_scenario, behavior_scenarios, cycle_cost);
+    }
+
+    void test_absolute_indexed(cpu_opcode opcode, cpu_register_id register_id, const scenario& addressing_scenario, std::span<const scenario> behavior_scenarios, cpu_cycle_t cycle_cost = cpu_cycle_t(7))
+    {
+        cpu_fixture::test_absolute_indexed(opcode, register_id, addressing_scenario, behavior_scenarios, cycle_cost);
+    }
+};
+
 struct cpu_store_fixture : cpu_fixture
 {
     // clang-format off
@@ -665,7 +688,7 @@ TEST_CASE_METHOD(cpu_fixture, "and", "[cpu][instruction]")
     test_indirect_indexed(cpu_opcode::and_indirect_indexed, addr_mode_scenario, behavior_scenarios);
 }
 
-TEST_CASE_METHOD(cpu_fixture, "asl", "[cpu][instruction]")
+TEST_CASE_METHOD(cpu_shift_fixture, "asl", "[cpu][instruction]")
 {
     // clang-format off
     static const scenario addr_mode_scenario{
@@ -1183,7 +1206,7 @@ TEST_CASE_METHOD(cpu_fixture, "jmp", "[cpu][instruction]")
     });
     // clang-format on
 
-    static constexpr cpu_cycle_t indirect_cycle_cost = cpu_cycle_t(3);
+    static constexpr cpu_cycle_t indirect_cycle_cost = cpu_cycle_t(5);
 
     // clang-format off
     static const std::array indirect_behavior_scenarios = std::to_array<scenario>({
@@ -1303,7 +1326,7 @@ TEST_CASE_METHOD(cpu_load_fixture, "ldy", "[cpu][instruction]")
     test_absolute_indexed(cpu_opcode::ldy_absolute_x, cpu_register_id::x, addr_mode_scenario, behavior_scenarios);
 }
 
-TEST_CASE_METHOD(cpu_fixture, "lsr", "[cpu][instruction]")
+TEST_CASE_METHOD(cpu_shift_fixture, "lsr", "[cpu][instruction]")
 {
     // clang-format off
     static const scenario addr_mode_scenario{
@@ -1651,7 +1674,7 @@ TEST_CASE_METHOD(cpu_fixture, "plp", "[cpu][instruction]")
     test_implied(cpu_opcode::plp_implied, behavior_scenarios);
 }
 
-TEST_CASE_METHOD(cpu_fixture, "rol", "[cpu][instruction]")
+TEST_CASE_METHOD(cpu_shift_fixture, "rol", "[cpu][instruction]")
 {
     // clang-format off
     static const scenario addr_mode_scenario{
@@ -1720,7 +1743,7 @@ TEST_CASE_METHOD(cpu_fixture, "rol", "[cpu][instruction]")
     test_absolute_indexed(cpu_opcode::rol_absolute_x, cpu_register_id::x, addr_mode_scenario, behavior_scenarios);
 }
 
-TEST_CASE_METHOD(cpu_fixture, "ror", "[cpu][instruction]")
+TEST_CASE_METHOD(cpu_shift_fixture, "ror", "[cpu][instruction]")
 {
     // clang-format off
     static const scenario addr_mode_scenario{
@@ -2037,7 +2060,6 @@ TEST_CASE_METHOD(cpu_transfer_fixture, "tya", "[cpu][instruction]")
 {
     test_implied(cpu_opcode::tya_implied, behavior_scenarios<cpu_register_id::y, cpu_register_id::a>);
 }
-
 
 #if NESE_UNOFFICIAL_INSTRUCTIONS_ENABLED
 

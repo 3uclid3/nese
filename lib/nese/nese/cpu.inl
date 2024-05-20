@@ -493,7 +493,6 @@ void cpu<BusT>::instruction_adc()
 
     add_with_carry<AddrModeT>(byte);
 
-    page_crossing = true;
     step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
 }
 
@@ -521,8 +520,7 @@ template<typename BusT>
 template<cpu_addr_mode AddrModeT>
 void cpu<BusT>::instruction_asl()
 {
-    bool page_crossing{false};
-    const word_t operand = decode_operand<AddrModeT>(page_crossing);
+    const word_t operand = decode_operand<AddrModeT>();
     const byte_t value = read_operand<AddrModeT>(operand);
     const byte_t new_value = static_cast<byte_t>(value << 1);
 
@@ -532,7 +530,7 @@ void cpu<BusT>::instruction_asl()
     set_status(cpu_status::zero, is_zero(new_value));
     set_status(cpu_status::negative, is_negative(new_value));
 
-    step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+    step_cycle(get_shift_cycle_cost<AddrModeT>());
 }
 
 // BCC (Branch if Carry Clear):
@@ -879,7 +877,7 @@ void cpu<BusT>::instruction_jmp()
     }
 
     pc() = new_addr;
-    step_cycle(3);
+    step_cycle(AddrModeT == cpu_addr_mode::indirect ? 5 : 3);
 }
 
 // JSR (Jump to Subroutine):
@@ -928,8 +926,7 @@ template<typename BusT>
 template<cpu_addr_mode AddrModeT>
 void cpu<BusT>::instruction_lsr()
 {
-    bool page_crossing{false};
-    const word_t operand = decode_operand<AddrModeT>(page_crossing);
+    const word_t operand = decode_operand<AddrModeT>();
     const byte_t value = read_operand<AddrModeT>(operand);
     const byte_t new_value = static_cast<byte_t>(value >> 1);
 
@@ -940,7 +937,7 @@ void cpu<BusT>::instruction_lsr()
     set_status(cpu_status::negative, false); // never negative
     // set_status(cpu_status::negative, is_negative(new_value));
 
-    step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+    step_cycle(get_shift_cycle_cost<AddrModeT>());
 }
 
 // NOP (No Operation):
@@ -951,9 +948,10 @@ void cpu<BusT>::instruction_nop()
 {
     if constexpr (AddrModeT != cpu_addr_mode::implied)
     {
-        [[maybe_unused]] const word_t operand = decode_operand<AddrModeT>();
+        bool page_crossing{false};
+        [[maybe_unused]] const word_t operand = decode_operand<AddrModeT>(page_crossing);
 
-        step_cycle(get_addr_mode_cycle_cost<AddrModeT>());
+        step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
     }
     else
     {
@@ -1061,8 +1059,7 @@ template<typename BusT>
 template<cpu_addr_mode AddrModeT>
 void cpu<BusT>::instruction_rol()
 {
-    bool page_crossing{false};
-    const word_t operand = decode_operand<AddrModeT>(page_crossing);
+    const word_t operand = decode_operand<AddrModeT>();
     const byte_t value = read_operand<AddrModeT>(operand);
     const byte_t carry_mask = is_status_set(cpu_status::carry) ? 0x01 : 0x00;
     const byte_t new_value = value << 1 | carry_mask;
@@ -1073,7 +1070,7 @@ void cpu<BusT>::instruction_rol()
     set_status(cpu_status::zero, is_zero(new_value));
     set_status(cpu_status::negative, is_negative(new_value));
 
-    step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+    step_cycle(get_shift_cycle_cost<AddrModeT>());
 }
 
 // ROR (Rotate Right):
@@ -1082,7 +1079,6 @@ template<typename BusT>
 template<cpu_addr_mode AddrModeT>
 void cpu<BusT>::instruction_ror()
 {
-    bool page_crossing{false};
     const word_t operand = decode_operand<AddrModeT>();
     const byte_t value = read_operand<AddrModeT>(operand);
     const byte_t carry_mask = is_status_set(cpu_status::carry) ? 0x80 : 0x00;
@@ -1094,7 +1090,7 @@ void cpu<BusT>::instruction_ror()
     set_status(cpu_status::zero, is_zero(new_value));
     set_status(cpu_status::negative, is_negative(new_value));
 
-    step_cycle(get_addr_mode_cycle_cost<AddrModeT>(page_crossing));
+    step_cycle(get_shift_cycle_cost<AddrModeT>());
 }
 
 // SBC (Subtract with Carry):
@@ -1661,12 +1657,13 @@ addr_t cpu<BusT>::decode_operand_addr(bool& page_crossing [[maybe_unused]])
 
     if constexpr (AddrModeT == cpu_addr_mode::indirect_indexed)
     {
-        const byte_t addr = decode();
+        const byte_t addr_arg = decode();
 
-        const byte_t lo = read(addr);
-        const byte_t hi = read((addr + 1) & 0xFF);
+        const byte_t lo = read(addr_arg);
+        const byte_t hi = read((addr_arg + 1) & 0xFF);
 
-        const addr_t new_addr = static_cast<addr_t>(lo) + static_cast<addr_t>(static_cast<addr_t>(hi) << 8) + y();
+        const addr_t addr = static_cast<addr_t>(lo) + static_cast<addr_t>(static_cast<addr_t>(hi) << 8) ;
+        const addr_t new_addr = addr + y();
 
         page_crossing = is_page_crossing(addr, new_addr);
 
@@ -1734,6 +1731,33 @@ constexpr cpu_cycle_t cpu<BusT>::get_addr_mode_cycle_cost(bool page_crossing)
 
     case cpu_addr_mode::indirect_indexed:
         return cpu_cycle_t(page_crossing ? 6 : 5);
+
+    default:
+        NESE_ASSERT(false);
+        return cpu_cycle_t(0);
+    }
+}
+
+template<typename BusT>
+template<cpu_addr_mode AddrModeT>
+constexpr cpu_cycle_t cpu<BusT>::get_shift_cycle_cost()
+{
+    switch (AddrModeT)
+    {
+    case cpu_addr_mode::accumulator:
+        return cpu_cycle_t(2);
+
+    case cpu_addr_mode::zero_page:
+        return cpu_cycle_t(5);
+
+    case cpu_addr_mode::zero_page_x:
+        return cpu_cycle_t(6);
+
+    case cpu_addr_mode::absolute:
+        return cpu_cycle_t(6);
+
+    case cpu_addr_mode::absolute_x:
+        return cpu_cycle_t(7);
 
     default:
         NESE_ASSERT(false);

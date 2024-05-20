@@ -169,11 +169,13 @@ struct cpu_fixture
     struct scenario
     {
         [[nodiscard]] string to_string() const;
+        [[nodiscard]] bool should_debug_break(cpu_opcode opcode) const;
 
         std::vector<operation> initial;
         std::vector<operation> expected;
         string description{};
         cpu_cycle_t cycle_cost{0};
+        std::optional<cpu_opcode> debug_break_opcode{std::nullopt};
         bool debug_break{false};
     };
 

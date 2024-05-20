@@ -307,6 +307,11 @@ string cpu_fixture::scenario::to_string() const
     return string;
 }
 
+bool cpu_fixture::scenario::should_debug_break(cpu_opcode opcode) const
+{
+    return debug_break && (!debug_break_opcode.has_value() || debug_break_opcode.value() == opcode);
+}
+
 cpu_fixture::op::set_operand<byte_t> cpu_fixture::set_operand(byte_t value)
 {
     return {value};
@@ -484,7 +489,7 @@ void cpu_fixture::test_implied(cpu_opcode opcode, std::span<const scenario> beha
         INFO(scenario.description);
         CAPTURE(scenario);
 
-        if (scenario.debug_break)
+        if (scenario.should_debug_break(opcode))
         {
             __debugbreak();
         }
@@ -509,7 +514,7 @@ void cpu_fixture::test_immediate(cpu_opcode opcode, const scenario& addressing_s
     auto test = [this, opcode, cycle_cost](addr_x pc_addr, const scenario& scenario) {
         CAPTURE(scenario);
 
-        if (scenario.debug_break)
+        if (scenario.should_debug_break(opcode))
         {
             __debugbreak();
         }
@@ -561,7 +566,7 @@ void cpu_fixture::test_acculumator(cpu_opcode opcode, std::span<const scenario> 
         INFO(scenario.description);
         CAPTURE(scenario);
 
-        if (scenario.debug_break)
+        if (scenario.should_debug_break(opcode))
         {
             __debugbreak();
         }
@@ -585,7 +590,7 @@ void cpu_fixture::test_zero_page(cpu_opcode opcode, const scenario& addressing_s
     auto test = [this, opcode, cycle_cost](addr_t pc_addr, byte_t base_addr, const scenario& scenario) {
         CAPTURE(scenario);
 
-        if (scenario.debug_break)
+        if (scenario.should_debug_break(opcode))
         {
             __debugbreak();
         }
@@ -635,7 +640,7 @@ void cpu_fixture::test_zero_page_indexed(cpu_opcode opcode, cpu_register_id inde
     auto test = [this, opcode, index_register, cycle_cost](addr_t pc_addr, byte_t base_addr, byte_t index, const scenario& scenario) {
         CAPTURE(scenario);
 
-        if (scenario.debug_break)
+        if (scenario.should_debug_break(opcode))
         {
             __debugbreak();
         }
@@ -691,7 +696,7 @@ void cpu_fixture::test_absolute(cpu_opcode opcode, const scenario& addressing_sc
     auto test = [this, opcode, cycle_cost](addr_t pc_addr, addr_t base_addr, const scenario& scenario) {
         CAPTURE(scenario);
 
-        if (scenario.debug_break)
+        if (scenario.should_debug_break(opcode))
         {
             __debugbreak();
         }
@@ -741,7 +746,7 @@ void cpu_fixture::test_absolute_indexed(cpu_opcode opcode, cpu_register_id index
     auto test = [this, opcode, index_register, cycle_cost](addr_x pc_addr, addr_x base_addr, byte_x index, const scenario& scenario) {
         CAPTURE(scenario);
 
-        if (scenario.debug_break)
+        if (scenario.should_debug_break(opcode))
         {
             __debugbreak();
         }
@@ -796,7 +801,7 @@ void cpu_fixture::test_indexed_indirect(cpu_opcode opcode, const scenario& addre
     auto test = [this, opcode, cycle_cost](addr_x pc_addr, byte_x base_addr, byte_x x, byte_x value_addr, const scenario& scenario) {
         CAPTURE(scenario);
 
-        if (scenario.debug_break)
+        if (scenario.should_debug_break(opcode))
         {
             __debugbreak();
         }
@@ -850,7 +855,7 @@ void cpu_fixture::test_indirect_indexed(cpu_opcode opcode, const scenario& addre
     auto test = [this, opcode, cycle_cost](addr_x pc_addr, byte_x base_addr, byte_x y, byte_x value_addr, const scenario& scenario) {
         CAPTURE(scenario);
 
-        if (scenario.debug_break)
+        if (scenario.should_debug_break(opcode))
         {
             __debugbreak();
         }
@@ -908,7 +913,7 @@ void cpu_fixture::test_relative(cpu_opcode opcode, std::span<const scenario> beh
         INFO(scenario.description);
         CAPTURE(scenario);
 
-        if (scenario.debug_break)
+        if (scenario.should_debug_break(opcode))
         {
             __debugbreak();
         }
@@ -934,7 +939,7 @@ void cpu_fixture::test_unspecified(cpu_opcode opcode, std::span<const scenario> 
     INFO(scenario.description);
     CAPTURE(scenario);
 
-    if (scenario.debug_break)
+    if (scenario.should_debug_break(opcode))
     {
         __debugbreak();
     }

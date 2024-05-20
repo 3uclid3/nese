@@ -311,7 +311,10 @@ private:
 
     // cycle cost
     template<cpu_addr_mode AddrModeT>
-    [[nodiscard]] constexpr cpu_cycle_t get_addr_mode_cycle_cost(bool page_crossing = false);
+    [[nodiscard]] static constexpr cpu_cycle_t get_addr_mode_cycle_cost(bool page_crossing = false);
+
+    template<cpu_addr_mode AddrModeT>
+    [[nodiscard]] static constexpr cpu_cycle_t get_shift_cycle_cost();
 
 private:
     static constexpr instruction_callback_table _instructions{instruction_callback_table::create()};
