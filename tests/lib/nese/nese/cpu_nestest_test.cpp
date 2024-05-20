@@ -24,10 +24,11 @@ TEST_CASE("nestest", "[cpu][instruction]")
     const char* filepath = format("{}/nestest.nes", test_roms_path);
     bus.cartridge = cartridge::from_file(filepath);
     bus.cpu.get_state().registers.pc = bus.cartridge.get_prg().size() == 0x4000 ? 0xc000 : 0x8000;
+    bus.cpu.get_state().cycle = cpu_cycle_t(7); // nestest start at cpu cycle 7
 
     auto format_flags = nintendulator::format_flag::all;
     format_flags = format_flags & ~nintendulator::format_flag::ppu;
-    format_flags = format_flags & ~nintendulator::format_flag::cycle;
+    //format_flags = format_flags & ~nintendulator::format_flag::cycle;
 
     bool last_instruction_succeeded = true;
     while (last_instruction_succeeded && bus.cpu.get_state().registers.pc != end_pc)

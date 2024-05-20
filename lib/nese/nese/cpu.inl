@@ -422,17 +422,18 @@ void cpu<BusT>::add_with_carry(byte_t value)
 template<typename BusT>
 void cpu<BusT>::branch(bool condition)
 {
-    const addr_t initial_pc = pc();
     const s8_t byte = static_cast<s8_t>(decode());
 
     if (condition)
     {
+        const addr_t pre_branch_pc = pc();
+
         // if branch succeeds ++
         step_cycle(1);
         pc() += byte;
 
         // if crossing to a new page ++
-        if (is_page_crossing(initial_pc, pc()))
+        if (is_page_crossing(pre_branch_pc, pc()))
         {
             step_cycle(1);
         }
@@ -1630,12 +1631,22 @@ addr_t cpu<BusT>::decode_operand_addr(bool& page_crossing [[maybe_unused]])
 
     if constexpr (AddrModeT == cpu_addr_mode::absolute_x)
     {
-        return decodew() + x();
+        const addr_t addr = decodew();
+        const addr_t new_addr = addr + x();
+
+        page_crossing = is_page_crossing(addr, new_addr);
+
+        return new_addr;
     }
 
     if constexpr (AddrModeT == cpu_addr_mode::absolute_y)
     {
-        return decodew() + y();
+        const addr_t addr = decodew();
+        const addr_t new_addr = addr + y();
+
+        page_crossing = is_page_crossing(addr, new_addr);
+
+        return new_addr;
     }
 
     if constexpr (AddrModeT == cpu_addr_mode::indexed_indirect)

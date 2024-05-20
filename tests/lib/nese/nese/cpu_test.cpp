@@ -69,8 +69,8 @@ struct cpu_branch_if_set_fixture : cpu_branch_fixture
             .cycle_cost = no_branching_cycle_cost
         },
         {
-            .initial = {op::set_register_status<StatusT>(), set_pc(0x0FFF), set_memory(0x0FFF, 0x01)},
-            .expected = {set_pc(0x1001)},
+            .initial = {op::set_register_status<StatusT>(), set_pc(0x0FFE), set_memory(0x0FFE, 0x01)},
+            .expected = {set_pc(0x1000)},
             .description = "crosses from 0x0Fxx to 0x10xx page",
             .cycle_cost = page_crossing_cycle_cost
         }
@@ -135,8 +135,8 @@ struct cpu_branch_if_clear_fixture : cpu_branch_fixture
             .cycle_cost = no_branching_cycle_cost
         },
         {
-            .initial = {set_pc(0x0FFF), set_memory(0x0FFF, 0x01)},
-            .expected = {set_pc(0x1001)},
+            .initial = {set_pc(0x0FFE), set_memory(0x0FFE, 0x01)},
+            .expected = {set_pc(0x1000)},
             .description = "crosses from 0x0Fxx to 0x10xx page",
             .cycle_cost = page_crossing_cycle_cost
         }
