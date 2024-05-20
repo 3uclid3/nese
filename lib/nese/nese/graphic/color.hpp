@@ -13,6 +13,8 @@ public:
     static constexpr u8_t default_g = 0x00;
     static constexpr u8_t default_b = 0x00;
 
+    static constexpr u32_t default_color = static_cast<u32_t>(default_r | (default_g << 8) | (default_b << 16) | (default_alpha << 24));
+
     constexpr color() = default;
     constexpr color(const color&) = default;
     constexpr color(color&&) = default;
@@ -64,9 +66,11 @@ private:
             u8_t _b, _g, _r, _a;
 #endif
         };
-        u32_t _value{static_cast<u32_t>(default_r | (default_g << 8) | (default_b << 16) | (default_alpha << 24))};
+        u32_t _value{default_color};
     };
 };
+
+static_assert(std::is_trivially_copyable_v<color>);
 
 static_assert(sizeof(color) == sizeof(u32_t));
 
