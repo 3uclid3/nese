@@ -76,10 +76,10 @@ public:
 
             // clang-format off
             if (addr_mode.starts_with("implied")) table._data[i] = cpu_addr_mode::implied;
-            else if (addr_mode.starts_with( "accumulator")) table._data[i] = cpu_addr_mode::accumulator;
-            else if (addr_mode.starts_with( "immediate")) table._data[i] = cpu_addr_mode::immediate;
-            else if (addr_mode.starts_with( "zero_page_x")) table._data[i] = cpu_addr_mode::zero_page_x;
-            else if (addr_mode.starts_with( "zero_page_y")) table._data[i] = cpu_addr_mode::zero_page_y;
+            else if (addr_mode.starts_with("accumulator")) table._data[i] = cpu_addr_mode::accumulator;
+            else if (addr_mode.starts_with("immediate")) table._data[i] = cpu_addr_mode::immediate;
+            else if (addr_mode.starts_with("zero_page_x")) table._data[i] = cpu_addr_mode::zero_page_x;
+            else if (addr_mode.starts_with("zero_page_y")) table._data[i] = cpu_addr_mode::zero_page_y;
             else if (addr_mode.starts_with("zero_page")) table._data[i] = cpu_addr_mode::zero_page;
             else if (addr_mode.starts_with("absolute_x")) table._data[i] = cpu_addr_mode::absolute_x;
             else if (addr_mode.starts_with("absolute_y")) table._data[i] = cpu_addr_mode::absolute_y;

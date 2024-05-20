@@ -45,7 +45,7 @@ inline bool disassembly::is_empty() const
 
 inline disassembly::const_iterator disassembly::begin() const
 {
-    return _lines.begin();    
+    return _lines.begin();
 }
 
 inline disassembly::const_iterator disassembly::end() const
