@@ -50,13 +50,16 @@ byte_t bus::readonly(addr_t addr) const
             return 0xFF;
 
         case ss::control:
-            return ppu.read_control();
+            return 0xFF;
+            // return ppu.read_control();
 
         case ss::mask:
-            return ppu.read_mask();
+            return 0xFF;
+            // return ppu.read_mask();
 
         case ss::status:
-            return ppu.read_status();
+            return 0xFF;
+            // return ppu.read_status();
         }
 
         return 0xFF;
@@ -98,10 +101,10 @@ byte_t bus::read(addr_t addr)
             return 0xFF;
 
         case ss::status:
-            return ppu.read_status();
+            //return ppu.read_status();
 
         case ss::ppu_data:
-            return ppu.read_ppu_data();
+            //return ppu.read_ppu_data();
         }
 
         return 0xFF;
@@ -128,23 +131,23 @@ void bus::write(addr_t addr, byte_t value)
         switch (static_cast<ss>(addr & 0x0007))
         {
         case ss::control:
-            ppu.write_control(value);
+            //ppu.write_control(value);
             break;
 
         case ss::mask:
-            ppu.write_mask(value);
+            //ppu.write_mask(value);
             break;
 
         case ss::scroll:
-            ppu.write_scroll(value);
+            //ppu.write_scroll(value);
             break;
 
         case ss::ppu_addr:
-            ppu.write_ppu_address(value);
+            //ppu.write_ppu_address(value);
             break;
 
         case ss::ppu_data:
-            ppu.write_ppu_data(value);
+            //.write_ppu_data(value);
             break;
 
         case ss::status:
