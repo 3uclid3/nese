@@ -67,6 +67,24 @@ const ppu_frame_buffer& ppu<BusT>::frame_buffer() const
 }
 
 template<typename BusT>
+ppu_cycle_t ppu<BusT>::get_cycle() const
+{
+    return _cycle;
+}
+
+template<typename BusT>
+ppu_cycle_t ppu<BusT>::get_scanline_cycle() const
+{
+    return _scanline_cycle;
+}
+
+template<typename BusT>
+size_t ppu<BusT>::get_scanline() const
+{
+    return _scanline;
+}
+
+template<typename BusT>
 void ppu<BusT>::swap_buffers()
 {
     std::swap(_front_frame_buffer, _back_frame_buffer);

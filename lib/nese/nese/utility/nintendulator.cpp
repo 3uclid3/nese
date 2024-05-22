@@ -303,7 +303,28 @@ void append_registers(auto& out, const bus& bus)
 
 void append_ppu(auto& out, const bus& bus [[maybe_unused]])
 {
-    out = fmt::format_to(out, "PPU:{}", "  0,  0");
+    auto append_value = [&out](size_t value) {
+        if (value <= 9)
+        {
+            out = fmt::format_to(out, "  {}", value);
+        }
+        else if (value <= 99)
+        {
+            out = fmt::format_to(out, " {}", value);
+        }
+        else
+        {
+            out = fmt::format_to(out, "{}", value);
+        }
+    };
+
+    append_char(out, 'P');
+    append_char(out, 'P');
+    append_char(out, 'U');
+    append_char(out, ':');
+    append_value(bus.ppu.get_scanline());
+    append_char(out, ',');
+    append_value(bus.ppu.get_scanline_cycle().count());
 }
 
 void append_cycle(auto& out, const bus& bus)

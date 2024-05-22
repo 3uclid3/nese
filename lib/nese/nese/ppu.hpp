@@ -24,6 +24,11 @@ public:
 public:
     [[nodiscard]] const ppu_frame_buffer& frame_buffer() const;
 
+    [[nodiscard]] ppu_cycle_t get_cycle() const;
+    [[nodiscard]] ppu_cycle_t get_scanline_cycle() const;
+
+    [[nodiscard]] size_t get_scanline() const;
+
 private:
     [[maybe_unused]] void swap_buffers();
 
@@ -42,6 +47,7 @@ private:
     static constexpr ppu_cycle_t scanline_max_cycle{341};
     static constexpr size_t scanline_count{362};
 
+public:
     ref_wrap<BusT> _bus;
 
     array<ppu_frame_buffer, 2> _frame_buffers;

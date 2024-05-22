@@ -13,6 +13,8 @@ namespace nese {
 
 TEST_CASE("nestest", "[cpu][instruction]")
 {
+    constexpr cpu_cycle_t start_cycle = cpu_cycle_t(7);
+    constexpr addr_x start_pc = 0xC000;
     constexpr addr_x end_pc = 0x0005;
 
     bus bus;
@@ -23,19 +25,24 @@ TEST_CASE("nestest", "[cpu][instruction]")
 
     const char* filepath = format("{}/nestest.nes", test_roms_path);
     bus.cartridge = cartridge::from_file(filepath);
-    bus.cpu.get_state().registers.pc = bus.cartridge.get_prg().size() == 0x4000 ? 0xc000 : 0x8000;
-    bus.cpu.get_state().cycle = cpu_cycle_t(7); // nestest start at cpu cycle 7
+    bus.cpu.get_state().registers.pc = start_pc;
+    bus.cpu.get_state().cycle = start_cycle;
+    bus.ppu._cycle = ppu_cycle_t(21);
+    bus.ppu._scanline_cycle = ppu_cycle_t(21);
 
-    auto format_flags = nintendulator::format_flag::all;
-    format_flags = format_flags & ~nintendulator::format_flag::ppu;
-    //format_flags = format_flags & ~nintendulator::format_flag::cycle;
-
+    auto cycle = cycle_t(21);
     bool last_instruction_succeeded = true;
     while (last_instruction_succeeded && bus.cpu.get_state().registers.pc != end_pc)
     {
-        nintendulator_logger->trace(nintendulator::format(bus, format_flags));
+        if (cycle == bus.cpu.get_state().cycle)
+        {
+            nintendulator_logger->trace(nintendulator::format(bus));
+        }
 
-        last_instruction_succeeded = bus.cpu.step();
+        ++cycle;
+
+        bus.ppu.step(cycle);
+        last_instruction_succeeded = bus.cpu.step(cycle);
     }
 
     REQUIRE(bus.cpu.get_state().registers.pc == end_pc);
