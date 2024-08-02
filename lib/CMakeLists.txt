@@ -1,3 +1,4 @@
 add_subdirectory("nese")
-add_subdirectory("nesesan")
-add_subdirectory("nesesan.debugger")
+add_subdirectory("nese.gui")
+
+add_subdirectory("nese.debugger")

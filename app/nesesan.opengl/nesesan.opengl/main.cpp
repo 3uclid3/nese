@@ -19,15 +19,15 @@
 #endif
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
+#include <nese.debugger/cpu_state_view.hpp>
+#include <nese.debugger/debug_control_view.hpp>
+#include <nese.debugger/disassembly_view.hpp>
+#include <nese.gui/application.hpp>
+#include <nese.gui/icons.hpp>
+#include <nese.gui/texture.hpp>
+#include <nese.gui/view/game_view.hpp>
+#include <nese.gui/view/window_view.hpp>
 #include <nese/utility/log.hpp>
-#include <nesesan.debugger/disassembly_view.hpp>
-#include <nesesan.debugger/cpu_state_view.hpp>
-#include <nesesan.debugger/debug_control_view.hpp>
-#include <nesesan/application.hpp>
-#include <nesesan/icons.hpp>
-#include <nesesan/texture.hpp>
-#include <nesesan/view/game_view.hpp>
-#include <nesesan/view/window_view.hpp>
 
 namespace {
 
@@ -36,10 +36,10 @@ void glfw_error_callback(int error, const char* description)
     NESE_ERROR("[GLFW] {}: {}", error, description);
 }
 
-class opengl_texture_broker : public nese::san::texture::broker
+class opengl_texture_broker : public nese::gui::texture::broker
 {
 public:
-    nese::san::texture::id create(nese::u32_t width, nese::u32_t height, std::span<const nese::u32_t> data) override
+    nese::gui::texture::id create(nese::u32_t width, nese::u32_t height, std::span<const nese::u32_t> data) override
     {
         GLuint id = 0;
         glGenTextures(1, &id);
@@ -53,16 +53,16 @@ public:
 
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        return static_cast<nese::san::texture::id>(id);
+        return static_cast<nese::gui::texture::id>(id);
     }
 
-    void update(nese::san::texture::id id, nese::u32_t width, nese::u32_t height, std::span<const nese::u32_t> data) override
+    void update(nese::gui::texture::id id, nese::u32_t width, nese::u32_t height, std::span<const nese::u32_t> data) override
     {
         glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(id));
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, data.data());
     }
 
-    void destroy(nese::san::texture::id id) override
+    void destroy(nese::gui::texture::id id) override
     {
         GLuint gl_id = static_cast<GLuint>(id);
         glDeleteTextures(1, &gl_id);
@@ -73,9 +73,9 @@ template<typename T>
 struct tag
 {};
 
-void create_views(nese::san::application& application)
+void create_views(nese::gui::application& application)
 {
-    using namespace nese::san;
+    using namespace nese::gui;
 
     auto create_window = [&application]<typename T>(tag<T>, const char* name, const char* path, window_view_flags flags = window_view_flag::none) {
         auto& window = application.get_views().add<window_view<T>>(name, flags);
@@ -96,7 +96,7 @@ void create_views(nese::san::application& application)
 int main(int, char**)
 {
     using namespace nese;
-    using namespace nese::san;
+    using namespace nese::gui;
 
     glfwSetErrorCallback(glfw_error_callback);
 

@@ -10,27 +10,27 @@ set(SOURCES
     "${DIR}/main.cpp"
 )
 
-add_executable(nesesan.opengl ${INCLUDES} ${SOURCES})
+add_executable(nese.opengl ${INCLUDES} ${SOURCES})
 
-set_target_properties(nesesan.opengl PROPERTIES
-    OUTPUT_NAME nesesan
+set_target_properties(nese.opengl PROPERTIES
+    OUTPUT_NAME nese
 )
 
 target_link_libraries(
-    nesesan.opengl
+    nese.opengl
     PRIVATE
-        nesesan
-        nesesan.debugger
+        nese
+        nese.debugger
         nese_project_options
         nese_project_warnings
 )
 
-target_disable_static_analysis(nesesan.opengl)
+target_disable_static_analysis(nese.opengl)
 
-target_include_interface_directories(nesesan.opengl "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_interface_directories(nese.opengl "${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_find_dependencies(
-    nesesan.opengl
+    nese.opengl
     PRIVATE_CONFIG
         imgui
         glad
@@ -38,17 +38,14 @@ target_find_dependencies(
 )
 
 target_link_system_libraries(
-    nesesan.opengl
+    nese.opengl
     PRIVATE 
         imgui::imgui
         glad::glad
         glfw
 )
  
-#add_custom_target(nesesan_copy_fonts ALL
-add_custom_command(TARGET nesesan.opengl POST_BUILD
+add_custom_command(TARGET nese.opengl POST_BUILD
                   COMMAND ${CMAKE_COMMAND} -E copy_if_different
                   "${PROJECT_SOURCE_DIR}/fonts/fa-regular-400.ttf" "${PROJECT_SOURCE_DIR}/fonts/fa-solid-900.ttf" "${CMAKE_CURRENT_BINARY_DIR}/"
                   COMMENT "Copying fonts to runtime directory from ${PROJECT_SOURCE_DIR}/fonts/ to ${CMAKE_CURRENT_BINARY_DIR}/")
-
-# add_dependencies(nesesan.opengl nesesan_copy_fonts)
