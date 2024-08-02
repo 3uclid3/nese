@@ -53,3 +53,6 @@ target_link_system_libraries(
     PRIVATE 
         imgui::imgui
 )
+
+# Set the folder for the project in Visual Studio
+set_property(TARGET nese.gui PROPERTY FOLDER "libs")

@@ -23,7 +23,7 @@ target_disable_static_analysis(nese.gui.unittest)
 target_include_interface_directories(nese.gui.unittest "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Set the folder for the project in Visual Studio
-set_property(TARGET nese.gui.unittest PROPERTY FOLDER "tests")
+set_property(TARGET nese.gui.unittest PROPERTY FOLDER "tests/unit")
 
 # use xml reporter if coverage is enabled
 if(${ENABLE_COVERAGE})

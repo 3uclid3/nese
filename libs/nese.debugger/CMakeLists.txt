@@ -24,3 +24,6 @@ target_link_libraries(
 )
 
 target_include_interface_directories(nese.debugger "${CMAKE_CURRENT_SOURCE_DIR}")
+
+# Set the folder for the project in Visual Studio
+set_property(TARGET nese.debugger PROPERTY FOLDER "libs")

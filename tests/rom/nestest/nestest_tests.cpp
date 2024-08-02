@@ -3,16 +3,19 @@
 #include <spdlog/sinks/basic_file_sink.h>
 
 #include <nese/bus.hpp>
-#include <nese/test_config.hpp>
 #include <nese/utility/format.hpp>
 #include <nese/utility/hex.hpp>
 #include <nese/utility/log.hpp>
 #include <nese/utility/nintendulator.hpp>
 
-namespace nese {
+#include "test_config.hpp"
 
-TEST_CASE("nestest", "[cpu][instruction]")
+namespace nestest {
+
+TEST_CASE("nestest", "[romtest]")
 {
+    using namespace nese;
+
     constexpr cpu_cycle_t start_cycle = cpu_cycle_t(7);
     constexpr addr_x start_pc = 0xC000;
     constexpr addr_x end_pc = 0x0005;
@@ -23,8 +26,7 @@ TEST_CASE("nestest", "[cpu][instruction]")
     nintendulator_logger->set_level(spdlog::level::trace);
     nintendulator_logger->set_pattern("%v");
 
-    const char* filepath = format("{}/nestest.nes", test_roms_path);
-    bus.cartridge = cartridge::from_file(filepath);
+    bus.cartridge = cartridge::from_file(nestest_rom_path);
     bus.cpu.get_state().registers.pc = start_pc;
     bus.cpu.get_state().cycle = start_cycle;
     bus.ppu._cycle = ppu_cycle_t(21);

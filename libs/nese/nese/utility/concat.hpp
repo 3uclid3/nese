@@ -3,7 +3,6 @@
 #include <variant>
 
 namespace nese {
-    
 
 template<typename T, typename... Args>
 struct concat;
@@ -17,4 +16,4 @@ struct concat<std::variant<Args0...>, Args1...>
 template<typename T, typename... Args>
 using concat_t = typename concat<T, Args...>::type;
 
-}
+} // namespace nese

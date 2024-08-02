@@ -1,6 +1,13 @@
+# IDE
 .vscode/
 .vs/
 
+# Build
+build/
 out/
 
+# Configs (move to build)
+**/test_config.hpp
+
+# User
 *.user

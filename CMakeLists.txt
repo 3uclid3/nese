@@ -85,9 +85,16 @@ project_options(
     CPPCHECK_OPTIONS ${CPPCHECK_OPTIONS}
 )
 
-add_subdirectory("lib")
+# use xml reporter if coverage is enabled
+if(${ENABLE_COVERAGE})
+  set(COVERAGE_ARGS REPORTER xml)
+endif()
+
+# add libs and app
+add_subdirectory("libs")
 add_subdirectory("app")
 
+# tests
 if(FEATURE_TESTS)
     add_subdirectory("tests")
 endif()

@@ -14,8 +14,10 @@ set(INCLUDES
     "${DIR}/graphic/color.hpp"
     "${DIR}/utility/details/crc32_table.hpp"
     "${DIR}/utility/assert.hpp"
+    "${DIR}/utility/concat.hpp"
     "${DIR}/utility/crc32.hpp"
     "${DIR}/utility/format.hpp"
+    "${DIR}/utility/hex.hpp"
     "${DIR}/utility/log.hpp"
     "${DIR}/utility/name_of.hpp"
     "${DIR}/utility/nintendulator.hpp"
@@ -72,3 +74,6 @@ target_link_system_libraries(
         fmt::fmt
         magic_enum::magic_enum
 )
+
+# Set the folder for the project in Visual Studio
+set_property(TARGET nese PROPERTY FOLDER "libs")
