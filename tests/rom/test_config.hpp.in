@@ -1,0 +1,7 @@
+#pragma once 
+
+namespace nese {
+
+static constexpr auto nestest_rom_path = "@NESTEST_ROM_PATH@";
+
+}

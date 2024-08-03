@@ -71,7 +71,7 @@ endif()
 project_options(
     PREFIX "nese"
     ENABLE_CACHE
-    ${ENABLE_CPPCHECK}
+    # ${ENABLE_CPPCHECK}
     # ${ENABLE_CLANG_TIDY}
     ENABLE_VS_ANALYSIS
     # ENABLE_INTERPROCEDURAL_OPTIMIZATION
@@ -85,9 +85,16 @@ project_options(
     CPPCHECK_OPTIONS ${CPPCHECK_OPTIONS}
 )
 
-add_subdirectory("lib")
+# use xml reporter if coverage is enabled
+if(${ENABLE_COVERAGE})
+  set(COVERAGE_ARGS REPORTER xml)
+endif()
+
+# add libs and app
+add_subdirectory("libs")
 add_subdirectory("app")
 
+# tests
 if(FEATURE_TESTS)
     add_subdirectory("tests")
 endif()
@@ -95,15 +102,16 @@ endif()
 # Package the project
 package_project(
     TARGETS
-    nesesan.opengl
-    nesesan
+    nese.app
+    nese.debugger
+    nese.gui
     nese
     nese_project_options 
     nese_project_warnings
 )
 
 # set the startup project for the "play" button in MSVC
-set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT nesesan.sdl2)
+set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT nese.app)
 
 # Experience shows that explicit package naming can help make it easier to sort
 # out potential ABI related issues before they start, while helping you
